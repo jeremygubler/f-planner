@@ -1,0 +1,1894 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PhotoPlanner</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.min.css">
+<!-- PWA -->
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#E9A42E">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="PhotoPlanner">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192.png">
+<link rel="icon" type="image/png" sizes="512x512" href="icons/icon-512.png">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fontsource/playfair-display@5/400.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fontsource/playfair-display@5/700.css">
+<style>
+:root{--gold:#E9A42E;--goldg:rgba(233,164,46,0.18);--goldb:rgba(233,164,46,0.28);--blue:#6B9FE8;--blueg:rgba(107,159,232,0.15);--blueb:rgba(107,159,232,0.28);--green:#34D399;--greeng:rgba(52,211,153,0.15);--red:#F87171;--bg:#08080D;--s1:rgba(255,255,255,0.04);--s2:rgba(255,255,255,0.07);--bd:rgba(255,255,255,0.08);--tx:#EDE8DF;--mu:rgba(237,232,223,0.45);--di:rgba(237,232,223,0.2);--r:14px;--rs:10px;}
+[data-theme="light"]{--bg:#F5F2EC;--s1:rgba(0,0,0,0.04);--s2:rgba(0,0,0,0.07);--bd:rgba(0,0,0,0.1);--tx:#1A1612;--mu:rgba(26,22,18,0.5);--di:rgba(26,22,18,0.25);--goldg:rgba(233,164,46,0.12);--blueg:rgba(107,159,232,0.1);--greeng:rgba(52,211,153,0.1);}
+[data-theme="light"] .bg-atm{background:radial-gradient(ellipse 70% 40% at 15% 5%,rgba(233,164,46,0.1) 0%,transparent 70%),radial-gradient(ellipse 50% 35% at 85% 85%,rgba(107,159,232,0.08) 0%,transparent 70%);}
+[data-theme="light"] .card{box-shadow:0 1px 4px rgba(0,0,0,0.06);}
+*{box-sizing:border-box;margin:0;padding:0;}
+html,body{min-height:100%;background:var(--bg);color:var(--tx);font-family:'DM Sans',-apple-system,BlinkMacSystemFont,sans-serif;font-weight:300;font-size:15px;line-height:1.6;overflow-x:hidden;padding-bottom:4rem;}
+.bg-atm{position:fixed;inset:0;pointer-events:none;z-index:0;background:radial-gradient(ellipse 70% 40% at 15% 5%,rgba(233,164,46,0.07) 0%,transparent 70%),radial-gradient(ellipse 50% 35% at 85% 85%,rgba(107,159,232,0.06) 0%,transparent 70%);}
+.app{position:relative;z-index:1;max-width:740px;margin:0 auto;padding:0 1.25rem;}
+.header{padding:1.5rem 0 1.25rem;display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;}
+.logo-title{font-family:'Playfair Display',Georgia,serif;font-size:21px;font-weight:700;letter-spacing:-0.02em;line-height:1;}
+.logo-dot{display:inline-block;width:7px;height:7px;background:var(--gold);border-radius:50%;margin-right:5px;vertical-align:middle;margin-bottom:2px;}
+.logo-sub{font-size:10px;letter-spacing:0.15em;text-transform:uppercase;color:var(--mu);margin-top:3px;}
+.hdr-r{display:flex;align-items:center;gap:8px;}
+.lang-sw{display:flex;border:0.5px solid var(--bd);border-radius:99px;overflow:hidden;}
+.lang-btn{background:none;border:none;color:var(--mu);font-size:11px;font-weight:500;padding:5px 10px;cursor:pointer;transition:background .15s,color .15s;font-family:inherit;}
+.lang-btn.on,.lang-btn:hover{background:var(--s2);color:var(--tx);}
+.icon-btn{width:36px;height:36px;background:var(--s2);border:0.5px solid var(--bd);border-radius:99px;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:15px;transition:all .15s;user-select:none;}
+.icon-btn:hover{background:rgba(255,255,255,0.12);}
+.icon-btn.on{border-color:var(--goldb);background:var(--goldg);}
+.clock{font-size:12px;color:var(--mu);}
+.search-row{display:flex;gap:8px;margin-bottom:1rem;flex-wrap:wrap;}
+.sw{position:relative;flex:1;min-width:180px;}
+.si{position:absolute;left:13px;top:50%;transform:translateY(-50%);color:var(--mu);font-size:14px;pointer-events:none;}
+.sinput{width:100%;height:46px;background:var(--s2);border:0.5px solid var(--bd);border-radius:var(--r);color:var(--tx);font-family:inherit;font-size:14px;font-weight:300;padding:0 13px 0 39px;outline:none;transition:border-color .2s,background .2s;}
+.sinput::placeholder{color:var(--di);}
+.sinput:focus{border-color:var(--goldb);background:rgba(255,255,255,0.09);}
+.dinput{height:46px;background:var(--s2);border:0.5px solid var(--bd);border-radius:var(--r);color:var(--tx);font-family:inherit;font-size:13px;padding:0 13px;outline:none;cursor:pointer;color-scheme:dark;min-width:135px;}
+.dinput:focus{border-color:var(--goldb);}
+.btn{height:46px;padding:0 16px;background:var(--s2);border:0.5px solid var(--bd);border-radius:var(--r);color:var(--tx);font-family:inherit;font-size:13px;font-weight:400;cursor:pointer;white-space:nowrap;transition:all .15s;display:flex;align-items:center;gap:6px;}
+.btn:hover{background:rgba(255,255,255,0.1);}
+.btn:active{transform:scale(0.98);}
+.btn-gold{background:var(--gold);border-color:var(--gold);color:#1A0E00;font-weight:500;}
+.btn-gold:hover{background:#F5B43A;border-color:#F5B43A;}
+.btn-sm{height:34px;padding:0 12px;font-size:12px;border-radius:var(--rs);}
+.tab-bar{display:flex;gap:3px;margin-bottom:1.25rem;background:var(--s1);border:0.5px solid var(--bd);border-radius:var(--r);padding:4px;overflow-x:auto;}
+.tab{flex:1;min-width:60px;height:36px;background:none;border:none;color:var(--mu);font-family:inherit;font-size:11.5px;font-weight:400;cursor:pointer;border-radius:11px;transition:all .15s;white-space:nowrap;padding:0 6px;}
+.tab:hover{color:var(--tx);background:var(--s2);}
+.tab.on{background:var(--s2);color:var(--tx);font-weight:500;border:0.5px solid var(--bd);}
+.card{background:var(--s1);border:0.5px solid var(--bd);border-radius:var(--r);padding:1.2rem;margin-bottom:1rem;}
+.card-gold{border-color:var(--goldb);background:linear-gradient(135deg,rgba(233,164,46,0.09) 0%,rgba(233,164,46,0.03) 100%);}
+.card-blue{border-color:var(--blueb);background:linear-gradient(135deg,rgba(107,159,232,0.08) 0%,rgba(107,159,232,0.02) 100%);}
+.card-dark{background:linear-gradient(135deg,rgba(20,15,50,0.7) 0%,rgba(8,8,15,0.9) 100%);border-color:rgba(107,159,232,0.2);}
+.ch{display:flex;align-items:center;justify-content:space-between;margin-bottom:1rem;}
+.ct{font-size:10px;letter-spacing:0.14em;text-transform:uppercase;color:var(--mu);font-weight:500;}
+.badge{font-size:11px;padding:3px 10px;border-radius:99px;font-weight:500;white-space:nowrap;}
+.bg{background:var(--goldg);color:var(--gold);}
+.bb{background:var(--blueg);color:var(--blue);}
+.bgr{background:var(--greeng);color:var(--green);}
+.bgray{background:rgba(255,255,255,0.08);color:var(--mu);}
+.bred{background:rgba(248,113,113,0.15);color:var(--red);}
+.tgrid{display:grid;grid-template-columns:repeat(3,1fr);gap:.9rem;}
+.tv{font-family:'Playfair Display',Georgia,serif;font-size:19px;font-weight:400;letter-spacing:-0.02em;line-height:1;}
+.tv.g{color:var(--gold);}
+.tv.b{color:var(--blue);}
+.tl{font-size:11px;color:var(--mu);margin-top:4px;line-height:1.3;}
+.score-v{font-family:'Playfair Display',Georgia,serif;font-size:40px;font-weight:700;letter-spacing:-0.03em;line-height:1;}
+.sbar{height:6px;background:var(--bd);border-radius:3px;overflow:hidden;margin:7px 0;}
+.sbar-f{height:100%;border-radius:3px;transition:width .7s ease;}
+.sch{color:var(--green);}
+.scm{color:var(--gold);}
+.scl{color:var(--red);}
+.wdays{display:grid;grid-template-columns:repeat(7,1fr);gap:5px;}
+.wday{background:var(--s2);border:0.5px solid var(--bd);border-radius:var(--rs);padding:9px 4px;text-align:center;cursor:pointer;transition:all .15s;}
+.wday:hover{background:rgba(255,255,255,0.1);transform:translateY(-2px);}
+.wday.best{border-color:rgba(52,211,153,0.4);background:rgba(52,211,153,0.07);}
+.wday.sel{border-color:var(--goldb);background:rgba(233,164,46,0.09);}
+.wdn{font-size:9px;color:var(--mu);font-weight:500;letter-spacing:0.05em;text-transform:uppercase;margin-bottom:3px;}
+.wdi{font-size:17px;margin:3px 0;}
+.wds{font-size:12px;font-weight:600;margin-top:2px;}
+.wdt{font-size:9px;color:var(--mu);margin-top:1px;}
+.two{display:grid;grid-template-columns:1.25fr 1fr;gap:1rem;}
+.drow{display:flex;justify-content:space-between;padding:7px 0;border-bottom:0.5px solid var(--bd);font-size:13px;}
+.drow:last-child{border-bottom:none;}
+.dl{color:var(--mu);}
+.dv{font-weight:500;text-align:right;}
+.tip{border-left:2px solid var(--gold);padding:9px 13px;font-size:12px;color:var(--mu);margin-top:.9rem;line-height:1.6;border-radius:0 var(--rs) var(--rs) 0;background:rgba(233,164,46,0.05);}
+.loc{font-size:12px;color:var(--mu);margin-bottom:1rem;display:flex;align-items:center;gap:5px;flex-wrap:wrap;}
+.loc strong{color:var(--tx);}
+.moon-xl{font-size:50px;line-height:1;display:block;margin-bottom:8px;}
+.moon-nm{font-family:'Playfair Display',Georgia,serif;font-size:19px;font-weight:400;margin-bottom:3px;}
+.mbar{height:4px;background:var(--bd);border-radius:2px;overflow:hidden;margin:8px 0;}
+.mbar-f{height:100%;border-radius:2px;background:linear-gradient(90deg,#4B5563,#D4D4D8,#F9FAFB);}
+/* Calculator styles */
+.calc-section{margin-bottom:1.5rem;}
+.calc-label{font-size:11px;letter-spacing:0.1em;text-transform:uppercase;color:var(--mu);margin-bottom:.5rem;display:block;}
+.calc-input{width:100%;height:42px;background:var(--s2);border:0.5px solid var(--bd);border-radius:var(--rs);color:var(--tx);font-family:inherit;font-size:14px;padding:0 12px;outline:none;transition:border-color .2s;}
+.calc-input:focus{border-color:var(--goldb);}
+.calc-select{width:100%;height:42px;background:var(--s2);border:0.5px solid var(--bd);border-radius:var(--rs);color:var(--tx);font-family:inherit;font-size:13px;padding:0 12px;outline:none;cursor:pointer;appearance:none;-webkit-appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='rgba(237,232,223,0.4)' stroke-width='1.5' fill='none'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 12px center;}
+.calc-select:focus{border-color:var(--goldb);}
+.calc-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+.calc-result{background:linear-gradient(135deg,rgba(233,164,46,0.1),rgba(233,164,46,0.04));border:0.5px solid var(--goldb);border-radius:var(--rs);padding:1rem 1.25rem;margin-top:1rem;}
+.calc-result-val{font-family:'Playfair Display',Georgia,serif;font-size:28px;color:var(--gold);font-weight:700;letter-spacing:-0.02em;}
+.calc-result-lbl{font-size:11px;color:var(--mu);margin-top:4px;}
+.calc-result-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:1rem;}
+.crg-item{background:var(--s2);border-radius:var(--rs);padding:10px 12px;text-align:center;}
+.crg-val{font-family:'Playfair Display',Georgia,serif;font-size:16px;color:var(--tx);font-weight:400;}
+.crg-lbl{font-size:10px;color:var(--mu);margin-top:3px;text-transform:uppercase;letter-spacing:0.08em;}
+.range-wrap{position:relative;margin:4px 0;}
+.range-input{width:100%;height:4px;border-radius:2px;outline:none;-webkit-appearance:none;background:var(--bd);cursor:pointer;}
+.range-input::-webkit-slider-thumb{-webkit-appearance:none;width:18px;height:18px;border-radius:50%;background:var(--gold);cursor:pointer;border:2px solid rgba(255,255,255,0.3);}
+.range-input::-moz-range-thumb{width:18px;height:18px;border-radius:50%;background:var(--gold);cursor:pointer;border:2px solid rgba(255,255,255,0.3);}
+.ev-display{display:flex;align-items:center;justify-content:center;height:80px;border-radius:var(--rs);border:0.5px solid var(--bd);margin-top:1rem;background:var(--s1);}
+.ev-val{font-family:'Playfair Display',Georgia,serif;font-size:36px;color:var(--gold);}
+/* Stars rating */
+.stars{display:flex;gap:4px;margin:6px 0;}
+.star{font-size:18px;cursor:pointer;opacity:.3;transition:opacity .15s;}
+.star.on{opacity:1;}
+/* Spot list */
+.spot-item{display:flex;align-items:flex-start;justify-content:space-between;background:var(--s2);border:0.5px solid var(--bd);border-radius:var(--rs);padding:10px 14px;font-size:13px;gap:10px;margin-bottom:6px;}
+.spot-info{flex:1;}
+.spot-name{font-weight:500;margin-bottom:2px;}
+.spot-meta{font-size:11px;color:var(--mu);}
+.spot-del{background:none;border:none;color:var(--mu);cursor:pointer;font-size:16px;padding:0;flex-shrink:0;transition:color .15s;}
+.spot-del:hover{color:var(--red);}
+.spot-note{width:100%;background:var(--s1);border:0.5px solid var(--bd);border-radius:6px;color:var(--tx);font-family:inherit;font-size:12px;padding:6px 10px;margin-top:6px;resize:none;outline:none;height:50px;}
+.spot-note:focus{border-color:var(--goldb);}
+/* Map */
+#map-c{height:340px;border-radius:var(--r);overflow:hidden;border:0.5px solid var(--bd);margin-bottom:1rem;}
+/* Seasonal */
+.season-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;}
+.season-card{background:var(--s2);border:0.5px solid var(--bd);border-radius:var(--rs);padding:10px 12px;text-align:center;}
+.season-icon{font-size:22px;display:block;margin-bottom:5px;}
+.season-name{font-size:11px;font-weight:500;margin-bottom:4px;}
+.season-tip{font-size:10px;color:var(--mu);line-height:1.4;}
+/* Milky way */
+.mw-win{background:var(--card-dark,linear-gradient(135deg,rgba(20,15,50,0.7),rgba(8,8,15,0.9)));border:0.5px solid rgba(107,159,232,0.25);border-radius:var(--r);padding:1.2rem;margin-bottom:1rem;}
+.mw-t{font-family:'Playfair Display',Georgia,serif;font-size:26px;color:var(--blue);letter-spacing:-0.02em;}
+.nights-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:5px;margin-top:.75rem;}
+.nc{background:var(--s2);border:0.5px solid var(--bd);border-radius:8px;padding:7px 3px;text-align:center;font-size:11px;}
+.nc.good{border-color:rgba(107,159,232,0.4);background:rgba(20,15,60,0.6);}
+.ncd{font-size:9px;color:var(--mu);margin-bottom:2px;}
+.nci{font-size:13px;display:block;}
+.ncm{font-size:9px;color:var(--mu);margin-top:1px;}
+/* Year chart */
+.year-chart{display:flex;gap:5px;align-items:flex-end;height:120px;margin:1rem 0;}
+.yb{display:flex;flex-direction:column;align-items:center;flex:1;height:100%;}
+.ybo{flex:1;width:100%;display:flex;flex-direction:column;justify-content:flex-end;background:rgba(255,255,255,0.03);border-radius:5px 5px 0 0;overflow:hidden;}
+.ybf{border-radius:5px 5px 0 0;min-height:2px;transition:height .6s;}
+.ybl{font-size:9px;color:var(--mu);margin-top:4px;text-align:center;font-weight:500;}
+.ybv{font-size:8px;color:var(--mu);margin-top:1px;}
+.month-item{display:flex;align-items:center;gap:10px;padding:8px 12px;background:var(--s2);border-radius:var(--rs);border:0.5px solid var(--bd);font-size:13px;margin-bottom:6px;}
+/* Sunpath */
+.sunpath-svg{width:100%;overflow:visible;}
+/* Exposure triangle */
+.exp-tri{display:grid;grid-template-columns:1fr;gap:12px;}
+.tri-row{display:flex;align-items:center;gap:12px;}
+.tri-lbl{width:80px;font-size:12px;color:var(--mu);flex-shrink:0;}
+.tri-val{width:70px;text-align:right;font-size:13px;font-weight:500;flex-shrink:0;}
+/* Rainbow */
+.rainbow-display{height:80px;border-radius:var(--rs);overflow:hidden;margin-top:1rem;background:linear-gradient(90deg,transparent 0%,rgba(148,0,211,0.3) 15%,rgba(0,0,255,0.3) 28%,rgba(0,128,0,0.3) 43%,rgba(255,255,0,0.3) 57%,rgba(255,165,0,0.3) 72%,rgba(255,0,0,0.3) 85%,transparent 100%);display:flex;align-items:center;justify-content:center;}
+/* Share bar */
+.share-bar{display:flex;gap:8px;margin-top:.75rem;flex-wrap:wrap;}
+/* Empty */
+.empty{text-align:center;padding:3.5rem 1rem;}
+.empty-icon{font-size:52px;display:block;margin-bottom:1.25rem;opacity:.4;}
+.empty-title{font-family:'Playfair Display',Georgia,serif;font-size:24px;font-weight:400;margin-bottom:.6rem;}
+.empty-sub{font-size:14px;color:var(--mu);max-width:300px;margin:0 auto 1.75rem;line-height:1.7;}
+.chips{display:flex;flex-wrap:wrap;gap:7px;justify-content:center;}
+.chip{background:var(--s2);border:0.5px solid var(--bd);border-radius:99px;padding:7px 15px;font-size:13px;cursor:pointer;transition:all .15s;color:var(--tx);}
+.chip:hover{background:rgba(255,255,255,0.1);border-color:var(--goldb);color:var(--gold);}
+.loading{text-align:center;padding:3rem;color:var(--mu);}
+.spin{width:28px;height:28px;border:2px solid var(--bd);border-top-color:var(--gold);border-radius:50%;animation:sp .8s linear infinite;margin:0 auto 1rem;}
+@keyframes sp{to{transform:rotate(360deg);}}
+.results{animation:fu .35s ease;}
+@keyframes fu{from{opacity:0;transform:translateY(10px);}to{opacity:1;transform:translateY(0);}}
+/* Time slider */
+.time-slider-wrap{margin:0.75rem 0 0.25rem;}
+.time-slider-row{display:flex;align-items:center;gap:10px;margin-bottom:4px;}
+.time-slider-lbl{font-size:12px;color:var(--mu);min-width:50px;}
+.time-slider-val{font-size:12px;color:var(--gold);min-width:45px;text-align:right;}
+
+/* Onboarding */
+.onboard-overlay{position:fixed;inset:0;background:rgba(8,8,13,0.97);z-index:10000;display:flex;align-items:center;justify-content:center;padding:1.5rem;}
+[data-theme="light"] .onboard-overlay{background:rgba(245,242,236,0.97);}
+.onboard-box{max-width:420px;width:100%;text-align:center;}
+.onboard-slides{overflow:hidden;position:relative;}
+.onboard-slide{display:none;animation:obFade .35s ease;}
+.onboard-slide.active{display:block;}
+@keyframes obFade{from{opacity:0;transform:translateY(12px);}to{opacity:1;transform:translateY(0);}}
+.onboard-emoji{font-size:72px;display:block;margin-bottom:1.25rem;line-height:1;}
+.onboard-title{font-family:'Playfair Display',Georgia,serif;font-size:26px;font-weight:700;margin-bottom:.75rem;letter-spacing:-.02em;}
+.onboard-sub{font-size:14px;color:var(--mu);line-height:1.7;margin-bottom:2rem;max-width:320px;margin-left:auto;margin-right:auto;}
+.onboard-dots{display:flex;justify-content:center;gap:8px;margin-bottom:1.5rem;}
+.onboard-dot{width:8px;height:8px;border-radius:50%;background:var(--bd);transition:background .2s,width .2s;}
+.onboard-dot.active{background:var(--gold);width:24px;border-radius:4px;}
+.onboard-btns{display:flex;gap:8px;justify-content:center;}
+/* Packing list */
+.pack-item{display:flex;align-items:center;gap:10px;padding:8px 12px;border-radius:var(--rs);margin-bottom:4px;cursor:pointer;transition:background .15s;}
+.pack-item:hover{background:var(--s2);}
+.pack-check{width:20px;height:20px;border:1.5px solid var(--bd);border-radius:6px;flex-shrink:0;display:flex;align-items:center;justify-content:center;transition:all .15s;}
+.pack-check.done{background:var(--green);border-color:var(--green);}
+.pack-label{font-size:13px;transition:opacity .15s;}
+.pack-label.done{opacity:.4;text-decoration:line-through;}
+.pack-category{font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:var(--mu);font-weight:600;margin:1rem 0 .5rem;padding-left:4px;}
+/* Multi-day planner */
+.day-card{background:var(--s1);border:.5px solid var(--bd);border-radius:var(--r);padding:1rem;margin-bottom:.75rem;}
+.day-hdr{display:flex;align-items:center;justify-content:space-between;margin-bottom:.75rem;}
+.day-num{background:var(--goldg);border:.5px solid var(--goldb);border-radius:99px;padding:3px 12px;font-size:12px;font-weight:500;color:var(--gold);}
+.day-score{font-size:22px;font-weight:700;font-family:'Playfair Display',Georgia,serif;}
+.hist-bar{display:flex;gap:3px;align-items:flex-end;height:80px;margin:.75rem 0;}
+.hb{display:flex;flex-direction:column;align-items:center;flex:1;height:100%;}
+.hbo{flex:1;width:100%;display:flex;flex-direction:column;justify-content:flex-end;background:rgba(255,255,255,0.03);border-radius:3px 3px 0 0;overflow:hidden;cursor:pointer;transition:opacity .15s;}
+.hbo:hover{opacity:.8;}
+.hbf{border-radius:3px 3px 0 0;min-height:2px;}
+.hbl{font-size:8px;color:var(--mu);margin-top:3px;text-align:center;}
+
+/* Print */
+@media print{
+  .bg-atm,.tab-bar,.search-row,.header .hdr-r,.icon-btn,.btn,.share-bar,.print-hide{display:none!important;}
+  .app{max-width:100%;padding:0 1rem;}
+  .card{break-inside:avoid;border:1px solid #ccc!important;background:#fff!important;color:#000!important;}
+  body{background:#fff;color:#000;}
+}
+.install-btn{position:fixed;bottom:1.25rem;right:1.25rem;z-index:999;background:var(--gold);color:#1A0E00;border:none;border-radius:99px;padding:12px 20px;font-family:inherit;font-size:13px;font-weight:500;cursor:pointer;box-shadow:0 4px 20px rgba(233,164,46,0.4);display:flex;align-items:center;gap:8px;transition:all .2s;animation:slideUp .4s ease;}
+.install-btn:hover{transform:translateY(-2px);box-shadow:0 6px 24px rgba(233,164,46,0.5);}
+@keyframes slideUp{from{opacity:0;transform:translateY(20px);}to{opacity:1;transform:translateY(0);}}
+.offline-bar{background:rgba(248,113,113,0.15);border:0.5px solid rgba(248,113,113,0.3);border-radius:var(--rs);padding:9px 14px;font-size:12px;color:#F87171;margin-bottom:1rem;display:none;align-items:center;gap:8px;}
+.online-bar{background:var(--greeng);border:0.5px solid rgba(52,211,153,0.3);border-radius:var(--rs);padding:9px 14px;font-size:12px;color:var(--green);margin-bottom:1rem;display:none;align-items:center;gap:8px;}
+@media(max-width:540px){
+  .wdays{grid-template-columns:repeat(4,1fr);}
+  .two{grid-template-columns:1fr;}
+  .tgrid{grid-template-columns:repeat(2,1fr);}
+  .tab{font-size:10px;}
+  .calc-grid{grid-template-columns:1fr;}
+  .season-grid{grid-template-columns:repeat(2,1fr);}
+  .year-chart{height:90px;}
+}
+</style>
+</head>
+<body>
+<div class="bg-atm"></div>
+<div class="app">
+<header class="header">
+  <div>
+    <div class="logo-title"><span class="logo-dot"></span>PhotoPlanner</div>
+    <div class="logo-sub" id="hdr-sub">Foto-Reise-Planer</div>
+  </div>
+  <div class="hdr-r">
+    <div class="lang-sw">
+      <button class="lang-btn on" onclick="setLang('de')">DE</button>
+      <button class="lang-btn" onclick="setLang('en')">EN</button>
+      <button class="lang-btn" onclick="setLang('fr')">FR</button>
+    </div>
+    <a href="community.html" class="icon-btn" title="Community Spots" style="text-decoration:none;">🌍</a>
+    <div class="icon-btn" id="theme-btn" onclick="toggleTheme()" title="Hell/Dunkel">🌓</div>
+    <div class="icon-btn" id="notif-btn" onclick="handleNotif()" title="Benachrichtigungen">🔔</div>
+    <div class="icon-btn print-hide" onclick="window.print()" title="Drucken / PDF">🖨️</div>
+    <div class="icon-btn print-hide" onclick="shareApp()" title="Teilen">🔗</div>
+    <div class="clock" id="clock"></div>
+  </div>
+</header>
+<div class="search-row">
+  <div class="sw">
+    <span class="si">🔍</span>
+    <input class="sinput" id="q" type="text" placeholder="Ort eingeben, z.B. Grindelwald…" autocomplete="off" onkeydown="if(event.key==='Enter')doSearch()">
+  </div>
+  <input class="dinput" id="di" type="date">
+  <button class="btn btn-gold" onclick="doSearch()" id="btn-search">Suchen</button>
+  <button class="btn" onclick="useGPS()">📍</button>
+</div>
+<!-- Onboarding Overlay -->
+<div class="onboard-overlay" id="onboard" style="display:none">
+  <div class="onboard-box">
+    <div class="onboard-slides">
+      <div class="onboard-slide active" id="ob0">
+        <span class="onboard-emoji">🌅</span>
+        <div class="onboard-title">Willkommen bei PhotoPlanner</div>
+        <div class="onboard-sub">Dein persönlicher Assistent für perfekte Fotos. Goldene Stunde, Milchstrasse, Wetter-Score – alles an einem Ort. Weltweit.</div>
+      </div>
+      <div class="onboard-slide" id="ob1">
+        <span class="onboard-emoji">🔧</span>
+        <div class="onboard-title">Alle Tools für Fotografen</div>
+        <div class="onboard-sub">ND-Filter Rechner, Schärfentiefe, Timelapse Planer, Belichtungsdreieck und Kamera-Empfehlungen je nach Lichtbedingung.</div>
+      </div>
+      <div class="onboard-slide" id="ob2">
+        <span class="onboard-emoji">📍</span>
+        <div class="onboard-title">Spots merken, Reisen planen</div>
+        <div class="onboard-sub">Speichere deine Lieblings-Fotospots, plane mehrtägige Trips und finde die besten Monate für jeden Ort weltweit.</div>
+      </div>
+    </div>
+    <div class="onboard-dots">
+      <div class="onboard-dot active" id="od0"></div>
+      <div class="onboard-dot" id="od1"></div>
+      <div class="onboard-dot" id="od2"></div>
+    </div>
+    <div class="onboard-btns">
+      <button class="btn" id="ob-skip" onclick="closeOnboard()" style="flex:1;justify-content:center;">Überspringen</button>
+      <button class="btn btn-gold" id="ob-next" onclick="obNext()" style="flex:1;justify-content:center;">Weiter →</button>
+    </div>
+  </div>
+</div>
+
+<div class="tab-bar" id="tab-bar" style="display:none">
+  <button class="tab on" onclick="setTab('light')" id="tab-light">🌅 Licht</button>
+  <button class="tab" onclick="setTab('map')" id="tab-map">🗺️ Karte</button>
+  <button class="tab" onclick="setTab('night')" id="tab-night">🌌 Nacht</button>
+  <button class="tab" onclick="setTab('plan')" id="tab-plan">📅 Planung</button>
+  <button class="tab" onclick="setTab('trip')" id="tab-trip">🗓️ Trip</button>
+  <button class="tab" onclick="setTab('tools')" id="tab-tools">🔧 Tools</button>
+</div>
+<div id="main"></div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/suncalc/1.9.0/suncalc.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.min.js"></script>
+<script>
+// ── i18n ──────────────────────────────────────────────────────────────────
+const STR={
+de:{sub:'Foto-Reise-Planer',search:'Ort eingeben…',sbtn:'Suchen',
+  t1:'🌅 Licht',t2:'🗺️ Karte',t3:'🌌 Nacht',t4:'📅 Planung',t5:'🔧 Tools',t6:'🗓️ Trip',
+  pack:'Packliste',trip_planner:'Mehrtages-Trip',hist:'Historisches Wetter',add_day:'Tag hinzufügen',
+  score:'Foto-Score',golden:'Goldene Stunde',blue:'Blaue Stunde',compass:'Sonnenkompass',
+  moon:'Mondphase',forecast:'7-Tage Score',suntimes:'Alle Sonnenzeiten',
+  camera:'Kamera-Empfehlung',milky:'Milchstrassen-Fenster',yearly:'Jahresübersicht',
+  spots:'Meine Foto-Spots',addspot:'Spot hinzufügen',bestmonths:'Beste Monate',
+  tools_nd:'ND-Filter Rechner',tools_tl:'Timelapse Planer',
+  tools_dof:'Schärfentiefe-Rechner',tools_exp:'Belichtungsdreieck',tools_rain:'Regenbogen',
+  MONTHS:['Jan','Feb','Mär','Apr','Mai','Jun','Jul','Aug','Sep','Okt','Nov','Dez'],
+  DAYS:['So','Mo','Di','Mi','Do','Fr','Sa'],TODAY:'Heute',
+  quality:'Fotoqualität des Tages',seasonal:'Saisonale Foto-Tipps',
+    best_time:'Beste Fotozeit',magic_light:'Magisches Licht',timeline:'Zeitverlauf',
+    moonlight_on:'Mondlicht aktiv',milkyway_ok:'✓ Milchstrasse',milkyway_no:'Mondlicht stark',
+    morn_start:'🌅 Morgen Beginn',morn_sunrise:'☀️ Sonnenaufgang',morn_end:'🌤️ Morgen Ende',
+    eve_start:'🌇 Abend Beginn',eve_sunset:'🌆 Sonnenuntergang',eve_end:'🌃 Abend Ende',
+    blue_morn_s:'🌌 Morgen Beginn',blue_morn_e:'🌅 Morgen Ende',solar_noon:'🌞 Sonnenmittag',
+    blue_eve_s:'🌆 Abend Beginn',blue_eve_e:'🌌 Abend Ende',elevation:'Elevation',
+    moon_hint:'→ Nacht-Tab für Details',illuminated:'beleuchtet',
+    moonwalk_good:'Ideal für Milchstrassen-Fotografie!',
+    sunpath_lbl:'Sonnenweg',daylight:'Tageslicht',blue_hour_short:'Blaue Std.',
+    moon_names:['Neumond','Zunehmende Sichel','Erstes Viertel','Zunehmender Halbmond','Vollmond','Abnehmender Halbmond','Letztes Viertel','Abnehmende Sichel'],
+    above_horiz:'über Horizont',below_horiz:'unter Horizont',
+    cam_scenes:['Landschaft','Stadt','Portrait','Wasserfall','Milchstrasse','Sternspuren'],
+    cam_icons:['🏔️','🏙️','👤','💧','🌌','⭐']
+},
+en:{sub:'Photo Travel Planner',search:'Enter location…',sbtn:'Search',
+  t1:'🌅 Light',t2:'🗺️ Map',t3:'🌌 Night',t4:'📅 Planning',t5:'🔧 Tools',t6:'🗓️ Trip',
+  pack:'Packing List',trip_planner:'Multi-Day Trip',hist:'Historical Weather',add_day:'Add Day',
+  score:'Photo Score',golden:'Golden Hour',blue:'Blue Hour',compass:'Sun Compass',
+  moon:'Moon Phase',forecast:'7-Day Score',suntimes:'All Sun Times',
+  camera:'Camera Settings',milky:'Milky Way Window',yearly:'Yearly Overview',
+  spots:'My Photo Spots',addspot:'Add Spot',bestmonths:'Best Months',
+  tools_nd:'ND Filter Calculator',tools_tl:'Timelapse Planner',
+  tools_dof:'Depth of Field',tools_exp:'Exposure Triangle',tools_rain:'Rainbow',
+  MONTHS:['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'],
+  DAYS:['Sun','Mon','Tue','Wed','Thu','Fri','Sat'],TODAY:'Today',
+  quality:'Photo quality today',seasonal:'Seasonal Photo Tips',
+    best_time:'Best Photo Time',magic_light:'Magical Light',timeline:'Timeline',
+    moonlight_on:'Moonlight active',milkyway_ok:'✓ Milky Way',milkyway_no:'Moonlight strong',
+    morn_start:'🌅 Morning Start',morn_sunrise:'☀️ Sunrise',morn_end:'🌤️ Morning End',
+    eve_start:'🌇 Evening Start',eve_sunset:'🌆 Sunset',eve_end:'🌃 Evening End',
+    blue_morn_s:'🌌 Morning Start',blue_morn_e:'🌅 Morning End',solar_noon:'🌞 Solar Noon',
+    blue_eve_s:'🌆 Evening Start',blue_eve_e:'🌌 Evening End',elevation:'Elevation',
+    moon_hint:'→ Night tab for details',illuminated:'illuminated',
+    moonwalk_good:'Ideal for Milky Way photography!',
+    sunpath_lbl:'Sun Path',daylight:'Daylight',blue_hour_short:'Blue Hr.',
+    moon_names:['New Moon','Waxing Crescent','First Quarter','Waxing Gibbous','Full Moon','Waning Gibbous','Last Quarter','Waning Crescent'],
+    above_horiz:'above horizon',below_horiz:'below horizon',
+    cam_scenes:['Landscape','Cityscape','Portrait','Waterfall','Milky Way','Star Trails'],
+    cam_icons:['🏔️','🏙️','👤','💧','🌌','⭐']
+},
+fr:{sub:'Planificateur Photo',search:'Entrez un lieu…',sbtn:'Chercher',
+  t1:'🌅 Lumière',t2:'🗺️ Carte',t3:'🌌 Nuit',t4:'📅 Planning',t5:'🔧 Outils',t6:'🗓️ Trip',
+  pack:'Liste d\'Équipement',trip_planner:'Voyage Multi-Jours',hist:'Météo Historique',add_day:'Ajouter Jour',
+  score:'Score Photo',golden:'Heure Dorée',blue:'Heure Bleue',compass:'Boussole',
+  moon:'Phase de Lune',forecast:'Score 7 Jours',suntimes:'Tous les Horaires',
+  camera:'Réglages',milky:'Voie Lactée',yearly:'Vue Annuelle',
+  spots:'Mes Spots',addspot:'Ajouter Spot',bestmonths:'Meilleurs Mois',
+  tools_nd:'Filtre ND',tools_tl:'Timelapse',
+  tools_dof:'Profondeur de Champ',tools_exp:'Triangle d\'Exposition',tools_rain:'Arc-en-ciel',
+  MONTHS:['Jan','Fév','Mar','Avr','Mai','Jun','Jul','Aoû','Sep','Oct','Nov','Déc'],
+  DAYS:['Dim','Lun','Mar','Mer','Jeu','Ven','Sam'],TODAY:"Aujourd'hui",
+  quality:'Qualité photo du jour',seasonal:'Conseils saisonniers',
+    best_time:'Meilleur Moment',magic_light:'Lumière Magique',timeline:'Chronologie',
+    moonlight_on:'Clair de lune actif',milkyway_ok:'✓ Voie Lactée',milkyway_no:'Clair de lune fort',
+    morn_start:'🌅 Début Matin',morn_sunrise:'☀️ Lever du Soleil',morn_end:'🌤️ Fin Matin',
+    eve_start:'🌇 Début Soir',eve_sunset:'🌆 Coucher du Soleil',eve_end:'🌃 Fin Soir',
+    blue_morn_s:'🌌 Début Matin',blue_morn_e:'🌅 Fin Matin',solar_noon:'🌞 Midi Solaire',
+    blue_eve_s:'🌆 Début Soir',blue_eve_e:'🌌 Fin Soir',elevation:'Élévation',
+    moon_hint:'→ Onglet Nuit',illuminated:'illuminée',
+    moonwalk_good:'Idéal pour la Voie Lactée!',
+    sunpath_lbl:'Voie Solaire',daylight:'Lumière du Jour',blue_hour_short:'H. Bleue',
+    moon_names:['Nouvelle Lune','Croissant','Premier Quartier','Gibbeuse Croissante','Pleine Lune','Gibbeuse Décroissante','Dernier Quartier','Croissant Décroissant'],
+    above_horiz:'au-dessus horizon',below_horiz:'sous horizon',
+    cam_scenes:['Paysage','Ville','Portrait','Cascade','Voie Lactée','Traînées'],
+    cam_icons:['🏔️','🏙️','👤','💧','🌌','⭐']
+}};
+// ── State ────────────────────────────────────────────────────────────────────
+let S={lat:null,lng:null,name:'',date:new Date(),weather:null,lang:'de',tab:'light',
+  spots:JSON.parse(localStorage.getItem('pp_spots3')||'[]'),
+  scene:'landscape',notifEnabled:false,sunHour:12,lpOverlay:false};
+let MAP=null,MMARKER=null,MLAYERS=[],LP_LAYER=null;
+function t(k){return(STR[S.lang]||STR.de)[k]||STR.de[k]||k;}
+// ── Init ─────────────────────────────────────────────────────────────────────
+(function(){
+  const di=document.getElementById('di'),now=new Date();
+  di.value=now.toISOString().slice(0,10);
+  di.min=now.toISOString().slice(0,10);
+  const mx=new Date(now);mx.setDate(mx.getDate()+14);
+  di.max=mx.toISOString().slice(0,10);
+  setInterval(()=>{document.getElementById('clock').textContent=new Date().toLocaleTimeString('de-CH',{hour:'2-digit',minute:'2-digit'});},20000);
+  document.getElementById('clock').textContent=new Date().toLocaleTimeString('de-CH',{hour:'2-digit',minute:'2-digit'});
+  showEmpty();
+})();
+// ── Helpers ──────────────────────────────────────────────────────────────────
+function fmt(d){return(!d||isNaN(d))?'—':d.toLocaleTimeString('de-CH',{hour:'2-digit',minute:'2-digit'});}
+function clamp(v,a,b){return Math.max(a,Math.min(b,v));}
+function wmoInfo(c){
+  const m={0:['Klarer Himmel','☀️'],1:['Überwiegend klar','🌤️'],2:['Teilweise bewölkt','⛅'],3:['Bedeckt','☁️'],
+    45:['Nebel','🌫️'],48:['Eisnebel','🌫️'],51:['Leichter Niesel','🌦️'],53:['Niesel','🌦️'],55:['Starker Niesel','🌧️'],
+    61:['Leichter Regen','🌧️'],63:['Regen','🌧️'],65:['Starker Regen','🌧️'],
+    71:['Leichter Schnee','🌨️'],73:['Schneefall','🌨️'],75:['Starker Schnee','❄️'],77:['Schneekörner','🌨️'],
+    80:['Schauer','🌦️'],81:['Starke Schauer','🌧️'],82:['Heftige Schauer','⛈️'],
+    85:['Schneeschauer','🌨️'],86:['Starke Schneeschauer','❄️'],95:['Gewitter','⛈️'],96:['Gewitter','⛈️'],99:['Gewitter','⛈️']};
+  return m[c]||['Unbekannt','❓'];
+}
+function photoScore(c){
+  const s={0:82,1:93,2:88,3:38,45:68,48:62,51:45,53:42,55:38,61:32,63:28,65:22,71:80,73:76,75:71,77:72,80:58,81:52,82:48,85:74,86:68,95:72,96:65,99:60};
+  return s[c]!==undefined?s[c]:50;
+}
+function scc(s){return s>=75?'sch':s>=50?'scm':'scl';}
+function scv(s){return s>=75?'var(--green)':s>=50?'var(--gold)':'var(--red)';}
+function moonIcon(ph){return['🌑','🌒','🌓','🌔','🌕','🌖','🌗','🌘'][Math.floor(ph*8)%8];}
+function moonName(ph){
+  const n=t('moon_names');
+  if(ph<0.03||ph>0.97)return n[0];
+  if(ph<0.22)return n[1];if(ph<0.28)return n[2];
+  if(ph<0.47)return n[3];if(ph<0.53)return n[4];
+  if(ph<0.72)return n[5];if(ph<0.78)return n[6];
+  return n[7];
+}
+function getTip(wCode,moonPhase){
+  if(moonPhase<0.08||moonPhase>0.92)return'🌌 Neumond: perfekt für Milchstrassen-Fotografie!';
+  if(moonPhase>0.45&&moonPhase<0.55)return'🌕 Vollmond: dramatisches Mondlicht für Nachtlandschaften.';
+  const tips={0:'☀️ Klarer Himmel – goldene Stunde nicht verpassen!',1:'🌤️ Optimale Bedingungen! Dramatische Wolken + goldenes Licht.',
+    2:'⛅ Lichtwechsel schaffen spannende Momente.',3:'☁️ Bedeckt: ideal für Wasserfälle, kein hartes Licht.',
+    45:'🌫️ Nebel! Frühaufstehen für Sonnenstrahlen im Nebel.',61:'🌧️ Regen: Reflexionen und satte Farben nutzen.',
+    71:'❄️ Schnee: -1 EV Belichtungskorrektur für korrektes Weiss.',95:'⛈️ Gewitter: nur sicher vom Inneren aus fotografieren.'};
+  return tips[wCode]||tips[Math.floor(wCode/10)*10]||'🌄 Goldene und blaue Stunde nutzen.';
+}
+// ── Galactic Center ──────────────────────────────────────────────────────────
+function gcAlt(date,lat,lng){
+  const JD=date.getTime()/86400000+2440587.5;
+  const GMST=((280.46061837+360.98564736629*(JD-2451545.0))%360+360)%360;
+  const LST=((GMST+lng)%360+360)%360;
+  const HA=((LST-266.405)%360+360)%360;
+  const lr=lat*Math.PI/180,dr=-28.936*Math.PI/180,hr=HA*Math.PI/180;
+  return Math.asin(clamp(Math.sin(dr)*Math.sin(lr)+Math.cos(dr)*Math.cos(lr)*Math.cos(hr),-1,1))*180/Math.PI;
+}
+function milkyWayWindows(date,lat,lng){
+  const wins=[];let inW=false,start=null;
+  for(let h=17;h<32;h++){for(let m=0;m<60;m+=15){
+    const t2=new Date(date);t2.setHours(h%24,m,0,0);
+    if(h>=24)t2.setDate(t2.getDate()+1);
+    const ok=SunCalc.getPosition(t2,lat,lng).altitude*180/Math.PI<-18&&gcAlt(t2,lat,lng)>5;
+    if(ok&&!inW){inW=true;start=new Date(t2);}
+    if(!ok&&inW){inW=false;wins.push({s:start,e:new Date(t2)});}
+  }}
+  if(inW)wins.push({s:start,e:null});
+  return wins;
+}
+// ── Tide approximation (lunar) ────────────────────────────────────────────────
+function tideApprox(date,lat){
+  const mi=SunCalc.getMoonIllumination(date);
+  const phase=mi.phase;
+  // Simplified: high tide roughly at new/full moon, low at quarters
+  const tideStrength=Math.abs(Math.cos(phase*2*Math.PI));
+  const tideLabel=tideStrength>0.7?'Springtide (stark)':tideStrength>0.3?'Normaltide':'Nipptide (schwach)';
+  // Approximate high tides: roughly every 12h 25min
+  // Use lunar transit time as rough guide
+  const lunarTransit=new Date(date);
+  lunarTransit.setHours(Math.round(12+phase*24)%24,0,0,0);
+  const ht1=new Date(lunarTransit);
+  const ht2=new Date(lunarTransit.getTime()+12*3600000+25*60000);
+  const lt1=new Date(lunarTransit.getTime()+6*3600000+12*60000);
+  const lt2=new Date(lunarTransit.getTime()+18*3600000+37*60000);
+  return{label:tideLabel,strength:Math.round(tideStrength*100),ht1,ht2,lt1,lt2};
+}
+// ── Camera Settings ──────────────────────────────────────────────────────────
+const CAM={
+  golden:{landscape:{iso:'100–400',ap:'f/8–f/11',sh:'1/125s',wb:'4000–5000 K',nd:'Kein',extra:'Stativ für dramatische Schatten'},
+    city:{iso:'100–200',ap:'f/8',sh:'1/250s',wb:'4500 K',nd:'Kein',extra:'Reflexionen auf Strassen suchen'},
+    portrait:{iso:'100–200',ap:'f/2–f/2.8',sh:'1/500s',wb:'Auto',nd:'Kein',extra:'Gegenlicht für Rim-Light nutzen'},
+    waterfall:{iso:'100',ap:'f/11',sh:'1/2s–2s',wb:'Tageslicht',nd:'ND 3–6 Stops',extra:'Polarisationsfilter empfohlen'},
+    milkyway:{iso:'1600',ap:'f/2.8',sh:'20s',wb:'4000 K',nd:'Kein',extra:'GZ nicht sichtbar in goldener Stunde'},
+    startrail:{iso:'400',ap:'f/5.6',sh:'Intervall',wb:'4000 K',nd:'Kein',extra:'Viele Aufnahmen für Stacking'}},
+  blue:{landscape:{iso:'400–800',ap:'f/8',sh:'1–4s',wb:'4500 K',nd:'Kein',extra:'Stativ zwingend – magisches Licht'},
+    city:{iso:'200–400',ap:'f/11',sh:'2–15s',wb:'3800 K',nd:'Kein',extra:'Bestes Fenster für Stadtfotos mit Himmel'},
+    portrait:{iso:'400–800',ap:'f/2',sh:'1/60s',wb:'Auto',nd:'Kein',extra:'Aufhellblitz für Balance'},
+    waterfall:{iso:'200',ap:'f/11',sh:'4–30s',wb:'Tageslicht',nd:'ND 3 Stops',extra:'Seidiges Wasser + blaues Licht'},
+    milkyway:{iso:'1600–3200',ap:'f/2.8',sh:'20–30s',wb:'4000 K',nd:'Kein',extra:'Kurz vor astronomischer Nacht'},
+    startrail:{iso:'800',ap:'f/4',sh:'Intervall',wb:'4000 K',nd:'Kein',extra:'Stapeln von Einzelaufnahmen'}},
+  day:{landscape:{iso:'100',ap:'f/8–f/16',sh:'1/250s',wb:'Tageslicht',nd:'ND 6–10',extra:'Mittagslicht vermeiden'},
+    city:{iso:'100–200',ap:'f/8',sh:'1/500s',wb:'Tageslicht',nd:'Polarisationsfilter',extra:'Blauen Himmel betonen'},
+    portrait:{iso:'100–200',ap:'f/2.8–f/4',sh:'1/1000s',wb:'Auto',nd:'Kein',extra:'Schatten suchen oder Diffusor'},
+    waterfall:{iso:'100',ap:'f/11–f/16',sh:'1/4s–4s',wb:'Tageslicht',nd:'ND 6–10',extra:'Langsame Verschlusszeit für Seide'},
+    milkyway:{iso:'—',ap:'—',sh:'—',wb:'—',nd:'—',extra:'Nicht möglich – zu hell'},
+    startrail:{iso:'—',ap:'—',sh:'—',wb:'—',nd:'—',extra:'Sterne tagsüber nicht sichtbar'}},
+  night:{landscape:{iso:'800–3200',ap:'f/2.8–f/4',sh:'15–30s',wb:'4000 K',nd:'Kein',extra:'Lichtquellen als Orientierung'},
+    city:{iso:'800–1600',ap:'f/8–f/11',sh:'10–30s',wb:'3200 K',nd:'Kein',extra:'Lichtspuren von Autos'},
+    portrait:{iso:'1600–3200',ap:'f/1.8–f/2',sh:'1/60s',wb:'Auto',nd:'Kein',extra:'Aufhellblitz oder LED-Panel'},
+    waterfall:{iso:'400–800',ap:'f/8',sh:'30s–2min',wb:'4000 K',nd:'Kein',extra:'Mondlicht als natürliche Beleuchtung'},
+    milkyway:{iso:'1600–6400',ap:'f/1.8–f/2.8',sh:'15–25s',wb:'3800–4200 K',nd:'Kein',extra:'500er-Regel: 500 ÷ Brennweite = max. s'},
+    startrail:{iso:'800',ap:'f/4–f/5.6',sh:'2–4 Min × viele',wb:'4000 K',nd:'Kein',extra:'200–500 Aufnahmen für vollst. Bögen'}}
+};
+function getLightCond(date,lat,lng){
+  const times=SunCalc.getTimes(date,lat,lng);
+  const alt=SunCalc.getPosition(date,lat,lng).altitude*180/Math.PI;
+  if(alt<-6)return'night';
+  const inG=(date>=times.dawn&&date<=times.goldenHourEnd)||(date>=times.goldenHour&&date<=times.dusk);
+  const inB=(date>=times.nauticalDawn&&date<times.dawn)||(date>times.dusk&&date<=times.nauticalDusk);
+  if(inG)return'golden';if(inB)return'blue';
+  return'day';
+}
+// ── SVGs ─────────────────────────────────────────────────────────────────────
+function sunPathSVG(date,lat,lng){
+  const W=680,H=130,ml=36,mr=12,mt=10,mb=26,pw=W-ml-mr,ph=H-mt-mb;
+  const pts=[];
+  for(let m=0;m<=1440;m+=15){
+    const t2=new Date(date);t2.setHours(0,m,0,0);
+    pts.push({m,alt:SunCalc.getPosition(t2,lat,lng).altitude*180/Math.PI});
+  }
+  const maxA=Math.max(6,...pts.map(p=>p.alt)),minA=Math.min(-20,...pts.map(p=>p.alt)),rng=maxA-minA;
+  const xp=m=>ml+(m/1440)*pw,yp=a=>mt+ph*(1-(a-minA)/rng);
+  const y0=yp(0),y6=yp(6),yn6=yp(-6),yn18=yp(-18);
+  const sf=v=>Math.max(mt,Math.min(mt+ph,v));
+  const path=pts.map((p,i)=>`${i?'L':'M'}${xp(p.m).toFixed(1)} ${yp(p.alt).toFixed(1)}`).join(' ');
+  const today=new Date(),isToday=date.toDateString()===today.toDateString();
+  let dot='';
+  if(isToday){const nm=today.getHours()*60+today.getMinutes();dot=`<circle cx="${xp(nm).toFixed(1)}" cy="${yp(SunCalc.getPosition(today,lat,lng).altitude*180/Math.PI).toFixed(1)}" r="5" fill="var(--gold)" stroke="rgba(255,255,255,0.5)" stroke-width="1.5"/>`;}
+  const hrs=[0,6,12,18,24].map(h=>`<text x="${xp(h*60).toFixed(1)}" y="${mt+ph+17}" text-anchor="middle" font-size="10" fill="rgba(237,232,223,0.35)" font-family="inherit">${h}h</text>`).join('');
+  return`<svg class="sunpath-svg" viewBox="0 0 ${W} ${H}">
+    <rect x="${ml}" y="${sf(mt)}" width="${pw}" height="${sf(y6)-sf(mt)}" fill="rgba(240,190,60,0.05)"/>
+    <rect x="${ml}" y="${sf(y6)}" width="${pw}" height="${sf(y0)-sf(y6)}" fill="rgba(233,164,46,0.14)"/>
+    <rect x="${ml}" y="${sf(y0)}" width="${pw}" height="${sf(yn6)-sf(y0)}" fill="rgba(107,159,232,0.12)"/>
+    <rect x="${ml}" y="${sf(yn6)}" width="${pw}" height="${sf(yn18)-sf(yn6)}" fill="rgba(50,80,180,0.08)"/>
+    <rect x="${ml}" y="${sf(yn18)}" width="${pw}" height="${mt+ph-sf(yn18)}" fill="rgba(0,0,0,0.12)"/>
+    <rect x="${ml}" y="${mt}" width="${pw}" height="${ph}" fill="none" stroke="rgba(255,255,255,0.06)" stroke-width="0.5"/>
+    <line x1="${ml}" y1="${y0.toFixed(1)}" x2="${ml+pw}" y2="${y0.toFixed(1)}" stroke="rgba(255,255,255,0.12)" stroke-width="0.5" stroke-dasharray="3 5"/>
+    <path d="${path}" fill="none" stroke="var(--gold)" stroke-width="1.8" stroke-linejoin="round"/>
+    ${dot}${hrs}
+    <text x="${ml-3}" y="${(y0+4).toFixed(1)}" text-anchor="end" font-size="9" fill="rgba(237,232,223,0.3)" font-family="inherit">0°</text>
+    <text x="${ml+pw-3}" y="${(yp(maxA/2)+4).toFixed(1)}" text-anchor="end" font-size="9" fill="rgba(233,164,46,0.5)" font-family="inherit">${t('daylight')}</text>
+    <text x="${ml+pw-3}" y="${(yp(-3)+4).toFixed(1)}" text-anchor="end" font-size="9" fill="rgba(107,159,232,0.5)" font-family="inherit">${t('blue_hour_short')}</text>
+  </svg>`;
+}
+function compass(sunAz,moonAz,useHour){
+  const cx=120,cy=120,r=86,rad=d=>d*Math.PI/180;
+  // If useHour, recalculate sun position
+  let az=sunAz;
+  if(useHour&&S.lat){
+    const t2=new Date(S.date);t2.setHours(Math.floor(S.sunHour),Math.round((S.sunHour%1)*60),0,0);
+    const pos=SunCalc.getPosition(t2,S.lat,S.lng);
+    az=(pos.azimuth*180/Math.PI+180+360)%360;
+  }
+  const sx=cx+r*Math.sin(rad(az)),sy=cy-r*Math.cos(rad(az));
+  let ticks='';
+  for(let i=0;i<36;i++){const a=i*10,maj=i%9===0,r1=r-(maj?12:5);ticks+=`<line x1="${(cx+r1*Math.sin(rad(a))).toFixed(1)}" y1="${(cy-r1*Math.cos(rad(a))).toFixed(1)}" x2="${(cx+r*Math.sin(rad(a))).toFixed(1)}" y2="${(cy-r*Math.cos(rad(a))).toFixed(1)}" stroke="rgba(237,232,223,${maj?.18:.07})" stroke-width="${maj?1.2:.7}"/>`;}
+  const cards=[{l:'N',a:0},{l:'O',a:90},{l:'S',a:180},{l:'W',a:270}].map(c=>{
+    const x=cx+(r+18)*Math.sin(rad(c.a)),y=cy-(r+18)*Math.cos(rad(c.a));
+    return`<text x="${x.toFixed(1)}" y="${(y+4).toFixed(1)}" text-anchor="middle" font-size="11" fill="${c.l==='N'?'var(--gold)':'rgba(237,232,223,0.4)'}" font-family="inherit" font-weight="${c.l==='N'?600:400}">${c.l}</text>`;
+  }).join('');
+  let ms='';
+  if(moonAz!==null){const mr2=r-22,mx=cx+mr2*Math.sin(rad(moonAz)),my=cy-mr2*Math.cos(rad(moonAz));ms=`<circle cx="${mx.toFixed(1)}" cy="${my.toFixed(1)}" r="5" fill="rgba(200,215,245,0.5)" stroke="rgba(200,215,245,0.8)" stroke-width="1"/>`;}
+  return`<svg width="240" height="250" viewBox="0 0 240 250" style="display:block;margin:0 auto;">
+    <circle cx="${cx}" cy="${cy}" r="${r}" fill="rgba(255,255,255,0.015)" stroke="rgba(255,255,255,0.08)" stroke-width="0.5"/>
+    <circle cx="${cx}" cy="${cy}" r="${r*.5}" fill="none" stroke="rgba(255,255,255,0.04)" stroke-width="0.5" stroke-dasharray="3 6"/>
+    <line x1="${cx}" y1="${cy-r}" x2="${cx}" y2="${cy+r}" stroke="rgba(255,255,255,0.04)" stroke-width="0.5"/>
+    <line x1="${cx-r}" y1="${cy}" x2="${cx+r}" y2="${cy}" stroke="rgba(255,255,255,0.04)" stroke-width="0.5"/>
+    ${ticks}${cards}${ms}
+    <circle cx="${cx}" cy="${cy}" r="3" fill="rgba(255,255,255,0.15)"/>
+    <circle cx="${sx.toFixed(1)}" cy="${sy.toFixed(1)}" r="16" fill="rgba(233,164,46,0.13)"/>
+    <circle cx="${sx.toFixed(1)}" cy="${sy.toFixed(1)}" r="9" fill="var(--gold)" stroke="rgba(255,255,255,0.35)" stroke-width="1.5"/>
+    <text x="${sx.toFixed(1)}" y="${(sy+4).toFixed(1)}" text-anchor="middle" font-size="10" fill="#1A0E00" font-weight="700">☀</text>
+    <text x="${cx}" y="240" text-anchor="middle" font-size="10" fill="rgba(237,232,223,0.3)" font-family="inherit">Az. ${Math.round(az)}°</text>
+  </svg>`;
+}
+// ── Camera Card ──────────────────────────────────────────────────────────────
+function cameraCard(lc,wCode){
+  const sc=S.scene,st=CAM[lc]?.[sc]||CAM.day.landscape;
+  const scenes=['landscape','city','portrait','waterfall','milkyway','startrail'];
+  const icons=t('cam_icons');
+  const lbls=t('cam_scenes');
+  const sb=scenes.map((id,i)=>`<button onclick="setScene('${id}')" style="background:${sc===id?'var(--goldg)':'var(--s2)'};border:0.5px solid ${sc===id?'var(--goldb)':'var(--bd)'};border-radius:99px;padding:5px 12px;font-size:11px;cursor:pointer;color:${sc===id?'var(--gold)':'var(--mu)'};font-family:inherit;transition:all .15s;">${icons[i]} ${lbls[i]}</button>`).join('');
+  const lcn={'de':{'golden':'🌅 Goldene Stunde','blue':'💙 Blaue Stunde','day':'☀️ Tageslicht','night':'🌙 Nacht'},'en':{'golden':'🌅 Golden Hour','blue':'💙 Blue Hour','day':'☀️ Daylight','night':'🌙 Night'},'fr':{'golden':'🌅 Heure Dorée','blue':'💙 Heure Bleue','day':'☀️ Lumière du Jour','night':'🌙 Nuit'}};
+  const lnames=lcn[S.lang]||lcn.de;
+  return`<div class="card">
+    <div class="ch"><div class="ct">${t('camera')}</div><div class="badge bgray">${lnames[lc]||lc}</div></div>
+    <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:1rem;">${sb}</div>
+    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;">
+      ${[['ISO',st.iso],['Blende',st.ap],['Belichtung',st.sh],['Weißabgleich',st.wb],['ND-Filter',st.nd],['Tipp','']].map(([l,v],i)=>
+        i<5?`<div style="background:var(--s2);border:0.5px solid var(--bd);border-radius:var(--rs);padding:10px 12px;text-align:center;">
+          <div style="font-size:10px;color:var(--mu);text-transform:uppercase;letter-spacing:0.08em;">${l}</div>
+          <div style="font-family:'Playfair Display',Georgia,serif;font-size:14px;margin-top:4px;">${v}</div>
+        </div>`:''
+      ).join('')}
+    </div>
+    <div class="tip">💡 ${st.extra}</div>
+  </div>`;
+}
+// ── Yearly Chart ─────────────────────────────────────────────────────────────
+function yearlyChart(lat,lng){
+  const MN=t('MONTHS'),yr=new Date().getFullYear();
+  const data=MN.map((name,m)=>{
+    const d=new Date(yr,m,15),times=SunCalc.getTimes(d,lat,lng);
+    const tot=Math.round(Math.max(0,(times.goldenHourEnd-times.dawn)/60000)+Math.max(0,(times.dusk-times.goldenHour)/60000));
+    return{name,tot};
+  });
+  const maxT=Math.max(...data.map(d=>d.tot));
+  const bars=data.map((d,i)=>{
+    const pct=maxT>0?(d.tot/maxT*100).toFixed(1):0;
+    const best=d.tot===maxT;
+    return`<div class="yb"><div class="ybo"><div class="ybf" style="height:${pct}%;background:${best?'var(--gold)':'rgba(233,164,46,0.38)'};"></div></div><div class="ybl">${d.name}</div><div class="ybv">${d.tot}m</div></div>`;
+  }).join('');
+  const sorted=[...data].sort((a,b)=>b.tot-a.tot).slice(0,3);
+  const medals=['🥇','🥈','🥉'];
+  const rank=sorted.map((d,i)=>{
+    const idx=data.indexOf(d);
+    return`<div class="month-item"><span style="font-size:16px;">${medals[i]}</span><span style="flex:1;font-weight:500;">${t('MONTHS')[idx]}</span><div style="height:4px;background:var(--bd);border-radius:2px;overflow:hidden;width:80px;flex-shrink:0;"><div style="height:100%;width:${Math.round(d.tot/maxT*100)}%;background:var(--gold);border-radius:2px;"></div></div><span style="font-size:11px;color:var(--mu);min-width:55px;text-align:right;">${d.tot} min/Tag</span></div>`;
+  }).join('');
+  return{bars,rank};
+}
+// ── Seasonal Tips ─────────────────────────────────────────────────────────────
+function seasonalTips(lat){
+  const m=new Date().getMonth();
+  const isNorth=lat>0;
+  const seasons={
+    spring:{icon:'🌸',name:'Frühling',tips:isNorth?'Kirschblüten, Löwenzahn-Felder, Morgennebel. Goldene Stunde wird länger!':'Herbstfarben, Laubwälder.'},
+    summer:{icon:'☀️',name:'Sommer',tips:isNorth?'Lange Tage, Mitternachtssonne (nördl. Breiten), Gewitter-Dramatik.':'Schnee & Eis auf Berggipfeln, klare Sichten.'},
+    autumn:{icon:'🍂',name:'Herbst',tips:isNorth?'Laub in Gold & Rot! Morgennebelstimmung. Kürzere, intensivere goldene Stunde.':'Frühlingsblüten erscheinen.'},
+    winter:{icon:'❄️',name:'Winter',tips:isNorth?'Schnee, Eis, kurze Tage = komprimiertes Licht. Nordlichter-Saison!':'Sommer, lange goldene Stunden.'}
+  };
+  const getNorth=m=>{if(m>=2&&m<=4)return'spring';if(m>=5&&m<=7)return'summer';if(m>=8&&m<=10)return'autumn';return'winter';};
+  const getSouth=m=>{if(m>=2&&m<=4)return'autumn';if(m>=5&&m<=7)return'winter';if(m>=8&&m<=10)return'spring';return'summer';};
+  const curr=isNorth?getNorth(m):getSouth(m);
+  const order=['spring','summer','autumn','winter'];
+  return order.map(s=>`<div class="season-card" style="${s===curr?'border-color:var(--goldb);background:var(--goldg);':''}">
+    <span class="season-icon">${seasons[s].icon}</span>
+    <div class="season-name" style="${s===curr?'color:var(--gold);':''}">${seasons[s].name}</div>
+    <div class="season-tip">${seasons[s].tips}</div>
+  </div>`).join('');
+}
+// ── Tab: Licht ───────────────────────────────────────────────────────────────
+function renderLight(){
+  const{lat,lng,date,weather}=S;
+  const times=SunCalc.getTimes(date,lat,lng);
+  const sliderDate=new Date(date);sliderDate.setHours(Math.floor(S.sunHour),Math.round((S.sunHour%1)*60),0,0);
+  const sunPos=SunCalc.getPosition(sliderDate,lat,lng);
+  const sunAz=(sunPos.azimuth*180/Math.PI+180+360)%360;
+  const moonIllum=SunCalc.getMoonIllumination(date);
+  const moonPos=SunCalc.getMoonPosition(date,lat,lng);
+  const moonAz=moonPos.altitude>0?(moonPos.azimuth*180/Math.PI+180+360)%360:null;
+  let wCode=2,tmax=null,tmin=null,precip=null,wind=null;
+  if(weather?.daily){
+    const ds=date.toISOString().slice(0,10),idx=weather.daily.time.indexOf(ds),i=idx>=0?idx:0;
+    wCode=weather.daily.weathercode[i];tmax=weather.daily.temperature_2m_max[i];
+    tmin=weather.daily.temperature_2m_min[i];precip=weather.daily.precipitation_probability_max[i];wind=weather.daily.windspeed_10m_max[i];
+  }
+  const sc=photoScore(wCode),[wDesc,wIcon]=wmoInfo(wCode);
+  const lc=getLightCond(date,lat,lng);
+  const selDs=date.toISOString().slice(0,10);
+  const DAYS=t('DAYS');
+  const altDeg=(SunCalc.getPosition(date,lat,lng).altitude*180/Math.PI);
+  const moonPct=Math.round(moonIllum.fraction*100);
+  const goodMilky=moonIllum.fraction<0.25;
+  const wdHtml=weather?.daily?weather.daily.time.map((d,i)=>{
+    const wc=weather.daily.weathercode[i],s=photoScore(wc),[,icon]=wmoInfo(wc);
+    const tx=Math.round(weather.daily.temperature_2m_max[i]),tn=Math.round(weather.daily.temperature_2m_min[i]);
+    const dd=new Date(d+'T12:00:00'),dn=i===0?t('TODAY'):DAYS[dd.getDay()];
+    const best=s===Math.max(...weather.daily.weathercode.map(photoScore))&&s>=80;
+    return`<div class="wday ${d===selDs?'sel':best?'best':''}" onclick="selectDay('${d}')"><div class="wdn">${dn}</div><div class="wdi">${icon}</div><div class="wds ${scc(s)}">${s}</div><div class="wdt">${tx}°/${tn}°</div></div>`;
+  }).join(''):'';
+  const hh=Math.floor(S.sunHour),hm=Math.round((S.sunHour%1)*60);
+  const timeStr=`${String(hh).padStart(2,'0')}:${String(hm).padStart(2,'0')}`;
+  document.getElementById('main').innerHTML=`<div class="results">
+  <div class="card ${sc>=75?'card-gold':sc>=50?'card-blue':''}">
+    <div class="ch"><div class="ct">${t('score')}</div><div class="badge ${sc>=75?'bg':sc>=50?'bb':'bgray'}">${wIcon} ${wDesc}</div></div>
+    <div style="display:flex;align-items:center;gap:1.5rem;">
+      <div><div class="score-v" style="color:${scv(sc)}">${sc}<span style="font-size:18px;opacity:.5">/100</span></div>
+        <div style="font-size:11px;color:var(--mu);margin-top:3px;">${t('quality')}</div>
+      </div>
+      <div style="flex:1;">
+        <div class="sbar"><div class="sbar-f" style="width:${sc}%;background:${scv(sc)};"></div></div>
+        ${tmax!==null?`<div style="font-size:11px;color:var(--mu);">${Math.round(tmax)}°/${Math.round(tmin)}° · ${precip}% Regen · ${Math.round(wind)} km/h</div>`:''}
+      </div>
+    </div>
+    <div class="tip">${getTip(wCode,moonIllum.phase)}</div>
+  </div>
+  <div class="card" style="padding-bottom:.75rem;">
+    <div class="ch"><div class="ct">${t('sunpath_lbl')} ${date.toLocaleDateString('de-CH',{day:'numeric',month:'short'})}</div><div class="badge bgray">${t('timeline')}</div></div>
+    ${sunPathSVG(date,lat,lng)}
+  </div>
+  <div class="card card-gold">
+    <div class="ch"><div class="ct">${t('golden')}</div><div class="badge bg">${t('best_time')}</div></div>
+    <div class="tgrid">
+      <div><div class="tv g">${fmt(times.dawn)}</div><div class="tl">${t('morn_start')}</div></div>
+      <div><div class="tv">${fmt(times.sunrise)}</div><div class="tl">${t('morn_sunrise')}</div></div>
+      <div><div class="tv g">${fmt(times.goldenHourEnd)}</div><div class="tl">${t('morn_end')}</div></div>
+      <div><div class="tv g">${fmt(times.goldenHour)}</div><div class="tl">${t('eve_start')}</div></div>
+      <div><div class="tv">${fmt(times.sunset)}</div><div class="tl">${t('eve_sunset')}</div></div>
+      <div><div class="tv g">${fmt(times.dusk)}</div><div class="tl">${t('eve_end')}</div></div>
+    </div>
+  </div>
+  <div class="card card-blue">
+    <div class="ch"><div class="ct">${t('blue')}</div><div class="badge bb">${t('magic_light')}</div></div>
+    <div class="tgrid">
+      <div><div class="tv b">${fmt(times.nauticalDawn)}</div><div class="tl">${t('blue_morn_s')}</div></div>
+      <div><div class="tv b">${fmt(times.dawn)}</div><div class="tl">${t('blue_morn_e')}</div></div>
+      <div><div class="tv">${fmt(times.solarNoon)}</div><div class="tl">${t('solar_noon')}</div></div>
+      <div><div class="tv b">${fmt(times.dusk)}</div><div class="tl">${t('blue_eve_s')}</div></div>
+      <div><div class="tv b">${fmt(times.nauticalDusk)}</div><div class="tl">${t('blue_eve_e')}</div></div>
+      <div><div class="tv" style="font-size:13px;">${altDeg>0?altDeg.toFixed(1)+'° '+t('above_horiz'):Math.abs(altDeg).toFixed(1)+'° '+t('below_horiz')}</div><div class="tl">Elevation</div></div>
+    </div>
+  </div>
+  <div class="two">
+    <div class="card">
+      <div class="ch"><div class="ct">${t('compass')}</div><div class="badge bg">${Math.round(sunAz)}° Az.</div></div>
+      ${compass(sunAz,moonAz,true)}
+      <div class="time-slider-wrap">
+        <div class="time-slider-row">
+          <span class="time-slider-lbl">Uhrzeit:</span>
+          <input class="range-input" type="range" min="0" max="23.9" step="0.25" value="${S.sunHour}" oninput="S.sunHour=parseFloat(this.value);document.getElementById('tslv').textContent=String(Math.floor(parseFloat(this.value))).padStart(2,'0')+':'+String(Math.round((parseFloat(this.value)%1)*60)).padStart(2,'0');updateCompass();" style="flex:1;">
+          <span class="time-slider-val" id="tslv">${timeStr}</span>
+        </div>
+      </div>
+      <div style="font-size:11px;color:var(--mu);text-align:center;margin-top:4px;">${moonAz!==null?'⚪ Mond sichtbar':'🌑 Mond unter Horizont'}</div>
+    </div>
+    <div class="card">
+      <div class="ch"><div class="ct">${t('moon')}</div><div class="badge ${goodMilky?'bgr':'bgray'}">${goodMilky?t('milkyway_ok'):t('moonlight_on')}</div></div>
+      <div class="moon-xl">${moonIcon(moonIllum.phase)}</div>
+      <div class="moon-nm">${moonName(moonIllum.phase)}</div>
+      <div style="font-size:12px;color:var(--mu);">${moonPct}% ${t('illuminated')}</div>
+      <div class="mbar"><div class="mbar-f" style="width:${moonPct}%;"></div></div>
+      <div style="font-size:12px;color:var(--mu);line-height:1.5;margin-top:4px;">${goodMilky?'🌌 '+t('moonwalk_good'):t('moon_hint')}</div>
+    </div>
+  </div>
+  ${cameraCard(lc,wCode)}
+  ${weather?.daily?`<div class="card"><div class="ch"><div class="ct">${t('forecast')}</div><div class="badge bgr">🌿 Bester Tag markiert</div></div><div class="wdays">${wdHtml}</div></div>`:''}
+  <div class="card"><div class="ch"><div class="ct">${t('seasonal')}</div><div class="badge bgray">${new Date().toLocaleDateString('de-CH',{month:'long'})}</div></div><div class="season-grid">${seasonalTips(lat)}</div></div>
+  </div>`;
+}
+function updateCompass(){
+  const c=document.querySelector('#main .two .card');if(!c)return;
+  const wrap=c.querySelector('.time-slider-wrap');if(!wrap)return;
+  const svgEl=c.querySelector('svg');if(!svgEl)return;
+  const t2=new Date(S.date);t2.setHours(Math.floor(S.sunHour),Math.round((S.sunHour%1)*60),0,0);
+  const pos=SunCalc.getPosition(t2,S.lat,S.lng);
+  const az=(pos.azimuth*180/Math.PI+180+360)%360;
+  const moonPos=SunCalc.getMoonPosition(S.date,S.lat,S.lng);
+  const moonAz=moonPos.altitude>0?(moonPos.azimuth*180/Math.PI+180+360)%360:null;
+  svgEl.outerHTML=compass(az,moonAz,false);
+  const badge=c.querySelector('.badge');if(badge)badge.textContent=`${Math.round(az)}° Az.`;
+}
+// ── Tab: Karte ───────────────────────────────────────────────────────────────
+function renderMap(){
+  document.getElementById('main').innerHTML=`<div class="results">
+  <div style="display:flex;gap:8px;margin-bottom:1rem;flex-wrap:wrap;">
+    <input class="sinput" id="spot-name" placeholder="Spot-Name…" style="flex:1;min-width:140px;height:40px;padding:0 12px;">
+    <button class="btn btn-gold btn-sm" onclick="addSpotManual()">📍 ${t('addspot')}</button>
+    <button class="btn btn-sm" onclick="toggleLP()" id="lp-btn" title="Lichtverschmutzung">${S.lpOverlay?'🌑 LP Ein':'🌟 LP Aus'}</button>
+    <button class="btn btn-sm" onclick="shareApp()" title="Teilen">🔗</button>
+  </div>
+  <div id="map-c"></div>
+  <div class="card">
+    <div class="ch"><div class="ct">${t('spots')}</div><div class="badge bgray">${S.spots.length} gespeichert</div></div>
+    <div id="spot-list">${renderSpotList()}</div>
+    ${!S.spots.length?`<div style="font-size:13px;color:var(--mu);">Karte klicken um Spot zu setzen, oder Button oben nutzen.</div>`:''}
+  </div>
+  <div class="card">
+    <div class="ch"><div class="ct">Lichtverschmutzungs-Karte</div><div class="badge bgray">Bortle-Skala</div></div>
+    <div style="font-size:13px;color:var(--mu);line-height:1.6;margin-bottom:.75rem;">
+      Die Bortle-Skala misst die Lichtverschmutzung von 1 (perfekt dunkel) bis 9 (Stadtzentrum). Für Milchstrassen-Fotografie sind Bortle 1–3 ideal.
+    </div>
+    ${[['1–2','Exzellent – perfekte Dunkelheit','🌌','var(--greeng)','var(--green)'],
+      ['3–4','Ländlich – gut für Astrofotografie','💫','rgba(107,159,232,0.15)','var(--blue)'],
+      ['5–6','Vorort – Milchstrasse sichtbar','⭐','var(--goldg)','var(--gold)'],
+      ['7–9','Städtisch – kaum Sterne sichtbar','💡','rgba(248,113,113,0.1)','var(--red)']].map(([b,d,ic,bg,tc])=>
+      `<div style="display:flex;align-items:center;gap:10px;padding:7px 10px;background:${bg};border-radius:8px;margin-bottom:5px;">
+        <span style="font-size:16px;">${ic}</span>
+        <div><div style="font-size:12px;font-weight:500;color:${tc};">Bortle ${b}</div><div style="font-size:11px;color:var(--mu);">${d}</div></div>
+      </div>`).join('')}
+    <a href="https://www.lightpollutionmap.info/#zoom=8&lat=${S.lat}&lon=${S.lng}" target="_blank" rel="noopener" style="display:flex;align-items:center;gap:8px;margin-top:.75rem;background:var(--s2);border:0.5px solid var(--bd);border-radius:var(--rs);padding:10px 14px;color:var(--tx);text-decoration:none;font-size:13px;">
+      🌍 Lichtverschmutzungs-Karte für ${S.name} öffnen ↗
+    </a>
+  </div>
+  </div>`;
+  setTimeout(initMap,50);
+}
+function renderSpotList(){
+  if(!S.spots.length)return'';
+  return S.spots.map(sp=>`<div class="spot-item">
+    <div class="spot-info">
+      <div class="spot-name">📍 ${sp.name} ${sp.rating?'⭐'.repeat(sp.rating):''}</div>
+      <div class="spot-meta">${sp.lat.toFixed(4)}°, ${sp.lng.toFixed(4)}°</div>
+      <textarea class="spot-note" placeholder="Notizen zum Spot…" onchange="updateNote('${sp.id}',this.value)">${sp.note||''}</textarea>
+      <div class="stars">${[1,2,3,4,5].map(i=>`<span class="star ${(sp.rating||0)>=i?'on':''}" onclick="rateSpot('${sp.id}',${i})">⭐</span>`).join('')}</div>
+    </div>
+    <button class="spot-del" onclick="deleteSpot('${sp.id}')">✕</button>
+  </div>`).join('');
+}
+function initMap(){
+  const container=document.getElementById('map-c');if(!container)return;
+  if(!MAP){
+    MAP=L.map('map-c').setView([S.lat,S.lng],12);
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{attribution:'© OpenStreetMap'}).addTo(MAP);
+    MAP.on('click',e=>{
+      const n=document.getElementById('spot-name')?.value.trim()||`Spot ${S.spots.length+1}`;
+      addSpot(e.latlng.lat,e.latlng.lng,n);
+      const el=document.getElementById('spot-name');if(el)el.value='';
+    });
+  }else{MAP.setView([S.lat,S.lng],12);MAP.invalidateSize();}
+  if(MMARKER)MMARKER.remove();
+  MMARKER=L.marker([S.lat,S.lng]).addTo(MAP).bindPopup(`<b>${S.name}</b>`).openPopup();
+  MLAYERS.forEach(l=>l.remove());MLAYERS=[];
+  S.spots.forEach(sp=>{
+    const icon=L.divIcon({html:'<div style="font-size:20px;line-height:1">📍</div>',className:'',iconAnchor:[10,20]});
+    MLAYERS.push(L.marker([sp.lat,sp.lng],{icon}).addTo(MAP).bindPopup(`<b>${sp.name}</b>${sp.note?'<br><small>'+sp.note+'</small>':''}`));
+  });
+}
+function toggleLP(){S.lpOverlay=!S.lpOverlay;const btn=document.getElementById('lp-btn');if(btn)btn.textContent=S.lpOverlay?'🌑 LP Ein':'🌟 LP Aus';if(MAP){if(S.lpOverlay){const lp=L.tileLayer('https://www.lightpollutionmap.info/layers/darkmap/{z}/{x}/{y}.png',{opacity:.6,attribution:'© LightPollutionMap'});lp.addTo(MAP);MLAYERS.push(lp);}else{MLAYERS.filter(l=>l.options?.attribution?.includes('LightPollution')).forEach(l=>{l.remove();});MLAYERS=MLAYERS.filter(l=>!l.options?.attribution?.includes('LightPollution'));}}}
+function addSpotManual(){const n=document.getElementById('spot-name')?.value.trim()||`Spot ${S.spots.length+1}`;addSpot(S.lat,S.lng,n);const el=document.getElementById('spot-name');if(el)el.value='';}
+function addSpot(lat,lng,name){
+  const sp={id:Date.now().toString(),lat,lng,name,rating:0,note:''};
+  S.spots.push(sp);localStorage.setItem('pp_spots3',JSON.stringify(S.spots));
+  if(MAP){const icon=L.divIcon({html:'<div style="font-size:20px;line-height:1">📍</div>',className:'',iconAnchor:[10,20]});MLAYERS.push(L.marker([lat,lng],{icon}).addTo(MAP).bindPopup(`<b>${name}</b>`));}
+  const sl=document.getElementById('spot-list');if(sl)sl.innerHTML=renderSpotList();
+}
+function deleteSpot(id){S.spots=S.spots.filter(s=>s.id!==id);localStorage.setItem('pp_spots3',JSON.stringify(S.spots));if(MAP){MLAYERS.forEach(l=>l.remove());MLAYERS=[];S.spots.forEach(sp=>{const icon=L.divIcon({html:'<div style="font-size:20px;line-height:1">📍</div>',className:'',iconAnchor:[10,20]});MLAYERS.push(L.marker([sp.lat,sp.lng],{icon}).addTo(MAP));});}const sl=document.getElementById('spot-list');if(sl)sl.innerHTML=renderSpotList();}
+function rateSpot(id,r){const sp=S.spots.find(s=>s.id===id);if(sp){sp.rating=r;localStorage.setItem('pp_spots3',JSON.stringify(S.spots));const sl=document.getElementById('spot-list');if(sl)sl.innerHTML=renderSpotList();}}
+function updateNote(id,note){const sp=S.spots.find(s=>s.id===id);if(sp){sp.note=note;localStorage.setItem('pp_spots3',JSON.stringify(S.spots));}}
+// ── Tab: Nacht ───────────────────────────────────────────────────────────────
+function renderNight(){
+  const{lat,lng,date}=S;
+  const moonIllum=SunCalc.getMoonIllumination(date);
+  const moonPct=Math.round(moonIllum.fraction*100);
+  const goodMilky=moonIllum.fraction<0.25;
+  const wins=milkyWayWindows(date,lat,lng);
+  const DAYS=t('DAYS');
+  let mwHtml='';
+  if(wins.length){
+    const w=wins[0],dur=w.e?Math.round((w.e-w.s)/60000):null;
+    mwHtml=`<div class="mw-win">
+      <div style="font-size:10px;letter-spacing:0.14em;text-transform:uppercase;color:rgba(107,159,232,0.7);margin-bottom:.5rem;">${t('milky')} 🌌</div>
+      <div class="mw-t">${fmt(w.s)}${w.e?' – '+fmt(w.e):' →'}</div>
+      ${dur?`<div style="font-size:13px;color:var(--mu);margin-top:4px;">Dauer: ${dur} Minuten</div>`:''}
+      <div class="tip" style="margin-top:.75rem;">Galaktisches Zentrum &gt; 5° · Astronomische Nacht · Empfohlen: ISO 3200, f/2.8, 20s</div>
+    </div>`;
+  }else{
+    mwHtml=`<div class="card"><div class="ch"><div class="ct">${t('milky')}</div><div class="badge bgray">Nicht sichtbar</div></div><div style="font-size:13px;color:var(--mu);line-height:1.6;">${moonPct>40?'🌕 Zu viel Mondlicht. Warte auf Neumond.':'Galaktisches Zentrum an diesem Datum/Ort nicht sichtbar. März–Oktober im Norden ist ideal.'}</div></div>`;
+  }
+  // Tide
+  const tide=tideApprox(date,lat);
+  const nightCells=Array.from({length:14},(_,i)=>{
+    const d=new Date(date);d.setDate(d.getDate()+i);
+    const mi=SunCalc.getMoonIllumination(d);
+    const pct=Math.round(mi.fraction*100),good=pct<25;
+    const dn=i===0?t('TODAY'):DAYS[d.getDay()];
+    return`<div class="nc ${good?'good':''}"><div class="ncd">${dn}</div><div class="nci">${moonIcon(mi.phase)}</div><div class="ncm">${pct}%</div></div>`;
+  }).join('');
+  // Rainbow
+  const sliderDate=new Date(date);sliderDate.setHours(Math.floor(S.sunHour),0,0,0);
+  const sp=SunCalc.getPosition(sliderDate,lat,lng);
+  const sunAzD=(sp.azimuth*180/Math.PI+180+360)%360;
+  const rainbowAz=(sunAzD+180)%360;
+  const rainbowDir=azToDir(rainbowAz);
+  document.getElementById('main').innerHTML=`<div class="results">
+  <div class="card">
+    <div class="ch"><div class="ct">${t('moon')}</div><div class="badge ${goodMilky?'bgr':'bgray'}">${goodMilky?t('milkyway_ok'):t('milkyway_no')}</div></div>
+    <div style="display:flex;align-items:center;gap:1.5rem;">
+      <div style="font-size:58px;line-height:1;">${moonIcon(moonIllum.phase)}</div>
+      <div>
+        <div style="font-family:'Playfair Display',Georgia,serif;font-size:22px;font-weight:400;margin-bottom:4px;">${moonName(moonIllum.phase)}</div>
+        <div style="font-size:13px;color:var(--mu);">${moonPct}% ${t('illuminated')}</div>
+        <div class="mbar" style="width:200px;margin-top:8px;"><div class="mbar-f" style="width:${moonPct}%;"></div></div>
+      </div>
+    </div>
+    <div style="font-size:12px;color:var(--mu);line-height:1.6;margin-top:12px;padding-top:12px;border-top:0.5px solid var(--bd);">
+      ${goodMilky?'🌌 Perfekte Bedingungen für Milchstrassen-Fotografie! Suche dunkle Orte.':
+        moonPct>75?'🌕 Vollmond – nutze das Mondlicht für dramatische Landschaften.':
+        '💡 Eingeschränkte Sichtbarkeit. Je weniger Mondlicht, desto besser für Sterne.'}
+    </div>
+  </div>
+  ${mwHtml}
+  <div class="card">
+    <div class="ch"><div class="ct">Mondlicht-Kalender – 14 Nächte</div><div class="badge bgr">&lt;25% = ideal</div></div>
+    <div class="nights-grid">${nightCells}</div>
+    <div style="font-size:10px;color:var(--mu);margin-top:8px;">Blau = &lt;25% Mondlicht – optimal für Astrophotographie</div>
+  </div>
+  <div class="card">
+    <div class="ch"><div class="ct">🌈 Regenbogen-Rechner</div><div class="badge bgray">Sonne + Regen</div></div>
+    <div style="font-size:13px;color:var(--mu);line-height:1.6;margin-bottom:.75rem;">
+      Regenbögen entstehen gegenüber der Sonne (42° Winkel). Sonne muss hinter dir, Regen vor dir sein.
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
+      <div style="background:var(--s2);border:0.5px solid var(--bd);border-radius:var(--rs);padding:10px 14px;">
+        <div style="font-size:10px;color:var(--mu);text-transform:uppercase;letter-spacing:0.08em;">Sonne steht bei</div>
+        <div style="font-family:'Playfair Display',Georgia,serif;font-size:20px;color:var(--gold);margin-top:4px;">${Math.round(sunAzD)}° (${azToDir(sunAzD)})</div>
+      </div>
+      <div style="background:var(--s2);border:0.5px solid var(--blueb);border-radius:var(--rs);padding:10px 14px;">
+        <div style="font-size:10px;color:var(--mu);text-transform:uppercase;letter-spacing:0.08em;">Regenbogen suchen bei</div>
+        <div style="font-family:'Playfair Display',Georgia,serif;font-size:20px;color:var(--blue);margin-top:4px;">${Math.round(rainbowAz)}° (${rainbowDir})</div>
+      </div>
+    </div>
+    <div class="rainbow-display" style="margin-top:1rem;">
+      <div style="font-size:14px;color:rgba(255,255,255,0.7);">← Stehe hier und schau Richtung ${rainbowDir} →</div>
+    </div>
+    <div style="font-size:11px;color:var(--mu);margin-top:8px;">Primärer Bogen: 40–42°. Sekundärer Bogen: 51–54° (schwächer, Farben invertiert).</div>
+  </div>
+  <div class="card">
+    <div class="ch"><div class="ct">🌊 Gezeitenindikator</div><div class="badge bgray">Mondbasiert (±30 min)</div></div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:.75rem;">
+      <div style="background:var(--s2);border:0.5px solid var(--bd);border-radius:var(--rs);padding:10px 14px;">
+        <div style="font-size:10px;color:var(--mu);text-transform:uppercase;">Tidetyp</div>
+        <div style="font-size:14px;font-weight:500;margin-top:4px;">${tide.label}</div>
+        <div style="font-size:11px;color:var(--mu);">Stärke: ${tide.strength}%</div>
+      </div>
+      <div style="background:var(--s2);border:0.5px solid var(--bd);border-radius:var(--rs);padding:10px 14px;">
+        <div style="font-size:10px;color:var(--mu);text-transform:uppercase;">Hochzeiten (ca.)</div>
+        <div style="font-size:14px;font-weight:500;margin-top:4px;">${fmt(tide.ht1)}</div>
+        <div style="font-size:11px;color:var(--mu);">${fmt(tide.ht2)}</div>
+      </div>
+    </div>
+    <div style="font-size:11px;color:var(--mu);line-height:1.5;">⚠️ Dies ist eine Mondphasen-Approximation (±30–60 Min). Für genaue Gezeiten lokale Tidentabellen verwenden.</div>
+  </div>
+  </div>`;
+}
+function azToDir(az){const dirs=['N','NO','O','SO','S','SW','W','NW'];return dirs[Math.round(az/45)%8];}
+// ── Tab: Planung ──────────────────────────────────────────────────────────────
+function renderPlan(){
+  const{lat,lng,date}=S;
+  const times=SunCalc.getTimes(date,lat,lng);
+  const{bars,rank}=yearlyChart(lat,lng);
+  const shareUrl=`${location.href.split('?')[0]}?lat=${lat.toFixed(4)}&lng=${lng.toFixed(4)}&date=${date.toISOString().slice(0,10)}`;
+  document.getElementById('main').innerHTML=`<div class="results">
+  <div class="card">
+    <div class="ch"><div class="ct">${t('yearly')}: Goldene Stunde / Tag</div><div class="badge bg">Minuten täglich</div></div>
+    <div class="year-chart">${bars}</div>
+    <div style="font-size:10px;color:var(--mu);text-align:center;margin-top:4px;">Berechnet für ${S.name} · ${new Date().getFullYear()}</div>
+  </div>
+  <div class="card">
+    <div class="ch"><div class="ct">${t('bestmonths')}</div><div class="badge bgr">🥇 Top 3</div></div>
+    ${rank}
+  </div>
+  <div class="card">
+    <div class="ch"><div class="ct">🔗 Teilen & Exportieren</div><div class="badge bgray">Planung weitergeben</div></div>
+    <div style="font-size:13px;color:var(--mu);margin-bottom:.75rem;">Teile deine Planung mit anderen Fotografen oder speichere sie als PDF.</div>
+    <div class="share-bar">
+      <button class="btn btn-sm" onclick="copyLink()">📋 Link kopieren</button>
+      <button class="btn btn-sm" onclick="window.print()">🖨️ PDF / Drucken</button>
+      <button class="btn btn-sm" onclick="shareNative()">📤 Teilen</button>
+    </div>
+    <div style="font-size:11px;color:var(--mu);margin-top:.5rem;word-break:break-all;opacity:.6;">${shareUrl}</div>
+  </div>
+  <div class="card">
+    <div class="ch"><div class="ct">${t('suntimes')} – ${date.toLocaleDateString('de-CH',{day:'numeric',month:'long'})}</div><div class="badge bgray">Vollständig</div></div>
+    ${[['🌑 Astro-Dämmerung',fmt(times.nightEnd)],['🌌 Nautische Dämmerung',fmt(times.nauticalDawn)],
+      ['💙 Blaue Stunde Beginn',fmt(times.nauticalDawn)],['🌅 Blaue Stunde Ende',fmt(times.dawn)],
+      ['🥇 Goldene Stunde Beginn',fmt(times.dawn)],['☀️ Sonnenaufgang',fmt(times.sunrise)],
+      ['🌤️ Goldene Stunde Ende',fmt(times.goldenHourEnd)],['🌞 Sonnenmittag',fmt(times.solarNoon)],
+      ['🥇 Goldene Stunde Beginn (A)',fmt(times.goldenHour)],['🌇 Sonnenuntergang',fmt(times.sunset)],
+      ['💙 Blaue Stunde Beginn (A)',fmt(times.dusk)],['🌌 Nautische Dämmerung (A)',fmt(times.nauticalDusk)],
+      ['🌑 Astronomische Nacht',fmt(times.night)]
+    ].map(([l,v])=>`<div class="drow"><div class="dl">${l}</div><div class="dv">${v}</div></div>`).join('')}
+  </div>
+  </div>`;
+}
+function copyLink(){
+  const url=`${location.href.split('?')[0]}?lat=${S.lat?.toFixed(4)}&lng=${S.lng?.toFixed(4)}&date=${S.date.toISOString().slice(0,10)}`;
+  navigator.clipboard?.writeText(url).then(()=>alert('Link kopiert! ✓')).catch(()=>prompt('Link zum Kopieren:',url));
+}
+function shareNative(){
+  const url=`${location.href.split('?')[0]}?lat=${S.lat?.toFixed(4)}&lng=${S.lng?.toFixed(4)}&date=${S.date.toISOString().slice(0,10)}`;
+  if(navigator.share){navigator.share({title:'PhotoPlanner – '+S.name,url});}else{copyLink();}
+}
+function shareApp(){if(S.lat)shareNative();else alert('Bitte zuerst einen Ort suchen.');}
+// ── Tab: Tools ───────────────────────────────────────────────────────────────
+function renderTools(){
+  document.getElementById('main').innerHTML=`<div class="results">
+  <!-- ND Filter -->
+  <div class="card">
+    <div class="ch"><div class="ct">${t('tools_nd')}</div><div class="badge bg">Langzeitbelichtung</div></div>
+    <div class="calc-grid">
+      <div><span class="calc-label">Original-Belichtungszeit</span>
+        <select class="calc-select" id="nd-base">
+          ${['1/8000','1/4000','1/2000','1/1000','1/500','1/250','1/125','1/60','1/30','1/15','1/8','1/4','1/2','1s','2s','4s','8s','15s','30s'].map((v,i)=>`<option value="${ndSeconds(v)}" ${v==='1/250'?'selected':''}>${v}</option>`).join('')}
+        </select>
+      </div>
+      <div><span class="calc-label">ND-Filter Stärke</span>
+        <select class="calc-select" id="nd-stops">
+          ${[['ND2 (1 Stop)',1],['ND4 (2 Stops)',2],['ND8 (3 Stops)',3],['ND16 (4 Stops)',4],['ND32 (5 Stops)',5],['ND64 (6 Stops)',6],['ND100 (~6.5 Stops)',6.5],['ND400 (~8.5 Stops)',8.5],['ND1000 (10 Stops)',10],['ND4000 (12 Stops)',12],['ND32000 (15 Stops)',15]].map(([l,v])=>`<option value="${v}" ${v===10?'selected':''}>${l}</option>`).join('')}
+        </select>
+      </div>
+    </div>
+    <button class="btn btn-gold" style="width:100%;justify-content:center;margin-top:12px;" onclick="calcND()">Berechnen</button>
+    <div id="nd-result"></div>
+  </div>
+  <!-- Timelapse -->
+  <div class="card">
+    <div class="ch"><div class="ct">${t('tools_tl')}</div><div class="badge bb">Video-Planung</div></div>
+    <div class="calc-grid">
+      <div><span class="calc-label">Aufnahmedauer (Minuten)</span><input class="calc-input" type="number" id="tl-dur" value="60" min="1"></div>
+      <div><span class="calc-label">Intervall (Sekunden)</span><input class="calc-input" type="number" id="tl-int" value="5" min="1"></div>
+      <div><span class="calc-label">Video-Framerate (fps)</span>
+        <select class="calc-select" id="tl-fps">
+          <option value="24">24 fps (cinematic)</option>
+          <option value="25" selected>25 fps (PAL)</option>
+          <option value="30">30 fps (NTSC)</option>
+          <option value="60">60 fps (smooth)</option>
+        </select>
+      </div>
+      <div><span class="calc-label">Dateigrösse pro Foto</span>
+        <select class="calc-select" id="tl-size">
+          <option value="5">5 MB (JPEG)</option>
+          <option value="20" selected>20 MB (RAW)</option>
+          <option value="35">35 MB (RAW gross)</option>
+        </select>
+      </div>
+    </div>
+    <button class="btn btn-gold" style="width:100%;justify-content:center;margin-top:12px;" onclick="calcTL()">Berechnen</button>
+    <div id="tl-result"></div>
+  </div>
+  <!-- Depth of Field -->
+  <div class="card">
+    <div class="ch"><div class="ct">${t('tools_dof')}</div><div class="badge bgray">Schärfentiefe</div></div>
+    <div class="calc-grid">
+      <div><span class="calc-label">Kamerasensor</span>
+        <select class="calc-select" id="dof-sensor">
+          <option value="0.030" selected>Vollformat (FF)</option>
+          <option value="0.020">APS-C</option>
+          <option value="0.015">Micro Four Thirds</option>
+          <option value="0.011">1 Zoll</option>
+          <option value="0.007">Smartphone</option>
+        </select>
+      </div>
+      <div><span class="calc-label">Brennweite (mm)</span><input class="calc-input" type="number" id="dof-fl" value="50" min="8" max="800"></div>
+      <div><span class="calc-label">Blende (f/)</span><input class="calc-input" type="number" id="dof-ap" value="8" min="1" max="22" step="0.5"></div>
+      <div><span class="calc-label">Fokus-Distanz (m)</span><input class="calc-input" type="number" id="dof-dist" value="5" min="0.1" step="0.1"></div>
+    </div>
+    <button class="btn btn-gold" style="width:100%;justify-content:center;margin-top:12px;" onclick="calcDOF()">Berechnen</button>
+    <div id="dof-result"></div>
+  </div>
+  <!-- Exposure Triangle -->
+  <div class="card">
+    <div class="ch"><div class="ct">${t('tools_exp')}</div><div class="badge bgray">EV Rechner</div></div>
+    <div style="margin-bottom:1rem;">
+      <div class="tri-row" style="margin-bottom:12px;">
+        <span class="tri-lbl">ISO</span>
+        <input class="range-input" type="range" min="0" max="12" step="1" value="0" id="exp-iso" oninput="updateEV()" style="flex:1;">
+        <span class="tri-val" id="exp-iso-v">100</span>
+      </div>
+      <div class="tri-row" style="margin-bottom:12px;">
+        <span class="tri-lbl">Blende</span>
+        <input class="range-input" type="range" min="0" max="12" step="1" value="5" id="exp-ap" oninput="updateEV()" style="flex:1;">
+        <span class="tri-val" id="exp-ap-v">f/8</span>
+      </div>
+      <div class="tri-row" style="margin-bottom:12px;">
+        <span class="tri-lbl">Belichtung</span>
+        <input class="range-input" type="range" min="0" max="18" step="1" value="6" id="exp-sh" oninput="updateEV()" style="flex:1;">
+        <span class="tri-val" id="exp-sh-v">1/125s</span>
+      </div>
+    </div>
+    <div class="ev-display" id="ev-display">
+      <div>
+        <div class="ev-val" id="ev-val">EV 13</div>
+        <div style="font-size:11px;color:var(--mu);text-align:center;margin-top:4px;" id="ev-desc">Heller Sonnentag</div>
+      </div>
+    </div>
+  </div>
+  </div>`;
+  updateEV();
+}
+const ISO_VALS=[100,200,400,800,1600,3200,6400,12800,25600,51200,102400,204800,409600];
+const AP_VALS=[1,1.4,2,2.8,4,5.6,8,11,16,22,32,45,64];
+const SH_VALS=[1/8000,1/4000,1/2000,1/1000,1/500,1/250,1/125,1/60,1/30,1/15,1/8,1/4,1/2,1,2,4,8,15,30];
+function ndSeconds(s){const m={
+  '1/8000':1/8000,'1/4000':1/4000,'1/2000':1/2000,'1/1000':1/1000,'1/500':1/500,
+  '1/250':1/250,'1/125':1/125,'1/60':1/60,'1/30':1/30,'1/15':1/15,
+  '1/8':1/8,'1/4':0.25,'1/2':0.5,'1s':1,'2s':2,'4s':4,'8s':8,'15s':15,'30s':30};
+  return m[s]||1/250;}
+function fmtShutter(s){
+  if(s>=1)return s>=60?`${Math.round(s/60)} min ${Math.round(s%60)}s`:`${s.toFixed(s<10?1:0)}s`;
+  return`1/${Math.round(1/s)}s`;}
+function calcND(){
+  const base=parseFloat(document.getElementById('nd-base').value);
+  const stops=parseFloat(document.getElementById('nd-stops').value);
+  const result=base*Math.pow(2,stops);
+  document.getElementById('nd-result').innerHTML=`<div class="calc-result">
+    <div class="calc-result-val">${fmtShutter(result)}</div>
+    <div class="calc-result-lbl">Neue Belichtungszeit</div>
+    <div style="margin-top:.75rem;display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;">
+      <div class="crg-item"><div class="crg-val">${fmtShutter(base)}</div><div class="crg-lbl">Original</div></div>
+      <div class="crg-item"><div class="crg-val">${stops} Stops</div><div class="crg-lbl">ND-Faktor</div></div>
+      <div class="crg-item"><div class="crg-val">${fmtShutter(result)}</div><div class="crg-lbl">Mit ND</div></div>
+    </div>
+    <div class="tip">💡 ${result>30?'Fernauslöser & BULB-Modus nötig für Belichtungen > 30s.':result>4?'Stativ zwingend. Spiegel-Vorauslösung empfohlen.':'Stativ empfohlen.'}</div>
+  </div>`;}
+function calcTL(){
+  const dur=parseFloat(document.getElementById('tl-dur').value)*60;
+  const intv=parseFloat(document.getElementById('tl-int').value);
+  const fps=parseFloat(document.getElementById('tl-fps').value);
+  const size=parseFloat(document.getElementById('tl-size').value);
+  const frames=Math.floor(dur/intv);
+  const vidLen=(frames/fps).toFixed(1);
+  const storage=(frames*size/1024).toFixed(2);
+  const battery=Math.round(dur/60/2);
+  document.getElementById('tl-result').innerHTML=`<div class="calc-result">
+    <div class="calc-result-val">${vidLen}s Video</div>
+    <div class="calc-result-lbl">Resultierende Video-Länge</div>
+    <div class="calc-result-grid">
+      <div class="crg-item"><div class="crg-val">${frames.toLocaleString()}</div><div class="crg-lbl">Fotos</div></div>
+      <div class="crg-item"><div class="crg-val">${storage} GB</div><div class="crg-lbl">Speicher</div></div>
+      <div class="crg-item"><div class="crg-val">${battery}×</div><div class="crg-lbl">Akkus (ca.)</div></div>
+    </div>
+    <div class="tip">💡 ${intv<3?'Kürzere Intervalle für schnelle Bewegungen (Wolken). Achtung: Mehr Speicher und Akku!':intv>30?'Lange Intervalle ideal für Sonnenauf/-untergänge und langsame Bewegungen.':'Gute Wahl für Wolkenbewegungen und Tageslicht-Timelapses.'}</div>
+  </div>`;}
+function calcDOF(){
+  const coc=parseFloat(document.getElementById('dof-sensor').value);
+  const fl=parseFloat(document.getElementById('dof-fl').value)/1000;
+  const ap=parseFloat(document.getElementById('dof-ap').value);
+  const dist=parseFloat(document.getElementById('dof-dist').value);
+  const H=(fl*fl)/(ap*coc/1000)+fl;
+  const near=(H*dist)/(H+dist);
+  const far=dist<H?(H*dist)/(H-dist):Infinity;
+  const dof=far===Infinity?Infinity:far-near;
+  const rule500=Math.round(500/parseFloat(document.getElementById('dof-fl').value*1000));
+  document.getElementById('dof-result').innerHTML=`<div class="calc-result">
+    <div class="calc-result-val">${dof===Infinity?'∞':dof<1?(dof*100).toFixed(0)+'cm':dof.toFixed(1)+'m'}</div>
+    <div class="calc-result-lbl">Schärfentiefe (gesamt)</div>
+    <div class="calc-result-grid">
+      <div class="crg-item"><div class="crg-val">${near.toFixed(2)}m</div><div class="crg-lbl">Nah-Grenze</div></div>
+      <div class="crg-item"><div class="crg-val">${far===Infinity?'∞':far.toFixed(1)+'m'}</div><div class="crg-lbl">Fern-Grenze</div></div>
+      <div class="crg-item"><div class="crg-val">${(H/1000).toFixed(0)}m</div><div class="crg-lbl">Hyperfokus</div></div>
+    </div>
+    <div class="tip">💡 500er-Regel für Sterne: max. ${rule500}s Belichtungszeit bei dieser Brennweite.</div>
+  </div>`;}
+function updateEV(){
+  const isoI=parseInt(document.getElementById('exp-iso').value);
+  const apI=parseInt(document.getElementById('exp-ap').value);
+  const shI=parseInt(document.getElementById('exp-sh').value);
+  const iso=ISO_VALS[isoI],ap=AP_VALS[apI],sh=SH_VALS[shI];
+  document.getElementById('exp-iso-v').textContent=iso>=1000?iso/1000+'k':iso;
+  document.getElementById('exp-ap-v').textContent='f/'+ap;
+  document.getElementById('exp-sh-v').textContent=fmtShutter(sh);
+  const ev=Math.round(Math.log2((ap*ap)/(sh*(iso/100)))*10)/10;
+  const desc=ev<-4?'🌑 Tiefe Nacht':ev<0?'🌌 Nacht':ev<4?'🌙 Dämmerung':ev<8?'🌅 Goldene Stunde':ev<11?'⛅ Bewölkt':ev<13?'☀️ Bewölkter Tag':ev<15?'☀️ Sonniger Tag':'🔆 Sehr hell';
+  const evEl=document.getElementById('ev-val'),deEl=document.getElementById('ev-desc');
+  if(evEl)evEl.textContent=`EV ${ev}`;
+  if(deEl)deEl.textContent=desc;
+  const evDisp=document.getElementById('ev-display');
+  if(evDisp){
+    const col=ev<4?'var(--blue)':ev<8?'var(--gold)':ev<13?'var(--green)':'#F87171';
+    evDisp.style.borderColor=col;
+    evEl.style.color=col;
+  }
+}
+// ── Search & Data ──────────────────────────────────────────────────────────────
+function loading(){document.getElementById('main').innerHTML='<div class="loading"><div class="spin"></div>Daten werden geladen…</div>';}
+function quickSearch(name){document.getElementById('q').value=name;doSearch();}
+async function doSearch(){
+  const q=document.getElementById('q').value.trim();if(!q)return;
+  loading();
+  try{
+    const res=await fetch(`https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(q)}&format=json&limit=1`);
+    const data=await res.json();
+    if(!data?.length){document.getElementById('main').innerHTML='<div class="loading">Ort nicht gefunden.</div>';return;}
+    S.lat=parseFloat(data[0].lat);S.lng=parseFloat(data[0].lon);
+    S.name=data[0].display_name.split(',').slice(0,2).join(', ').trim();
+    await loadData();
+  }catch{document.getElementById('main').innerHTML='<div class="loading">Fehler beim Laden.</div>';}
+}
+function useGPS(){
+  if(!navigator.geolocation){alert('GPS nicht verfügbar.');return;}
+  loading();
+  navigator.geolocation.getCurrentPosition(async pos=>{
+    S.lat=pos.coords.latitude;S.lng=pos.coords.longitude;
+    try{const r=await fetch(`https://nominatim.openstreetmap.org/reverse?lat=${S.lat}&lon=${S.lng}&format=json`);const d=await r.json();S.name=d.address?.city||d.address?.town||d.address?.village||'Mein Standort';document.getElementById('q').value=S.name;}catch{S.name='Mein Standort';}
+    await loadData();
+  },()=>{document.getElementById('main').innerHTML='<div class="loading">GPS nicht verfügbar.</div>';});
+}
+async function loadData(){
+  const dv=document.getElementById('di').value;
+  S.date=dv?new Date(dv+'T12:00:00'):new Date();
+  try{const r=await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${S.lat}&longitude=${S.lng}&daily=weathercode,temperature_2m_max,temperature_2m_min,precipitation_probability_max,windspeed_10m_max&timezone=auto&forecast_days=7`);S.weather=await r.json();}catch{S.weather=null;}
+  document.getElementById('tab-bar').style.display='flex';
+  render();
+  if(S.notifEnabled)checkNotif();
+  // Read URL params on first load
+  const p=new URLSearchParams(location.search);
+  if(p.get('lat')&&!S._urlLoaded){S._urlLoaded=true;S.lat=parseFloat(p.get('lat'));S.lng=parseFloat(p.get('lng'));if(p.get('date'))S.date=new Date(p.get('date')+'T12:00:00');}
+}
+function render(){
+  if(!S.lat){showEmpty();return;}
+  switch(S.tab){
+    case'light':renderLight();break;
+    case'map':renderMap();break;
+    case'night':renderNight();break;
+    case'plan':renderPlan();break;
+    case'tools':renderTools();break;
+    case'trip':renderTrip();break;
+  }
+}
+function selectDay(ds){document.getElementById('di').value=ds;S.date=new Date(ds+'T12:00:00');render();}
+function setScene(sc){S.scene=sc;render();}
+function setTab(tab){
+  S.tab=tab;
+  document.querySelectorAll('.tab').forEach(el=>el.classList.toggle('on',el.id===`tab-${tab}`));
+  render();
+}
+function setLang(l){
+  S.lang=l;
+  document.querySelectorAll('.lang-btn').forEach(b=>b.classList.toggle('on',b.textContent===l.toUpperCase()));
+  document.getElementById('hdr-sub').textContent=t('sub');
+  document.getElementById('q').placeholder=t('search');
+  document.getElementById('btn-search').textContent=t('sbtn');
+  ['light','map','night','plan','tools','trip'].forEach((tab,i)=>{const el=document.getElementById('tab-'+tab);if(el)el.textContent=t('t'+(i+1));});
+  if(S.lat)render();
+}
+async function handleNotif(){
+  if(!('Notification'in window)){alert('Nicht unterstützt.');return;}
+  if(Notification.permission==='denied'){alert('Blockiert – bitte in Browser-Einstellungen erlauben.');return;}
+  const p=await Notification.requestPermission();
+  if(p==='granted'){S.notifEnabled=true;document.getElementById('notif-btn').classList.add('on');checkNotif();}
+}
+function checkNotif(){
+  if(!S.weather?.daily||!S.notifEnabled)return;
+  const scores=S.weather.daily.time.map((d,i)=>({d,sc:photoScore(S.weather.daily.weathercode[i])}));
+  const best=scores.reduce((a,b)=>b.sc>a.sc?b:a);
+  if(best.sc>=80){
+    const dd=new Date(best.d+'T12:00:00');
+    const dn=dd.toLocaleDateString('de-CH',{weekday:'long',day:'numeric',month:'long'});
+    new Notification(`📸 Nächster guter Fototag: ${dn}`,{body:`Score ${best.sc}/100 in ${S.name}`});
+  }
+}
+function showEmpty(){
+  document.getElementById('tab-bar').style.display='none';
+  document.getElementById('main').innerHTML=`<div class="empty">
+    <span class="empty-icon">🌄</span>
+    <div class="empty-title">Plane deinen perfekten Fototrip</div>
+    <div class="empty-sub">Ort eingeben und goldene Stunde, Milchstrassen-Fenster, Wetter-Score, Kamera-Einstellungen und Foto-Tools weltweit erhalten.</div>
+    <div class="chips">
+      ${['🏔️ Grindelwald','💧 Lauterbrunnen','🌊 Santorini','⛰️ Dolomiten','🏡 Hallstatt','🌿 Faroe Islands','🌌 Tromsø','🎈 Kappadokien','🏯 Kyoto','🌋 Teide','🐧 Patagonia','🦁 Serengeti'].map(s=>`<div class="chip" onclick="quickSearch('${s.replace(/^.+? /,'')}')">${s}</div>`).join('')}
+    </div>
+  </div>`;
+}
+// Load from URL params on startup
+(function(){
+  const p=new URLSearchParams(location.search);
+  if(p.get('lat')&&p.get('lng')){
+    S.lat=parseFloat(p.get('lat'));S.lng=parseFloat(p.get('lng'));
+    if(p.get('date'))S.date=new Date(p.get('date')+'T12:00:00');
+    S.name='Geteilter Ort';
+    loadData();
+  }
+})();
+</script>
+
+<script>
+// ── PWA Service Worker Registration ──────────────────────────────────────────
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', async () => {
+    try {
+      // Inline SW as Blob – works without external sw.js file
+      const swCode = `const CACHE = 'photoplanner-v3';
+const API_CACHE = 'photoplanner-api-v3';
+
+const STATIC = [
+  './',
+  './index.html',
+  'https://cdnjs.cloudflare.com/ajax/libs/suncalc/1.9.0/suncalc.min.js',
+  'https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.min.js',
+  'https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.min.css',
+  'https://cdn.jsdelivr.net/npm/@fontsource/playfair-display@5/400.css',
+  'https://cdn.jsdelivr.net/npm/@fontsource/playfair-display@5/700.css',
+];
+
+// ── Install: cache static assets ────────────────────────────────────────────
+self.addEventListener('install', e => {
+  e.waitUntil(
+    caches.open(CACHE)
+      .then(cache => cache.addAll(STATIC).catch(() => {}))
+      .then(() => self.skipWaiting())
+  );
+});
+
+// ── Activate: clean old caches ───────────────────────────────────────────────
+self.addEventListener('activate', e => {
+  e.waitUntil(
+    caches.keys().then(keys =>
+      Promise.all(
+        keys.filter(k => k !== CACHE && k !== API_CACHE)
+            .map(k => caches.delete(k))
+      )
+    ).then(() => self.clients.claim())
+  );
+});
+
+// ── Fetch: smart caching strategy ───────────────────────────────────────────
+self.addEventListener('fetch', e => {
+  const url = new URL(e.request.url);
+
+  // Weather & Geocoding: Network-first, cache fallback (24h TTL)
+  if (url.hostname === 'api.open-meteo.com' ||
+      url.hostname === 'nominatim.openstreetmap.org') {
+    e.respondWith(networkFirstWithTTL(e.request, API_CACHE, 24 * 60 * 60 * 1000));
+    return;
+  }
+
+  // Map tiles: Cache-first (tiles don't change)
+  if (url.hostname.includes('openstreetmap.org') ||
+      url.hostname.includes('lightpollutionmap.info')) {
+    e.respondWith(cacheFirst(e.request, CACHE));
+    return;
+  }
+
+  // Fonts & CDN libraries: Cache-first (versioned, stable)
+  if (url.hostname === 'cdnjs.cloudflare.com' ||
+      url.hostname === 'cdn.jsdelivr.net' ||
+      url.hostname === 'unpkg.com') {
+    e.respondWith(cacheFirst(e.request, CACHE));
+    return;
+  }
+
+  // App shell (index.html): Stale-while-revalidate
+  if (url.pathname === '/' || url.pathname.endsWith('.html')) {
+    e.respondWith(staleWhileRevalidate(e.request, CACHE));
+    return;
+  }
+
+  // Default: network with cache fallback
+  e.respondWith(
+    fetch(e.request).catch(() => caches.match(e.request))
+  );
+});
+
+// ── Cache strategies ─────────────────────────────────────────────────────────
+async function cacheFirst(req, cacheName) {
+  const cached = await caches.match(req);
+  if (cached) return cached;
+  try {
+    const fresh = await fetch(req);
+    if (fresh.ok) {
+      const cache = await caches.open(cacheName);
+      cache.put(req, fresh.clone());
+    }
+    return fresh;
+  } catch {
+    return new Response('Offline – cached version not available', { status: 503 });
+  }
+}
+
+async function staleWhileRevalidate(req, cacheName) {
+  const cache = await caches.open(cacheName);
+  const cached = await cache.match(req);
+  const fetchPromise = fetch(req).then(fresh => {
+    if (fresh.ok) cache.put(req, fresh.clone());
+    return fresh;
+  }).catch(() => null);
+  return cached || await fetchPromise || offlinePage();
+}
+
+async function networkFirstWithTTL(req, cacheName, ttl) {
+  try {
+    const fresh = await fetch(req);
+    if (fresh.ok) {
+      const cache = await caches.open(cacheName);
+      const resp = fresh.clone();
+      // Store with timestamp header
+      const headers = new Headers(resp.headers);
+      headers.set('x-cached-at', Date.now().toString());
+      const cachedResp = new Response(await resp.blob(), { headers });
+      cache.put(req, cachedResp);
+      return fresh;
+    }
+  } catch {}
+  // Cache fallback – check TTL
+  const cache = await caches.open(cacheName);
+  const cached = await cache.match(req);
+  if (cached) {
+    const cachedAt = parseInt(cached.headers.get('x-cached-at') || '0');
+    if (Date.now() - cachedAt < ttl) return cached;
+  }
+  return cached || new Response(
+    JSON.stringify({ error: 'offline', message: 'No network – showing cached data' }),
+    { status: 503, headers: { 'Content-Type': 'application/json' } }
+  );
+}
+
+function offlinePage() {
+  return new Response(\`
+    <!DOCTYPE html><html lang="de"><head><meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <title>PhotoPlanner – Offline</title>
+    <style>body{background:#08080D;color:#EDE8DF;font-family:system-ui;display:flex;align-items:center;justify-content:center;min-height:100vh;text-align:center;padding:2rem;}
+    h1{font-size:2rem;margin-bottom:1rem;}p{color:rgba(237,232,223,0.5);margin-bottom:2rem;}
+    button{background:#E9A42E;border:none;color:#1A0E00;padding:12px 24px;border-radius:12px;font-size:1rem;cursor:pointer;}
+    </style></head><body>
+    <div><div style="font-size:4rem;margin-bottom:1rem;">📷</div>
+    <h1>PhotoPlanner</h1>
+    <p>Keine Internetverbindung.<br>Bitte prüfe dein Netzwerk.</p>
+    <button onclick="location.reload()">Erneut versuchen</button></div>
+    </body></html>
+  \`, { headers: { 'Content-Type': 'text/html' } });
+}
+
+// ── Background Sync: Wetter-Update ──────────────────────────────────────────
+self.addEventListener('sync', e => {
+  if (e.tag === 'weather-sync') {
+    e.waitUntil(syncWeather());
+  }
+});
+
+async function syncWeather() {
+  // Triggered when back online – clients can request a re-fetch
+  const clients = await self.clients.matchAll();
+  clients.forEach(client => client.postMessage({ type: 'SYNC_WEATHER' }));
+}
+
+// ── Push Notifications ───────────────────────────────────────────────────────
+self.addEventListener('push', e => {
+  const data = e.data?.json() || {};
+  e.waitUntil(
+    self.registration.showNotification(data.title || '📸 PhotoPlanner', {
+      body: data.body || 'Gute Foto-Bedingungen heute!',
+      icon: './icons/icon-192.png',
+      badge: './icons/icon-72.png',
+      tag: 'photoplanner-alert',
+      renotify: true,
+      data: { url: data.url || './' }
+    })
+  );
+});
+
+self.addEventListener('notificationclick', e => {
+  e.notification.close();
+  e.waitUntil(clients.openWindow(e.notification.data?.url || './'));
+});
+`;
+      const blob = new Blob([swCode], { type: 'application/javascript' });
+      const swUrl = URL.createObjectURL(blob);
+      const reg = await navigator.serviceWorker.register(swUrl, { scope: './' });
+      console.log('SW registered via Blob');
+
+      reg.addEventListener('updatefound', () => {
+        const newSW = reg.installing;
+        newSW.addEventListener('statechange', () => {
+          if (newSW.state === 'installed' && navigator.serviceWorker.controller) {
+            showUpdateToast();
+          }
+        });
+      });
+
+      navigator.serviceWorker.addEventListener('message', e => {
+        if (e.data?.type === 'SYNC_WEATHER' && S.lat) loadData();
+      });
+    } catch (err) {
+      // Silently ignore – PWA features are enhancement only
+      console.info('PWA offline caching not available in this environment.');
+    }
+  });
+}
+
+// ── Install Prompt ────────────────────────────────────────────────────────────
+let deferredPrompt = null;
+
+window.addEventListener('beforeinstallprompt', e => {
+  e.preventDefault();
+  deferredPrompt = e;
+  const btn = document.getElementById('install-btn');
+  if (btn) btn.style.display = 'flex';
+});
+
+window.addEventListener('appinstalled', () => {
+  const btn = document.getElementById('install-btn');
+  if (btn) btn.style.display = 'none';
+  deferredPrompt = null;
+  showToast('✅ PhotoPlanner wurde installiert!');
+});
+
+async function installPWA() {
+  if (!deferredPrompt) {
+    showToast('ℹ️ Nutze "Zum Homescreen hinzufügen" im Browser-Menü');
+    return;
+  }
+  deferredPrompt.prompt();
+  const { outcome } = await deferredPrompt.userChoice;
+  deferredPrompt = null;
+  if (outcome === 'accepted') showToast('✅ App wird installiert…');
+}
+
+// ── Online / Offline detection ────────────────────────────────────────────────
+function setOnlineStatus(online) {
+  const offBar = document.getElementById('offline-bar');
+  const onBar  = document.getElementById('online-bar');
+  if (!offBar || !onBar) return;
+
+  if (!online) {
+    offBar.style.display = 'flex';
+    onBar.style.display  = 'none';
+  } else {
+    offBar.style.display = 'none';
+    // Show "back online" briefly
+    onBar.style.display = 'flex';
+    setTimeout(() => { onBar.style.display = 'none'; }, 3500);
+    // Reload weather if we have a location
+    if (S?.lat) loadData();
+  }
+}
+
+window.addEventListener('online',  () => setOnlineStatus(true));
+window.addEventListener('offline', () => setOnlineStatus(false));
+if (!navigator.onLine) setOnlineStatus(false);
+
+// ── Update Toast ──────────────────────────────────────────────────────────────
+function showUpdateToast() {
+  showToast('🔄 Neue Version verfügbar – Seite neu laden?', true);
+}
+
+function showToast(msg, withReload = false) {
+  const el = document.createElement('div');
+  el.style.cssText = 'position:fixed;bottom:5rem;left:50%;transform:translateX(-50%);background:rgba(20,20,30,0.95);border:0.5px solid rgba(255,255,255,0.15);color:#EDE8DF;padding:10px 18px;border-radius:99px;font-size:13px;z-index:9999;white-space:nowrap;display:flex;align-items:center;gap:10px;box-shadow:0 4px 20px rgba(0,0,0,0.4);animation:slideUp .3s ease;';
+  el.textContent = msg;
+  if (withReload) {
+    const btn = document.createElement('button');
+    btn.textContent = 'Neu laden';
+    btn.style.cssText = 'background:var(--gold);color:#1A0E00;border:none;border-radius:99px;padding:4px 12px;font-size:12px;cursor:pointer;font-weight:500;';
+    btn.onclick = () => location.reload();
+    el.appendChild(btn);
+  }
+  document.body.appendChild(el);
+  if (!withReload) setTimeout(() => el.remove(), 3500);
+}
+
+
+// ── Theme Toggle ─────────────────────────────────────────────────────────────
+function toggleTheme(){
+  const curr=document.documentElement.getAttribute('data-theme');
+  const next=curr==='light'?'dark':'light';
+  document.documentElement.setAttribute('data-theme',next==='dark'?'':next);
+  localStorage.setItem('pp_theme',next);
+  document.getElementById('theme-btn').textContent=next==='light'?'🌙':'🌓';
+}
+(function initTheme(){
+  const saved=localStorage.getItem('pp_theme');
+  const prefersDark=window.matchMedia('(prefers-color-scheme: dark)').matches;
+  const theme=saved||(prefersDark?'dark':'light');
+  if(theme==='light'){
+    document.documentElement.setAttribute('data-theme','light');
+    const btn=document.getElementById('theme-btn');
+    if(btn)btn.textContent='🌙';
+  }
+})();
+
+// ── Onboarding ───────────────────────────────────────────────────────────────
+let obSlide=0;
+function showOnboard(){
+  if(localStorage.getItem('pp_onboard_done'))return;
+  const el=document.getElementById('onboard');
+  if(el)el.style.display='flex';
+}
+function obNext(){
+  obSlide++;
+  if(obSlide>2){closeOnboard();return;}
+  document.querySelectorAll('.onboard-slide').forEach((s,i)=>s.classList.toggle('active',i===obSlide));
+  document.querySelectorAll('.onboard-dot').forEach((d,i)=>d.classList.toggle('active',i===obSlide));
+  if(obSlide===2)document.getElementById('ob-next').textContent='Los geht\'s 🚀';
+}
+function closeOnboard(){
+  const el=document.getElementById('onboard');
+  if(el)el.style.display='none';
+  localStorage.setItem('pp_onboard_done','1');
+}
+// Show onboarding after short delay on first visit
+setTimeout(showOnboard, 800);
+
+// ── Packing List ─────────────────────────────────────────────────────────────
+const PACK_ITEMS={
+  'Kamera & Optik':[
+    {id:'cam',label:'Kamera-Body'},
+    {id:'lens1',label:'Hauptobjektiv'},
+    {id:'lens2',label:'Weitwinkel (für Milchstrasse)'},
+    {id:'lens3',label:'Teleobjektiv'},
+    {id:'filter_pol',label:'Polarisationsfilter'},
+    {id:'filter_nd',label:'ND-Filter (3, 6, 10 Stops)'},
+    {id:'filter_uv',label:'UV-/Schutzfilter'},
+    {id:'lens_cloth',label:'Linsenreinigungstücher'},
+  ],
+  'Stativ & Stabilisierung':[
+    {id:'tripod',label:'Stativ'},
+    {id:'ballhead',label:'Kugelkopf'},
+    {id:'remote',label:'Fernauslöser / Intervallometer'},
+    {id:'sandbag',label:'Sandsack (für Wind)'},
+  ],
+  'Strom & Speicher':[
+    {id:'batt1',label:'Akku 1 (geladen)'},
+    {id:'batt2',label:'Akku 2 (Ersatz)'},
+    {id:'charger',label:'Ladegerät'},
+    {id:'sd1',label:'Speicherkarte 1'},
+    {id:'sd2',label:'Speicherkarte 2 (Ersatz)'},
+    {id:'powerbank',label:'Powerbank'},
+  ],
+  'Licht & Zubehör':[
+    {id:'headlamp',label:'Stirnlampe (für Nacht)'},
+    {id:'reflector',label:'Reflektor / Diffusor'},
+    {id:'led',label:'LED-Panel (Portrait)'},
+    {id:'gaffer',label:'Gaffer Tape'},
+  ],
+  'Wetter & Schutz':[
+    {id:'raincover',label:'Kamera-Regenschutz'},
+    {id:'jacket',label:'Wetterfeste Jacke'},
+    {id:'gloves',label:'Handschuhe (für Kälte)'},
+    {id:'drybox',label:'Trockenbox / Silica Gel'},
+  ],
+  'Navigation & Planung':[
+    {id:'phone',label:'Smartphone mit PhotoPlanner'},
+    {id:'compass',label:'Kompass / GPS'},
+    {id:'map',label:'Offline-Karte heruntergeladen'},
+    {id:'notebook',label:'Notizbuch für Settings'},
+  ],
+};
+
+function renderPackList(){
+  const packed=JSON.parse(localStorage.getItem('pp_pack')||'{}');
+  const total=Object.values(PACK_ITEMS).flat().length;
+  const done=Object.values(packed).filter(Boolean).length;
+  const pct=Math.round(done/total*100);
+  let html=`<div class="card">
+    <div class="ch">
+      <div class="ct">${t('pack')}</div>
+      <div class="badge ${pct===100?'bgr':pct>50?'bg':'bgray'}">${done}/${total} bereit</div>
+    </div>
+    <div class="sbar" style="margin-bottom:1rem;"><div class="sbar-f" style="width:${pct}%;background:${pct===100?'var(--green)':'var(--gold)'};"></div></div>
+    <div style="display:flex;gap:8px;margin-bottom:1rem;">
+      <button class="btn btn-sm" onclick="packAll(true)">✅ Alle</button>
+      <button class="btn btn-sm" onclick="packAll(false)">↺ Reset</button>
+    </div>`;
+  for(const [cat,items] of Object.entries(PACK_ITEMS)){
+    html+=`<div class="pack-category">${cat}</div>`;
+    items.forEach(item=>{
+      const isDone=!!packed[item.id];
+      html+=`<div class="pack-item" onclick="togglePack('${item.id}')">
+        <div class="pack-check ${isDone?'done':''}">${isDone?'✓':''}</div>
+        <div class="pack-label ${isDone?'done':''}">${item.label}</div>
+      </div>`;
+    });
+  }
+  html+='</div>';
+  return html;
+}
+function togglePack(id){
+  const p=JSON.parse(localStorage.getItem('pp_pack')||'{}');
+  p[id]=!p[id];
+  localStorage.setItem('pp_pack',JSON.stringify(p));
+  const el=document.getElementById('pack-section');
+  if(el)el.innerHTML=renderPackList();
+}
+function packAll(val){
+  const p={};
+  Object.values(PACK_ITEMS).flat().forEach(i=>p[i.id]=val);
+  localStorage.setItem('pp_pack',JSON.stringify(p));
+  const el=document.getElementById('pack-section');
+  if(el)el.innerHTML=renderPackList();
+}
+
+// ── Historical Weather ────────────────────────────────────────────────────────
+async function loadHistorical(lat,lng,year){
+  const end=`${year}-12-31`,start=`${year}-01-01`;
+  try{
+    const r=await fetch(`https://archive-api.open-meteo.com/v1/archive?latitude=${lat}&longitude=${lng}&start_date=${start}&end_date=${end}&daily=weathercode&timezone=auto`);
+    return await r.json();
+  }catch{return null;}
+}
+
+async function renderHistorical(container){
+  container.innerHTML='<div class="loading"><div class="spin"></div>Historische Daten werden geladen…</div>';
+  const yr=new Date().getFullYear()-1;
+  const data=await loadHistorical(S.lat,S.lng,yr);
+  if(!data?.daily){container.innerHTML='<div style="font-size:13px;color:var(--mu);padding:1rem;">Keine historischen Daten verfügbar.</div>';return;}
+  
+  // Group by month, average score
+  const monthly=Array.from({length:12},()=>({scores:[],days:0}));
+  data.daily.time.forEach((d,i)=>{
+    const m=new Date(d).getMonth();
+    const sc=photoScore(data.daily.weathercode[i]);
+    monthly[m].scores.push(sc);
+    monthly[m].days++;
+  });
+  const avgScores=monthly.map(m=>m.scores.length?Math.round(m.scores.reduce((a,b)=>a+b,0)/m.scores.length):0);
+  const maxSc=Math.max(...avgScores);
+  const MN=t('MONTHS');
+  
+  const bars=avgScores.map((sc,i)=>{
+    const pct=maxSc>0?(sc/maxSc*100).toFixed(1):0;
+    const isBest=sc===maxSc;
+    return`<div class="hb">
+      <div class="hbo" onclick="goToMonth(${i})">
+        <div class="hbf" style="height:${pct}%;background:${isBest?'var(--gold)':scv(sc)};opacity:${isBest?1:.6};"></div>
+      </div>
+      <div class="hbl">${MN[i]}</div>
+    </div>`;
+  }).join('');
+
+  const bestMonth=avgScores.indexOf(maxSc);
+  const sorted=[...avgScores.map((sc,i)=>({sc,i}))].sort((a,b)=>b.sc-a.sc);
+  
+  container.innerHTML=`<div class="card">
+    <div class="ch"><div class="ct">${t('hist')} ${yr}</div><div class="badge bg">Durchschnittlicher Foto-Score</div></div>
+    <div class="hist-bar">${bars}</div>
+    <div style="font-size:11px;color:var(--mu);text-align:center;margin-bottom:1rem;">Auf Monat klicken → zu diesem Datum springen</div>
+    <div style="font-size:13px;margin-bottom:.5rem;font-weight:500;">🥇 Beste Monate ${yr}:</div>
+    ${sorted.slice(0,3).map(({sc,i},rank)=>`<div style="display:flex;align-items:center;gap:10px;padding:7px 12px;background:var(--s2);border-radius:var(--rs);margin-bottom:5px;">
+      <span>${['🥇','🥈','🥉'][rank]}</span>
+      <span style="flex:1;font-weight:500;">${MN[i]}</span>
+      <span class="badge ${sc>=75?'bg':sc>=50?'bb':'bgray'}">${sc}/100</span>
+    </div>`).join('')}
+    <div class="tip">💡 Historische Daten geben keinen Garantie, aber zeigen klimatische Tendenzen zuverlässig.</div>
+  </div>`;
+}
+
+function goToMonth(m){
+  const yr=new Date().getFullYear();
+  const d=new Date(yr,m,15);
+  document.getElementById('di').value=d.toISOString().slice(0,10);
+  S.date=d;
+  setTab('light');
+}
+
+// ── Multi-Day Trip Planner ────────────────────────────────────────────────────
+let TRIP={days:[],name:'Mein Fototrip'};
+(function(){const saved=localStorage.getItem('pp_trip');if(saved)try{TRIP=JSON.parse(saved);}catch{}})();
+
+function saveTrip(){localStorage.setItem('pp_trip',JSON.stringify(TRIP));}
+
+function renderTrip(){
+  const hasLoc=S.lat&&S.lng;
+  document.getElementById('main').innerHTML=`<div class="results">
+  <!-- Trip Header -->
+  <div class="card">
+    <div class="ch">
+      <div class="ct">${t('trip_planner')}</div>
+      <div class="badge bgray">${TRIP.days.length} Tage</div>
+    </div>
+    <div style="display:flex;gap:8px;margin-bottom:.75rem;flex-wrap:wrap;">
+      <input class="sinput" id="trip-name" value="${TRIP.name}" placeholder="Trip-Name…" 
+        style="flex:1;min-width:160px;height:38px;padding:0 12px;font-size:13px;"
+        onchange="TRIP.name=this.value;saveTrip()">
+      <button class="btn btn-gold btn-sm" onclick="addTripDay()">+ ${t('add_day')}</button>
+      <button class="btn btn-sm" onclick="clearTrip()">↺ Reset</button>
+    </div>
+    ${!hasLoc?'<div style="font-size:12px;color:var(--mu);">Bitte zuerst einen Ort suchen.</div>':''}
+  </div>
+
+  <!-- Days -->
+  <div id="trip-days">${renderTripDays()}</div>
+
+  <!-- Packing List -->
+  <div id="pack-section">${renderPackList()}</div>
+  </div>`;
+}
+
+function renderTripDays(){
+  if(!TRIP.days.length)return`<div style="text-align:center;padding:2rem;color:var(--mu);font-size:14px;">Noch keine Tage geplant.<br>Klicke "+ Tag hinzufügen" um zu starten.</div>`;
+  return TRIP.days.map((day,idx)=>{
+    const d=new Date(day.date+'T12:00:00');
+    const times=SunCalc.getTimes(d,day.lat||S.lat,day.lng||S.lng);
+    const mi=SunCalc.getMoonIllumination(d);
+    const wCode=day.wCode||2;
+    const sc=photoScore(wCode);
+    const [wDesc,wIcon]=wmoInfo(wCode);
+    const MN=t('MONTHS'), DAYS=t('DAYS');
+    const dn=`${DAYS[d.getDay()]}, ${d.getDate()}. ${MN[d.getMonth()]}`;
+    return`<div class="day-card">
+      <div class="day-hdr">
+        <div>
+          <div class="day-num">Tag ${idx+1}</div>
+          <div style="font-size:14px;font-weight:500;margin-top:4px;">${dn}</div>
+          <div style="font-size:12px;color:var(--mu);">${day.location||S.name}</div>
+        </div>
+        <div style="text-align:right;">
+          <div class="day-score" style="color:${scv(sc)}">${sc}<span style="font-size:13px;opacity:.5">/100</span></div>
+          <div style="font-size:12px;color:var(--mu);">${wIcon} ${wDesc}</div>
+          <button class="btn btn-sm" style="margin-top:6px;" onclick="removeTripDay(${idx})">✕ Entfernen</button>
+        </div>
+      </div>
+      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;font-size:12px;">
+        <div style="background:var(--s2);border-radius:var(--rs);padding:8px;text-align:center;">
+          <div style="color:var(--gold);font-weight:500;">${fmt(times.dawn)}</div>
+          <div style="color:var(--mu);margin-top:2px;">🌅 Gold Morgen</div>
+        </div>
+        <div style="background:var(--s2);border-radius:var(--rs);padding:8px;text-align:center;">
+          <div style="color:var(--gold);font-weight:500;">${fmt(times.goldenHour)}</div>
+          <div style="color:var(--mu);margin-top:2px;">🌇 Gold Abend</div>
+        </div>
+        <div style="background:var(--s2);border-radius:var(--rs);padding:8px;text-align:center;">
+          <div style="color:var(--blue);font-weight:500;">${Math.round(mi.fraction*100)}%</div>
+          <div style="color:var(--mu);margin-top:2px;">${moonIcon(mi.phase)} Mond</div>
+        </div>
+      </div>
+      <textarea placeholder="Notizen für diesen Tag…" style="width:100%;background:var(--s1);border:.5px solid var(--bd);border-radius:var(--rs);color:var(--tx);font-family:inherit;font-size:12px;padding:8px 10px;margin-top:.75rem;resize:none;outline:none;height:50px;"
+        onchange="TRIP.days[${idx}].note=this.value;saveTrip()">${day.note||''}</textarea>
+    </div>`;
+  }).join('');
+}
+
+async function addTripDay(){
+  if(!S.lat){alert('Bitte zuerst einen Ort suchen.');return;}
+  // Find next date after last day
+  const lastDate=TRIP.days.length?new Date(TRIP.days[TRIP.days.length-1].date+'T12:00:00'):new Date(S.date);
+  const nextDate=new Date(lastDate);
+  if(TRIP.days.length)nextDate.setDate(nextDate.getDate()+1);
+  const ds=nextDate.toISOString().slice(0,10);
+  
+  // Get weather for this day if available
+  let wCode=2;
+  if(S.weather?.daily){
+    const idx=S.weather.daily.time.indexOf(ds);
+    if(idx>=0)wCode=S.weather.daily.weathercode[idx];
+  }
+  
+  TRIP.days.push({date:ds,lat:S.lat,lng:S.lng,location:S.name,wCode,note:''});
+  saveTrip();
+  
+  const el=document.getElementById('trip-days');
+  if(el)el.innerHTML=renderTripDays();
+}
+
+function removeTripDay(idx){
+  TRIP.days.splice(idx,1);
+  saveTrip();
+  const el=document.getElementById('trip-days');
+  if(el)el.innerHTML=renderTripDays();
+}
+
+function clearTrip(){
+  if(!confirm('Trip zurücksetzen?'))return;
+  TRIP={days:[],name:'Mein Fototrip'};
+  saveTrip();
+  renderTrip();
+}
+
+// ── renderPlan: add historical weather ──────────────────────────────────────
+const _origRenderPlan=renderPlan;
+function renderPlan(){
+  _origRenderPlan();
+  // Append historical weather section
+  const main=document.getElementById('main');
+  if(!main||!S.lat)return;
+  const histDiv=document.createElement('div');
+  histDiv.id='hist-weather';
+  main.querySelector('.results')?.appendChild(histDiv);
+  renderHistorical(histDiv);
+}
+
+// ── iOS standalone detection ──────────────────────────────────────────────────
+if (window.navigator.standalone === false && /iPhone|iPad/.test(navigator.userAgent)) {
+  // Show iOS install hint after 3s if not already installed
+  setTimeout(() => {
+    if (!localStorage.getItem('pp_ios_hint')) {
+      showToast('📲 Auf iPhone: Teilen → Zum Home-Bildschirm');
+      localStorage.setItem('pp_ios_hint', '1');
+    }
+  }, 3000);
+}
+
+// ── URL param tab routing ─────────────────────────────────────────────────────
+(function() {
+  const p = new URLSearchParams(location.search);
+  const tab = p.get('tab');
+  if (tab && ['light','map','night','plan','tools'].includes(tab)) {
+    // Will be applied after data loads
+    setTimeout(() => { if (S.lat) setTab(tab); }, 500);
+  }
+})();
+</script>
+</body>
+</html>

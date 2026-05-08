@@ -1,0 +1,44 @@
+{
+  "name": "PhotoPlanner – Foto-Reise-Planer",
+  "short_name": "PhotoPlanner",
+  "description": "Goldene Stunde, Blaue Stunde, Milchstrasse & Wetter-Score für Fotografen weltweit",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#08080D",
+  "theme_color": "#E9A42E",
+  "orientation": "any",
+  "lang": "de",
+  "categories": ["photo", "travel", "utilities"],
+  "icons": [
+    { "src": "icons/icon-72.png",            "sizes": "72x72",   "type": "image/png" },
+    { "src": "icons/icon-96.png",            "sizes": "96x96",   "type": "image/png" },
+    { "src": "icons/icon-128.png",           "sizes": "128x128", "type": "image/png" },
+    { "src": "icons/icon-144.png",           "sizes": "144x144", "type": "image/png" },
+    { "src": "icons/icon-152.png",           "sizes": "152x152", "type": "image/png" },
+    { "src": "icons/icon-192.png",           "sizes": "192x192", "type": "image/png" },
+    { "src": "icons/icon-384.png",           "sizes": "384x384", "type": "image/png" },
+    { "src": "icons/icon-512.png",           "sizes": "512x512", "type": "image/png" },
+    { "src": "icons/icon-maskable-192.png",  "sizes": "192x192", "type": "image/png", "purpose": "maskable" },
+    { "src": "icons/icon-maskable-512.png",  "sizes": "512x512", "type": "image/png", "purpose": "maskable" },
+    { "src": "icons/apple-touch-icon.png",   "sizes": "180x180", "type": "image/png" }
+  ],
+  "shortcuts": [
+    {
+      "name": "Golden Hour",
+      "short_name": "Gold",
+      "url": "./?tab=light",
+      "description": "Goldene Stunde für aktuellen Standort",
+      "icons": [{ "src": "icons/icon-96.png", "sizes": "96x96" }]
+    },
+    {
+      "name": "Milchstrasse",
+      "short_name": "MW",
+      "url": "./?tab=night",
+      "description": "Milchstrassen-Fenster berechnen",
+      "icons": [{ "src": "icons/icon-96.png", "sizes": "96x96" }]
+    }
+  ],
+  "screenshots": [],
+  "prefer_related_applications": false
+}

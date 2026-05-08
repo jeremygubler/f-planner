@@ -1,0 +1,706 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PhotoPlanner – Community Spots</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.min.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fontsource/playfair-display@5/400.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fontsource/playfair-display@5/700.css">
+<style>
+:root{--gold:#E9A42E;--goldg:rgba(233,164,46,0.15);--goldb:rgba(233,164,46,0.3);--blue:#6B9FE8;--green:#34D399;--red:#F87171;--bg:#07070C;--card:rgba(255,255,255,0.04);--card2:rgba(255,255,255,0.07);--bd:rgba(255,255,255,0.08);--tx:#EDE8DF;--mu:rgba(237,232,223,0.45);--di:rgba(237,232,223,0.18);--r:14px;--rs:10px;}
+*{box-sizing:border-box;margin:0;padding:0;}
+html,body{min-height:100%;background:var(--bg);color:var(--tx);font-family:'DM Sans',-apple-system,sans-serif;font-weight:300;font-size:15px;overflow-x:hidden;}
+.bg-fx{position:fixed;inset:0;pointer-events:none;z-index:0;background:radial-gradient(ellipse 80% 60% at 10% -20%,rgba(233,164,46,0.08),transparent 60%),radial-gradient(ellipse 60% 50% at 90% 110%,rgba(107,159,232,0.06),transparent 60%);}
+nav{position:sticky;top:0;z-index:200;background:rgba(7,7,12,0.88);backdrop-filter:blur(16px);border-bottom:.5px solid var(--bd);padding:.9rem 0;}
+.nav-inner{max-width:1200px;margin:0 auto;padding:0 1.5rem;display:flex;align-items:center;justify-content:space-between;gap:12px;}
+.nav-logo{font-family:'Playfair Display',Georgia,serif;font-size:18px;font-weight:700;color:var(--tx);text-decoration:none;display:flex;align-items:center;gap:7px;letter-spacing:-.02em;}
+.logo-dot{width:8px;height:8px;background:var(--gold);border-radius:50%;}
+.nav-right{display:flex;align-items:center;gap:8px;}
+.nav-back{color:var(--mu);text-decoration:none;font-size:13px;transition:color .15s;}
+.nav-back:hover{color:var(--tx);}
+.btn{padding:9px 18px;border-radius:99px;font-size:13px;font-weight:500;cursor:pointer;font-family:inherit;transition:all .2s;border:none;display:flex;align-items:center;gap:6px;}
+.btn-gold{background:var(--gold);color:#1A0E00;font-weight:600;}
+.btn-gold:hover{background:#F5B43A;transform:translateY(-1px);}
+.btn-outline{background:var(--card2);border:.5px solid var(--bd);color:var(--tx);}
+.btn-outline:hover{background:rgba(255,255,255,0.1);}
+.user-chip{display:flex;align-items:center;gap:8px;background:var(--card2);border:.5px solid var(--bd);border-radius:99px;padding:5px 12px 5px 5px;}
+.user-avatar{width:26px;height:26px;border-radius:50%;background:var(--goldg);border:.5px solid var(--goldb);display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:600;color:var(--gold);}
+.user-name{font-size:12px;font-weight:500;}
+.pro-badge{background:var(--goldg);border:.5px solid var(--goldb);color:var(--gold);font-size:10px;font-weight:700;padding:1px 6px;border-radius:99px;letter-spacing:.05em;}
+.main{position:relative;z-index:1;max-width:1200px;margin:0 auto;padding:0 1.5rem 4rem;}
+.hero{padding:2.5rem 0 2rem;display:flex;align-items:flex-end;justify-content:space-between;flex-wrap:wrap;gap:1rem;}
+.hero-tag{font-size:11px;letter-spacing:.15em;text-transform:uppercase;color:var(--gold);font-weight:600;margin-bottom:.5rem;}
+.hero-title{font-family:'Playfair Display',Georgia,serif;font-size:clamp(1.8rem,3vw,2.6rem);font-weight:700;letter-spacing:-.03em;line-height:1.1;margin-bottom:.5rem;}
+.hero-sub{font-size:14px;color:var(--mu);max-width:480px;line-height:1.6;}
+.hero-stats{display:flex;gap:1.5rem;flex-shrink:0;}
+.hs-val{font-family:'Playfair Display',Georgia,serif;font-size:2rem;font-weight:700;color:var(--gold);line-height:1;}
+.hs-lbl{font-size:11px;color:var(--mu);margin-top:3px;}
+#map{height:420px;border-radius:var(--r);overflow:hidden;border:.5px solid var(--bd);margin-bottom:1.5rem;position:relative;}
+.map-overlay{position:absolute;top:12px;left:12px;z-index:400;background:rgba(7,7,12,0.85);backdrop-filter:blur(10px);border:.5px solid var(--bd);border-radius:var(--rs);padding:8px 12px;font-size:12px;color:var(--mu);pointer-events:none;}
+.filter-bar{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:1.5rem;align-items:center;}
+.filter-chip{background:var(--card2);border:.5px solid var(--bd);border-radius:99px;padding:6px 14px;font-size:12px;cursor:pointer;color:var(--mu);transition:all .15s;white-space:nowrap;font-family:inherit;}
+.filter-chip:hover,.filter-chip.on{background:var(--goldg);border-color:var(--goldb);color:var(--gold);}
+.sort-select{background:var(--card2);border:.5px solid var(--bd);border-radius:99px;color:var(--mu);font-family:inherit;font-size:12px;padding:6px 14px;outline:none;cursor:pointer;margin-left:auto;appearance:none;}
+.spots-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:1rem;}
+.spot-card{background:var(--card);border:.5px solid var(--bd);border-radius:var(--r);overflow:hidden;transition:border-color .2s,transform .2s;}
+.spot-card:hover{border-color:var(--goldb);transform:translateY(-3px);}
+.spot-img{width:100%;height:180px;object-fit:cover;display:block;background:var(--card2);}
+.spot-ph{width:100%;height:180px;background:var(--card2);display:flex;align-items:center;justify-content:center;font-size:42px;}
+.spot-body{padding:1rem;}
+.spot-cat{font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--gold);font-weight:600;margin-bottom:.4rem;}
+.spot-name{font-family:'Playfair Display',Georgia,serif;font-size:17px;font-weight:400;margin-bottom:.3rem;line-height:1.2;}
+.spot-loc{font-size:12px;color:var(--mu);display:flex;align-items:center;gap:5px;margin-bottom:.6rem;}
+.spot-desc{font-size:13px;color:var(--mu);line-height:1.5;margin-bottom:.75rem;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;}
+.spot-footer{display:flex;align-items:center;justify-content:space-between;}
+.vote-btn{background:none;border:.5px solid var(--bd);border-radius:99px;padding:4px 12px;cursor:pointer;color:var(--mu);font-family:inherit;font-size:12px;transition:all .15s;display:flex;align-items:center;gap:5px;}
+.vote-btn:hover,.vote-btn.on{background:var(--goldg);border-color:var(--goldb);color:var(--gold);}
+.detail-btn{font-size:11px;color:var(--mu);background:none;border:none;cursor:pointer;font-family:inherit;transition:color .15s;}
+.detail-btn:hover{color:var(--gold);}
+/* Modal */
+.modal-bd{position:fixed;inset:0;background:rgba(7,7,12,0.92);z-index:500;display:none;align-items:center;justify-content:center;padding:1.5rem;}
+.modal-bd.open{display:flex;}
+.modal{background:#0E0E18;border:.5px solid var(--bd);border-radius:20px;width:100%;max-width:520px;max-height:90vh;overflow-y:auto;}
+.modal-hdr{padding:1.5rem 1.5rem 0;display:flex;align-items:flex-start;justify-content:space-between;}
+.modal-title{font-family:'Playfair Display',Georgia,serif;font-size:22px;font-weight:700;}
+.modal-close{background:none;border:none;color:var(--mu);font-size:22px;cursor:pointer;padding:0;line-height:1;}
+.modal-body{padding:1.25rem 1.5rem 1.5rem;}
+.form-group{margin-bottom:1rem;}
+.form-label{display:block;font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--mu);font-weight:600;margin-bottom:.5rem;}
+.form-input,.form-select,.form-textarea{width:100%;background:var(--card2);border:.5px solid var(--bd);border-radius:var(--rs);color:var(--tx);font-family:inherit;font-size:13px;padding:10px 13px;outline:none;transition:border-color .2s;}
+.form-input:focus,.form-select:focus,.form-textarea:focus{border-color:var(--goldb);}
+.form-textarea{resize:vertical;min-height:80px;}
+.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:.75rem;}
+.cat-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;}
+.cat-btn{background:var(--card2);border:.5px solid var(--bd);border-radius:var(--rs);padding:8px 6px;text-align:center;cursor:pointer;font-family:inherit;font-size:11px;color:var(--mu);transition:all .15s;}
+.cat-btn:hover,.cat-btn.on{background:var(--goldg);border-color:var(--goldb);color:var(--gold);}
+.cat-icon{font-size:18px;display:block;margin-bottom:3px;}
+.img-preview{width:100%;height:160px;object-fit:cover;border-radius:var(--rs);margin-top:.5rem;display:none;border:.5px solid var(--bd);}
+.mod-status{margin-top:.75rem;border-radius:var(--rs);padding:10px 14px;font-size:13px;display:none;}
+.mod-pending{background:rgba(107,159,232,0.1);border:.5px solid rgba(107,159,232,0.3);color:var(--blue);}
+.mod-ok{background:rgba(52,211,153,0.1);border:.5px solid rgba(52,211,153,0.3);color:var(--green);}
+.mod-fail{background:rgba(248,113,113,0.1);border:.5px solid rgba(248,113,113,0.3);color:var(--red);}
+.mod-spin{display:inline-block;width:14px;height:14px;border:2px solid rgba(107,159,232,0.3);border-top-color:var(--blue);border-radius:50%;animation:spin .7s linear infinite;margin-right:6px;vertical-align:middle;}
+@keyframes spin{to{transform:rotate(360deg);}}
+.submit-row{display:flex;gap:8px;margin-top:1.25rem;}
+.btn-cancel{flex:1;background:none;border:.5px solid var(--bd);border-radius:var(--rs);color:var(--mu);font-family:inherit;font-size:14px;padding:12px;cursor:pointer;transition:all .15s;}
+.btn-go{flex:2;background:var(--gold);border:none;border-radius:var(--rs);color:#1A0E00;font-family:inherit;font-size:14px;font-weight:600;padding:12px;cursor:pointer;transition:all .2s;}
+.btn-go:disabled{opacity:.4;cursor:not-allowed;}
+/* Auth modal */
+.auth-tabs{display:flex;gap:4px;background:var(--card2);border-radius:var(--rs);padding:4px;margin-bottom:1.25rem;}
+.auth-tab{flex:1;padding:8px;border:none;background:none;border-radius:8px;color:var(--mu);font-family:inherit;font-size:13px;cursor:pointer;transition:all .15s;}
+.auth-tab.on{background:var(--card);color:var(--tx);border:.5px solid var(--bd);}
+.divider-or{display:flex;align-items:center;gap:.75rem;margin:1rem 0;color:var(--mu);font-size:12px;}
+.divider-or::before,.divider-or::after{content:'';flex:1;height:.5px;background:var(--bd);}
+.btn-google{width:100%;background:var(--card2);border:.5px solid var(--bd);border-radius:var(--rs);color:var(--tx);font-family:inherit;font-size:14px;padding:12px;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;transition:all .15s;}
+.btn-google:hover{background:rgba(255,255,255,0.1);}
+.magic-sent{text-align:center;padding:1.5rem 0;}
+.magic-icon{font-size:48px;display:block;margin-bottom:1rem;}
+/* Detail */
+.detail-img{width:100%;max-height:280px;object-fit:cover;border-radius:12px 12px 0 0;}
+.detail-tags{display:flex;gap:6px;margin-bottom:.75rem;flex-wrap:wrap;}
+.detail-tag{background:var(--card2);border:.5px solid var(--bd);border-radius:99px;font-size:11px;padding:3px 10px;color:var(--mu);}
+/* Report */
+.report-opt{background:var(--card2);border:.5px solid var(--bd);border-radius:var(--rs);padding:10px 14px;cursor:pointer;font-size:13px;transition:all .15s;font-family:inherit;color:var(--tx);text-align:left;width:100%;margin-bottom:5px;}
+.report-opt:hover{background:rgba(248,113,113,0.08);border-color:rgba(248,113,113,0.25);color:var(--red);}
+/* Geo results */
+.geo-item{padding:8px 12px;background:var(--card2);border-radius:var(--rs);margin-bottom:4px;cursor:pointer;font-size:13px;border:.5px solid var(--bd);transition:background .15s;}
+.geo-item:hover{background:rgba(255,255,255,0.1);}
+/* Upload */
+.upload-area{border:1.5px dashed var(--bd);border-radius:var(--rs);padding:1.5rem;text-align:center;cursor:pointer;transition:border-color .2s;margin-top:.5rem;}
+.upload-area:hover{border-color:var(--goldb);}
+.upload-area input{display:none;}
+/* Toast */
+.toast{position:fixed;bottom:2rem;left:50%;transform:translateX(-50%) translateY(80px);background:rgba(14,14,24,0.95);border:.5px solid var(--bd);border-radius:99px;padding:10px 20px;font-size:13px;z-index:9999;white-space:nowrap;transition:transform .3s ease;pointer-events:none;}
+.toast.show{transform:translateX(-50%) translateY(0);}
+/* Empty / Loading */
+.empty{text-align:center;padding:4rem 1rem;color:var(--mu);}
+.skel{background:var(--card);border:.5px solid var(--bd);border-radius:var(--r);overflow:hidden;animation:pulse 1.5s ease infinite;}
+.skel-img{height:180px;background:var(--card2);}
+.skel-body{padding:1rem;}
+.skel-line{height:12px;background:var(--card2);border-radius:6px;margin-bottom:8px;}
+@keyframes pulse{0%,100%{opacity:1;}50%{opacity:.5;}}
+@media(max-width:680px){.hero{flex-direction:column;}.form-grid{grid-template-columns:1fr;}.spots-grid{grid-template-columns:1fr;}#map{height:280px;}}
+</style>
+</head>
+<body>
+<div class="bg-fx"></div>
+
+<nav>
+  <div class="nav-inner">
+    <a class="nav-logo" href="index.html"><span class="logo-dot"></span>PhotoPlanner</a>
+    <div class="nav-right">
+      <a class="nav-back" href="index.html">← App</a>
+      <div id="auth-area">
+        <button class="btn btn-outline" onclick="openAuth()">Anmelden</button>
+      </div>
+      <button class="btn btn-gold" id="submit-btn" onclick="checkAuthAndSubmit()">📍 Spot einreichen</button>
+    </div>
+  </div>
+</nav>
+
+<div class="main">
+  <div class="hero">
+    <div>
+      <div class="hero-tag">Community</div>
+      <h1 class="hero-title">Die besten Foto-Spots<br>von Fotografen.</h1>
+      <p class="hero-sub">Entdecke kuratierte Orte, teile deine Lieblings-Locations. KI-geprüft, community-bewertet.</p>
+    </div>
+    <div class="hero-stats">
+      <div style="text-align:center"><div class="hs-val" id="stat-spots">–</div><div class="hs-lbl">Spots</div></div>
+      <div style="text-align:center"><div class="hs-val" id="stat-votes">–</div><div class="hs-lbl">Votes</div></div>
+      <div style="text-align:center"><div class="hs-val" id="stat-users">–</div><div class="hs-lbl">Beiträge</div></div>
+    </div>
+  </div>
+
+  <div id="map"><div class="map-overlay" id="map-overlay">Lade Spots…</div></div>
+
+  <div class="filter-bar">
+    <div class="filter-chip on" onclick="setFilter('all',this)">Alle</div>
+    <div class="filter-chip" onclick="setFilter('landscape',this)">🏔️ Landschaft</div>
+    <div class="filter-chip" onclick="setFilter('cityscape',this)">🏙️ Stadt</div>
+    <div class="filter-chip" onclick="setFilter('astrophoto',this)">🌌 Astro</div>
+    <div class="filter-chip" onclick="setFilter('waterfall',this)">💧 Wasserfall</div>
+    <div class="filter-chip" onclick="setFilter('coast',this)">🌊 Küste</div>
+    <div class="filter-chip" onclick="setFilter('architecture',this)">🏛️ Architektur</div>
+    <div class="filter-chip" onclick="setFilter('nature',this)">🌿 Natur</div>
+    <div class="filter-chip" onclick="setFilter('winter',this)">❄️ Winter</div>
+    <select class="sort-select" onchange="setSort(this.value)">
+      <option value="votes">Meiste Votes</option>
+      <option value="newest">Neueste</option>
+      <option value="name">Name A–Z</option>
+    </select>
+  </div>
+
+  <div id="spots-wrap"></div>
+</div>
+
+<!-- AUTH MODAL -->
+<div class="modal-bd" id="auth-modal">
+  <div class="modal">
+    <div class="modal-hdr">
+      <div class="modal-title">Konto</div>
+      <button class="modal-close" onclick="closeModal('auth-modal')">×</button>
+    </div>
+    <div class="modal-body">
+      <div class="auth-tabs">
+        <button class="auth-tab on" id="tab-login" onclick="switchAuthTab('login')">Anmelden</button>
+        <button class="auth-tab" id="tab-signup" onclick="switchAuthTab('signup')">Registrieren</button>
+      </div>
+      <div id="auth-form-area">
+        <div class="form-group">
+          <label class="form-label">E-Mail</label>
+          <input class="form-input" id="auth-email" type="email" placeholder="deine@email.ch">
+        </div>
+        <div class="form-group" id="pw-group">
+          <label class="form-label">Passwort</label>
+          <input class="form-input" id="auth-pw" type="password" placeholder="Mindestens 6 Zeichen">
+        </div>
+        <button class="btn-go" style="width:100%;" id="auth-go" onclick="doAuth()">Anmelden</button>
+        <div class="divider-or">oder</div>
+        <button class="btn-google" onclick="signInGoogle()">
+          <svg width="18" height="18" viewBox="0 0 18 18"><path fill="#4285F4" d="M17.64 9.2c0-.637-.057-1.251-.164-1.84H9v3.481h4.844a4.14 4.14 0 0 1-1.796 2.716v2.259h2.908c1.702-1.567 2.684-3.875 2.684-6.615z"/><path fill="#34A853" d="M9 18c2.43 0 4.467-.806 5.956-2.18l-2.908-2.259c-.806.54-1.837.86-3.048.86-2.344 0-4.328-1.584-5.036-3.711H.957v2.332A8.997 8.997 0 0 0 9 18z"/><path fill="#FBBC05" d="M3.964 10.71A5.41 5.41 0 0 1 3.682 9c0-.593.102-1.17.282-1.71V4.958H.957A8.996 8.996 0 0 0 0 9c0 1.452.348 2.827.957 4.042l3.007-2.332z"/><path fill="#EA4335" d="M9 3.58c1.321 0 2.508.454 3.44 1.345l2.582-2.58C13.463.891 11.426 0 9 0A8.997 8.997 0 0 0 .957 4.958L3.964 7.29C4.672 5.163 6.656 3.58 9 3.58z"/></svg>
+          Mit Google anmelden
+        </button>
+        <div style="font-size:11px;color:var(--mu);text-align:center;margin-top:1rem;line-height:1.5;">
+          Mit der Anmeldung stimmst du unseren Nutzungsbedingungen zu.<br>
+          Keine Werbemails. Keine Weitergabe an Dritte.
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- SUBMIT MODAL -->
+<div class="modal-bd" id="submit-modal">
+  <div class="modal">
+    <div class="modal-hdr">
+      <div>
+        <div class="modal-title">Spot einreichen</div>
+        <div style="font-size:12px;color:var(--mu);margin-top:4px;">KI-Moderation prüft automatisch · nur passende Foto-Locations werden genehmigt</div>
+      </div>
+      <button class="modal-close" onclick="closeModal('submit-modal')">×</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-group">
+        <label class="form-label">Name des Spots *</label>
+        <input class="form-input" id="f-name" placeholder="z.B. Grindelwald Panorama">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Ort suchen *</label>
+        <input class="form-input" id="f-loc" placeholder="Ortname eingeben…" oninput="debounceGeo(this.value)">
+        <div id="geo-results"></div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Kategorie *</label>
+        <div class="cat-grid">
+          <button class="cat-btn on" onclick="setCat('landscape',this)"><span class="cat-icon">🏔️</span>Landschaft</button>
+          <button class="cat-btn" onclick="setCat('cityscape',this)"><span class="cat-icon">🏙️</span>Stadt</button>
+          <button class="cat-btn" onclick="setCat('astrophoto',this)"><span class="cat-icon">🌌</span>Astro</button>
+          <button class="cat-btn" onclick="setCat('waterfall',this)"><span class="cat-icon">💧</span>Wasserfall</button>
+          <button class="cat-btn" onclick="setCat('coast',this)"><span class="cat-icon">🌊</span>Küste</button>
+          <button class="cat-btn" onclick="setCat('architecture',this)"><span class="cat-icon">🏛️</span>Architektur</button>
+          <button class="cat-btn" onclick="setCat('nature',this)"><span class="cat-icon">🌿</span>Natur</button>
+          <button class="cat-btn" onclick="setCat('winter',this)"><span class="cat-icon">❄️</span>Winter</button>
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Beschreibung</label>
+        <textarea class="form-textarea" id="f-desc" placeholder="Was macht diesen Spot besonders? Tipps, beste Jahreszeit…"></textarea>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Bild *</label>
+        <input class="form-input" id="f-img" placeholder="https://… (Bild-URL)" oninput="previewImage(this.value)">
+        <img class="img-preview" id="img-preview" alt="">
+        <div class="mod-status" id="mod-status"></div>
+      </div>
+      <div class="form-grid">
+        <div><label class="form-label">Jahreszeit</label>
+          <select class="form-select" id="f-season">
+            <option value="">–</option>
+            <option value="spring">🌸 Frühling</option>
+            <option value="summer">☀️ Sommer</option>
+            <option value="autumn">🍂 Herbst</option>
+            <option value="winter">❄️ Winter</option>
+            <option value="all">Ganzjährig</option>
+          </select>
+        </div>
+        <div><label class="form-label">Beste Zeit</label>
+          <select class="form-select" id="f-time">
+            <option value="">–</option>
+            <option value="golden_morning">🌅 Gold Morgen</option>
+            <option value="golden_evening">🌇 Gold Abend</option>
+            <option value="blue_hour">💙 Blaue Stunde</option>
+            <option value="night">🌌 Nacht</option>
+            <option value="midday">☀️ Mittag</option>
+          </select>
+        </div>
+      </div>
+      <div class="submit-row">
+        <button class="btn-cancel" onclick="closeModal('submit-modal')">Abbrechen</button>
+        <button class="btn-go" id="btn-go" onclick="submitSpot()">📍 Einreichen</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- DETAIL MODAL -->
+<div class="modal-bd" id="detail-modal">
+  <div class="modal" id="detail-content" style="max-width:560px;"></div>
+</div>
+
+<!-- REPORT MODAL -->
+<div class="modal-bd" id="report-modal">
+  <div class="modal" style="max-width:380px;">
+    <div class="modal-hdr"><div class="modal-title">Spot melden</div>
+      <button class="modal-close" onclick="closeModal('report-modal')">×</button></div>
+    <div class="modal-body">
+      <button class="report-opt" onclick="doReport('illegal')">🚫 Illegaler Inhalt</button>
+      <button class="report-opt" onclick="doReport('inappropriate')">⚠️ Unangemessenes Bild</button>
+      <button class="report-opt" onclick="doReport('privacy')">👤 Datenschutzverletzung</button>
+      <button class="report-opt" onclick="doReport('spam')">💬 Spam / irrelevant</button>
+      <button class="report-opt" onclick="doReport('wrong_location')">📍 Falscher Standort</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script src="https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+<script>
+// ── Supabase Client ──────────────────────────────────────────────────────────
+const SUPA_URL = 'https://cwvmjsasfcidyfssxkgi.supabase.co';
+const SUPA_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImN3dm1qc2FzZmNpZHlmc3N4a2dpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzgyMzkyMDUsImV4cCI6MjA5MzgxNTIwNX0.CPTEdINY26Nr4D5Fg6M54kmREvvRva2Ei4NtRnXw1Hg';
+const { createClient } = supabase;
+const sb = createClient(SUPA_URL, SUPA_KEY);
+
+const CAT_ICONS={landscape:'🏔️',cityscape:'🏙️',astrophoto:'🌌',waterfall:'💧',coast:'🌊',architecture:'🏛️',nature:'🌿',winter:'❄️'};
+const CAT_NAMES={landscape:'Landschaft',cityscape:'Stadt',astrophoto:'Astro',waterfall:'Wasserfall',coast:'Küste',architecture:'Architektur',nature:'Natur',winter:'Winter'};
+const SEASONS={spring:'🌸 Frühling',summer:'☀️ Sommer',autumn:'🍂 Herbst',winter:'❄️ Winter',all:'Ganzjährig','':''};
+const TIMES={golden_morning:'🌅 Gold Morgen',golden_evening:'🌇 Gold Abend',blue_hour:'💙 Blaue Std.',night:'🌌 Nacht',midday:'☀️ Mittag','':''};
+
+// ── State ─────────────────────────────────────────────────────────────────────
+let SPOTS=[], CURRENT_USER=null, USER_PROFILE=null;
+let MAP_OBJ=null, MAP_MARKERS=[];
+let activeFilter='all', activeSort='votes';
+let formData={lat:null,lng:null,cat:'landscape',modOk:false};
+let reportingId=null, geoTimer=null;
+
+// ── Auth ─────────────────────────────────────────────────────────────────────
+async function initAuth(){
+  const {data:{session}}=await sb.auth.getSession();
+  if(session?.user) await setUser(session.user);
+  sb.auth.onAuthStateChange(async(_,session)=>{
+    if(session?.user) await setUser(session.user);
+    else clearUser();
+  });
+}
+
+async function setUser(user){
+  CURRENT_USER=user;
+  const {data}=await sb.from('profiles').select('*').eq('id',user.id).single();
+  USER_PROFILE=data;
+  renderAuthArea();
+}
+
+function clearUser(){
+  CURRENT_USER=null; USER_PROFILE=null;
+  renderAuthArea();
+}
+
+function renderAuthArea(){
+  const el=document.getElementById('auth-area');
+  if(!CURRENT_USER){
+    el.innerHTML='<button class="btn btn-outline" onclick="openAuth()">Anmelden</button>';
+    return;
+  }
+  const initial=(USER_PROFILE?.display_name||CURRENT_USER.email||'U')[0].toUpperCase();
+  const isPro=USER_PROFILE?.is_pro;
+  el.innerHTML=`<div class="user-chip">
+    <div class="user-avatar">${initial}</div>
+    <span class="user-name">${USER_PROFILE?.display_name||CURRENT_USER.email?.split('@')[0]||'User'}</span>
+    ${isPro?'<span class="pro-badge">PRO</span>':''}
+    <button style="background:none;border:none;color:var(--mu);cursor:pointer;font-size:11px;padding:0 4px;" onclick="signOut()">✕</button>
+  </div>`;
+}
+
+// ── Auth UI ───────────────────────────────────────────────────────────────────
+let authMode='login';
+function openAuth(){document.getElementById('auth-modal').classList.add('open');}
+function switchAuthTab(mode){
+  authMode=mode;
+  document.getElementById('tab-login').classList.toggle('on',mode==='login');
+  document.getElementById('tab-signup').classList.toggle('on',mode==='signup');
+  document.getElementById('auth-go').textContent=mode==='login'?'Anmelden':'Registrieren';
+  document.getElementById('auth-form-area').querySelector('.form-group:last-of-type').style.display=mode==='signup'?'block':'block';
+}
+
+async function doAuth(){
+  const email=document.getElementById('auth-email').value.trim();
+  const pw=document.getElementById('auth-pw').value;
+  if(!email||!pw){showToast('⚠️ E-Mail und Passwort eingeben');return;}
+  document.getElementById('auth-go').textContent='Bitte warten…';
+  document.getElementById('auth-go').disabled=true;
+  let result;
+  if(authMode==='login'){
+    result=await sb.auth.signInWithPassword({email,password:pw});
+  }else{
+    result=await sb.auth.signUp({email,password:pw});
+  }
+  document.getElementById('auth-go').disabled=false;
+  if(result.error){
+    showToast('❌ '+result.error.message);
+    document.getElementById('auth-go').textContent=authMode==='login'?'Anmelden':'Registrieren';
+  }else{
+    closeModal('auth-modal');
+    if(authMode==='signup') showToast('✉️ Bestätigungs-E-Mail gesendet!');
+    else showToast('✅ Willkommen zurück!');
+  }
+}
+
+async function signInGoogle(){
+  const {error}=await sb.auth.signInWithOAuth({
+    provider:'google',
+    options:{redirectTo:window.location.href}
+  });
+  if(error)showToast('❌ '+error.message);
+}
+
+async function signOut(){
+  await sb.auth.signOut();
+  showToast('Abgemeldet');
+}
+
+// ── Spots: Load from Supabase ─────────────────────────────────────────────────
+async function loadSpots(){
+  showSkeleton();
+  let q=sb.from('spots').select('*').eq('status','approved');
+  if(activeFilter!=='all') q=q.eq('category',activeFilter);
+  if(activeSort==='votes') q=q.order('votes_count',{ascending:false});
+  else if(activeSort==='newest') q=q.order('created_at',{ascending:false});
+  else if(activeSort==='name') q=q.order('name',{ascending:true});
+  const {data,error}=await q;
+  if(error){showToast('❌ Fehler beim Laden');return;}
+  SPOTS=data||[];
+  updateStats();
+  renderSpots();
+  updateMapMarkers(SPOTS);
+}
+
+async function updateStats(){
+  document.getElementById('stat-spots').textContent=SPOTS.length;
+  const total=SPOTS.reduce((a,s)=>a+(s.votes_count||0),0);
+  document.getElementById('stat-votes').textContent=total>999?Math.round(total/100)/10+'k':total;
+  // Count contributors
+  const contribs=new Set(SPOTS.filter(s=>s.user_id).map(s=>s.user_id)).size;
+  document.getElementById('stat-users').textContent=contribs||SPOTS.length;
+}
+
+// ── Realtime subscription ─────────────────────────────────────────────────────
+function subscribeRealtime(){
+  sb.channel('spots').on('postgres_changes',
+    {event:'*',schema:'public',table:'spots'},
+    ()=>loadSpots()
+  ).subscribe();
+}
+
+// ── Map ───────────────────────────────────────────────────────────────────────
+function initMap(){
+  MAP_OBJ=L.map('map').setView([46.8,8.2],5);
+  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{attribution:'© OSM'}).addTo(MAP_OBJ);
+}
+function updateMapMarkers(spots){
+  MAP_MARKERS.forEach(m=>m.remove()); MAP_MARKERS=[];
+  spots.forEach(sp=>{
+    const icon=L.divIcon({html:`<div style="background:#E9A42E;width:30px;height:30px;border-radius:50% 50% 50% 0;transform:rotate(-45deg);border:2px solid white;display:flex;align-items:center;justify-content:center;box-shadow:0 2px 8px rgba(0,0,0,0.4);"><span style="transform:rotate(45deg);font-size:13px">${CAT_ICONS[sp.category]||'📍'}</span></div>`,className:'',iconAnchor:[15,30]});
+    const m=L.marker([sp.lat,sp.lng],{icon}).addTo(MAP_OBJ);
+    m.bindPopup(`<b>${sp.name}</b><br><small>${sp.location}</small><br><button onclick="openDetail('${sp.id}')" style="margin-top:5px;background:#E9A42E;border:none;padding:3px 10px;border-radius:99px;font-size:11px;cursor:pointer;font-weight:600;color:#1A0E00;">Details</button>`);
+    MAP_MARKERS.push(m);
+  });
+  document.getElementById('map-overlay').textContent=`${spots.length} Spots`;
+}
+
+// ── Render spots ──────────────────────────────────────────────────────────────
+function renderSpots(){
+  const c=document.getElementById('spots-wrap');
+  if(!SPOTS.length){
+    c.innerHTML=`<div class="empty"><span style="font-size:48px;display:block;margin-bottom:1rem;opacity:.4;">📍</span>Keine Spots in dieser Kategorie.<br><a href="#" onclick="checkAuthAndSubmit()" style="color:var(--gold)">Ersten Spot einreichen →</a></div>`;
+    return;
+  }
+  c.innerHTML=`<div class="spots-grid">${SPOTS.map(spotCard).join('')}</div>`;
+}
+
+function spotCard(sp){
+  const myVote=localStorage.getItem('pp_v_'+sp.id);
+  return`<div class="spot-card">
+    ${sp.image_url
+      ?`<img class="spot-img" src="${sp.image_url}" alt="${sp.name}" loading="lazy" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">
+         <div class="spot-ph" style="display:none">${CAT_ICONS[sp.category]||'📍'}</div>`
+      :`<div class="spot-ph">${CAT_ICONS[sp.category]||'📍'}</div>`}
+    <div class="spot-body">
+      <div class="spot-cat">${CAT_ICONS[sp.category]||''} ${CAT_NAMES[sp.category]||sp.category}</div>
+      <div class="spot-name">${sp.name}</div>
+      <div class="spot-loc">📍 ${sp.location}</div>
+      <div class="spot-desc">${sp.description||''}</div>
+      <div class="spot-footer">
+        <button class="vote-btn ${myVote?'on':''}" onclick="voteSpot(event,'${sp.id}')">
+          ▲ <span id="vc-${sp.id}">${sp.votes_count||0}</span>
+        </button>
+        <button class="detail-btn" onclick="openDetail('${sp.id}')">Details →</button>
+      </div>
+    </div>
+  </div>`;
+}
+
+function showSkeleton(){
+  document.getElementById('spots-wrap').innerHTML=`<div class="spots-grid">${Array(6).fill(`<div class="skel"><div class="skel-img"></div><div class="skel-body"><div class="skel-line" style="width:60%"></div><div class="skel-line" style="width:90%"></div><div class="skel-line" style="width:70%"></div></div></div>`).join('')}</div>`;
+}
+
+// ── Vote ──────────────────────────────────────────────────────────────────────
+async function voteSpot(e,id){
+  e.stopPropagation();
+  if(!CURRENT_USER){openAuth();showToast('Bitte zuerst anmelden');return;}
+  if(localStorage.getItem('pp_v_'+id)){showToast('Bereits gevoted');return;}
+  const {error}=await sb.from('votes').insert({spot_id:id,user_id:CURRENT_USER.id});
+  if(error){showToast('❌ Fehler');return;}
+  localStorage.setItem('pp_v_'+id,'1');
+  const el=document.getElementById('vc-'+id);
+  if(el)el.textContent=parseInt(el.textContent)+1;
+  e.target.closest('.vote-btn').classList.add('on');
+  showToast('👍 Vote gespeichert!');
+}
+
+// ── Detail ────────────────────────────────────────────────────────────────────
+function openDetail(id){
+  const sp=SPOTS.find(s=>s.id===id);
+  if(!sp)return;
+  const isOwner=CURRENT_USER&&CURRENT_USER.id===sp.user_id;
+  document.getElementById('detail-content').innerHTML=`
+    ${sp.image_url?`<img class="detail-img" src="${sp.image_url}" alt="${sp.name}" onerror="this.style.display='none'">`:'' }
+    <div style="padding:1.5rem;">
+      <div class="detail-tags">
+        <span class="detail-tag">${CAT_ICONS[sp.category]} ${CAT_NAMES[sp.category]||sp.category}</span>
+        ${sp.season?`<span class="detail-tag">${SEASONS[sp.season]}</span>`:''}
+        ${sp.best_time?`<span class="detail-tag">${TIMES[sp.best_time]}</span>`:''}
+      </div>
+      <div style="font-family:'Playfair Display',Georgia,serif;font-size:22px;font-weight:700;margin-bottom:.4rem;">${sp.name}</div>
+      <div style="font-size:13px;color:var(--mu);margin-bottom:.75rem;">📍 ${sp.location}</div>
+      <div style="font-size:14px;color:var(--mu);line-height:1.7;margin-bottom:1.25rem;">${sp.description||'Keine Beschreibung.'}</div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap;">
+        <button class="btn btn-gold" onclick="planSpot(${sp.lat},${sp.lng})">🌅 In App planen</button>
+        <button class="btn btn-outline" onclick="closeModal('detail-modal');reportingId='${sp.id}';document.getElementById('report-modal').classList.add('open')">⚑ Melden</button>
+        ${isOwner?`<button class="btn btn-outline" onclick="deleteOwnSpot('${sp.id}')" style="color:var(--red);border-color:rgba(248,113,113,0.3)">🗑 Löschen</button>`:''}
+      </div>
+    </div>`;
+  document.getElementById('detail-modal').classList.add('open');
+}
+
+function planSpot(lat,lng){
+  closeModal('detail-modal');
+  window.location.href=`index.html?lat=${lat}&lng=${lng}`;
+}
+
+async function deleteOwnSpot(id){
+  if(!confirm('Spot wirklich löschen?'))return;
+  const {error}=await sb.from('spots').delete().eq('id',id).eq('user_id',CURRENT_USER.id);
+  if(error){showToast('❌ Fehler');return;}
+  closeModal('detail-modal');
+  showToast('🗑 Spot gelöscht');
+  loadSpots();
+}
+
+// ── Report ────────────────────────────────────────────────────────────────────
+async function doReport(reason){
+  if(!CURRENT_USER){closeModal('report-modal');openAuth();return;}
+  const {error}=await sb.from('reports').insert({spot_id:reportingId,user_id:CURRENT_USER.id,reason});
+  closeModal('report-modal');
+  if(error?.code==='23505'){showToast('Bereits gemeldet');return;}
+  showToast('✓ Meldung eingegangen – danke!');
+  loadSpots();
+}
+
+// ── Submit ────────────────────────────────────────────────────────────────────
+function checkAuthAndSubmit(){
+  if(!CURRENT_USER){openAuth();showToast('Bitte zuerst anmelden um Spots einzureichen');return;}
+  formData={lat:null,lng:null,cat:'landscape',modOk:false};
+  ['f-name','f-loc','f-desc','f-img'].forEach(id=>document.getElementById(id).value='');
+  document.getElementById('img-preview').style.display='none';
+  document.getElementById('mod-status').style.display='none';
+  document.getElementById('btn-go').disabled=false;
+  document.getElementById('geo-results').innerHTML='';
+  document.querySelectorAll('.cat-btn').forEach((b,i)=>b.classList.toggle('on',i===0));
+  document.getElementById('submit-modal').classList.add('open');
+}
+
+function setCat(cat,btn){
+  formData.cat=cat;
+  document.querySelectorAll('.cat-btn').forEach(b=>b.classList.remove('on'));
+  btn.classList.add('on');
+}
+
+function debounceGeo(val){
+  clearTimeout(geoTimer);
+  if(val.length<3){document.getElementById('geo-results').innerHTML='';return;}
+  geoTimer=setTimeout(()=>geoSearch(val),600);
+}
+
+async function geoSearch(q){
+  const r=await fetch(`https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(q)}&format=json&limit=4`);
+  const data=await r.json();
+  const el=document.getElementById('geo-results');
+  if(!data.length){el.innerHTML='<div style="font-size:12px;color:var(--mu);padding:4px;">Nicht gefunden</div>';return;}
+  el.innerHTML=data.map(d=>`
+    <div class="geo-item" onclick="selectGeo(${d.lat},${d.lon},'${d.display_name.split(',').slice(0,2).join(',').trim().replace(/'/g,"\\'")}')")>
+      📍 ${d.display_name.split(',').slice(0,3).join(', ')}
+    </div>`).join('');
+}
+
+function selectGeo(lat,lng,name){
+  formData.lat=parseFloat(lat); formData.lng=parseFloat(lng);
+  document.getElementById('f-loc').value=name;
+  document.getElementById('geo-results').innerHTML='';
+}
+
+let prevTimer=null;
+function previewImage(url){
+  clearTimeout(prevTimer); formData.modOk=false;
+  document.getElementById('mod-status').style.display='none';
+  document.getElementById('img-preview').style.display='none';
+  if(!url.startsWith('http'))return;
+  prevTimer=setTimeout(()=>{
+    const img=document.getElementById('img-preview');
+    img.src=url; img.style.display='block';
+    img.onload=()=>moderateImage(url);
+    img.onerror=()=>{img.style.display='none';};
+  },800);
+}
+
+async function moderateImage(url){
+  const el=document.getElementById('mod-status');
+  el.className='mod-status mod-pending'; el.style.display='block';
+  el.innerHTML='<span class="mod-spin"></span>KI-Moderation läuft…';
+  document.getElementById('btn-go').disabled=true;
+  try{
+    const res=await fetch('https://api.anthropic.com/v1/messages',{
+      method:'POST',headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({
+        model:'claude-sonnet-4-20250514',max_tokens:200,
+        system:`Fotografie-Community-Moderator. Nur JSON antworten:
+{"approved":true/false,"reason":"max 80 Zeichen"}
+Ablehnen: Nacktheit, Gewalt, Gesichter, Kennzeichen, Innenräume, kein Fotospot.
+Genehmigen: Landschaften, Städte, Architektur, Natur, Astro, Wasserfälle.`,
+        messages:[{role:'user',content:[
+          {type:'image',source:{type:'url',url}},
+          {type:'text',text:'Geeignet für Foto-Spot-Community?'}
+        ]}]
+      })
+    });
+    const d=await res.json();
+    const result=JSON.parse((d.content?.[0]?.text||'{}').replace(/```json|```/g,'').trim());
+    if(result.approved){
+      el.className='mod-status mod-ok';
+      el.innerHTML=`✅ Genehmigt – ${result.reason||'Bild geeignet'}`;
+      formData.modOk=true; document.getElementById('btn-go').disabled=false;
+    }else{
+      el.className='mod-status mod-fail';
+      el.innerHTML=`❌ Abgelehnt – ${result.reason||'Nicht geeignet'}`;
+      formData.modOk=false; document.getElementById('btn-go').disabled=true;
+    }
+  }catch{
+    el.className='mod-status mod-pending';
+    el.innerHTML='⚠️ Prüfung nicht verfügbar – wird manuell geprüft';
+    formData.modOk=true; document.getElementById('btn-go').disabled=false;
+  }
+}
+
+async function submitSpot(){
+  const name=document.getElementById('f-name').value.trim();
+  const loc=document.getElementById('f-loc').value.trim();
+  const desc=document.getElementById('f-desc').value.trim();
+  const img=document.getElementById('f-img').value.trim();
+  if(!name||!formData.lat||!img){showToast('⚠️ Bitte alle Pflichtfelder ausfüllen');return;}
+  if(!formData.modOk){showToast('⚠️ Warte auf Bild-Prüfung');return;}
+  const {error}=await sb.from('spots').insert({
+    user_id:CURRENT_USER.id, name, lat:formData.lat, lng:formData.lng,
+    location:loc, category:formData.cat, description:desc,
+    image_url:img, season:document.getElementById('f-season').value,
+    best_time:document.getElementById('f-time').value,
+    status:'approved', moderated_by:'claude-ai'
+  });
+  if(error){showToast('❌ Fehler: '+error.message);return;}
+  closeModal('submit-modal');
+  showToast('🎉 Spot eingereicht – danke!');
+  loadSpots();
+}
+
+// ── Filter + Sort ──────────────────────────────────────────────────────────────
+function setFilter(cat,el){
+  activeFilter=cat;
+  document.querySelectorAll('.filter-chip').forEach(c=>c.classList.remove('on'));
+  el.classList.add('on'); loadSpots();
+}
+function setSort(v){activeSort=v;loadSpots();}
+
+// ── Helpers ───────────────────────────────────────────────────────────────────
+function closeModal(id){document.getElementById(id).classList.remove('open');}
+function showToast(msg,dur=3000){
+  const el=document.getElementById('toast');
+  el.textContent=msg; el.classList.add('show');
+  setTimeout(()=>el.classList.remove('show'),dur);
+}
+document.querySelectorAll('.modal-bd').forEach(bd=>{
+  bd.addEventListener('click',e=>{if(e.target===bd)bd.classList.remove('open');});
+});
+document.addEventListener('keydown',e=>{if(e.key==='Escape')document.querySelectorAll('.modal-bd.open').forEach(m=>m.classList.remove('open'));});
+
+// ── Init ──────────────────────────────────────────────────────────────────────
+(async()=>{
+  initMap();
+  await initAuth();
+  await loadSpots();
+  subscribeRealtime();
+})();
+</script>
+</body>
+</html>
