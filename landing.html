@@ -108,6 +108,10 @@ footer{border-top:.5px solid var(--bd);padding:2rem 0;text-align:center;color:va
   .hero{padding:4rem 0 3rem;}
 }
 </style>
+<script src="https://js.stripe.com/v3/"></script>
+<script>
+const STRIPE = Stripe('pk_live_51TUoGxFRbXhlZH4X6C2QpDOKfhD7hgSTVAkAcTzxfTdGYzoaTWCs12MgPuTBi2hvrnzGTvGDj2m3lPBKwaNvDKsT00HJf1xqGd');
+</script>
 </head>
 <body>
 <div class="bg1"></div>
@@ -279,7 +283,9 @@ footer{border-top:.5px solid var(--bd);padding:2rem 0;text-align:center;color:va
           <li>✅ Packliste</li>
           <li>📱 PWA offline Modus</li>
         </ul>
-        <a class="price-btn price-btn-pro" href="https://gumroad.com" target="_blank">Pro kaufen – CHF 9 →</a>
+        <button class="price-btn price-btn-pro" onclick="buyPro()" id="buy-btn">
+  Pro kaufen – CHF 9 →
+</button>
       </div>
     </div>
     <p style="font-size:12px;color:var(--mu);margin-top:1.5rem;">💳 Sicherer Kauf über Gumroad · Sofort-Download · 30 Tage Geld-zurück-Garantie</p>
@@ -346,6 +352,25 @@ document.querySelectorAll('a[href^="#"]').forEach(a=>{
     if(el){e.preventDefault();el.scrollIntoView({behavior:'smooth',block:'start'});}
   });
 });
+</script>
+<script>
+// ── Stripe Checkout ──────────────────────────────────────────────
+// SCHRITT: Erstelle in Stripe Dashboard einen Payment Link
+// Products → + → "PhotoPlanner Pro" CHF 9 einmalig
+// Payment Links → Create → Link kopieren → hier eintragen:
+const PAYMENT_LINK = 'https://buy.stripe.com/bJe8wPfsG6uQ7040XJ6Ri00'; // z.B. https://buy.stripe.com/xxxxx
+
+async function buyPro() {
+  // Option A: Payment Link (empfohlen für statische Sites)
+  if (PAYMENT_LINK && PAYMENT_LINK !== 'HIER_PAYMENT_LINK_URL') {
+    window.location.href = PAYMENT_LINK;
+    return;
+  }
+  // Option B: Checkout Session (braucht Backend – für später)
+  alert('Zahlung wird vorbereitet...
+
+Für den Test: Erstelle in stripe.com/dashboard einen Payment Link und trage ihn in landing.html ein.');
+}
 </script>
 </body>
 </html>

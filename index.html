@@ -236,6 +236,16 @@ html,body{min-height:100%;background:var(--bg);color:var(--tx);font-family:'DM S
 @keyframes slideUp{from{opacity:0;transform:translateY(20px);}to{opacity:1;transform:translateY(0);}}
 .offline-bar{background:rgba(248,113,113,0.15);border:0.5px solid rgba(248,113,113,0.3);border-radius:var(--rs);padding:9px 14px;font-size:12px;color:#F87171;margin-bottom:1rem;display:none;align-items:center;gap:8px;}
 .online-bar{background:var(--greeng);border:0.5px solid rgba(52,211,153,0.3);border-radius:var(--rs);padding:9px 14px;font-size:12px;color:var(--green);margin-bottom:1rem;display:none;align-items:center;gap:8px;}
+.pro-lock{position:relative;pointer-events:none;opacity:.45;filter:blur(1px);user-select:none;}
+.pro-lock::after{content:'';position:absolute;inset:0;z-index:10;cursor:pointer;border-radius:var(--r);}
+.pro-overlay{position:absolute;inset:0;z-index:20;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;background:rgba(8,8,13,0.75);backdrop-filter:blur(4px);border-radius:var(--r);border:.5px solid var(--goldb);pointer-events:all;cursor:pointer;}
+.pro-overlay-icon{font-size:32px;}
+.pro-overlay-text{font-size:13px;color:var(--tx);font-weight:500;text-align:center;line-height:1.5;}
+.pro-overlay-btn{background:var(--gold);color:#1A0E00;border:none;border-radius:99px;padding:8px 20px;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit;}
+.pro-wrap{position:relative;}
+.pro-banner{background:linear-gradient(135deg,rgba(233,164,46,0.12),rgba(233,164,46,0.04));border:.5px solid var(--goldb);border-radius:var(--r);padding:1.25rem;margin-bottom:1rem;display:flex;align-items:center;justify-content:space-between;gap:1rem;flex-wrap:wrap;}
+.pro-banner-text{font-size:13px;color:var(--mu);line-height:1.5;}
+.pro-banner-title{font-size:15px;font-weight:600;color:var(--gold);margin-bottom:3px;}
 @media(max-width:540px){
   .wdays{grid-template-columns:repeat(4,1fr);}
   .two{grid-template-columns:1fr;}
@@ -263,6 +273,7 @@ html,body{min-height:100%;background:var(--bg);color:var(--tx);font-family:'DM S
     </div>
     <a href="community.html" class="icon-btn" title="Community Spots" style="text-decoration:none;">🌍</a>
     <div class="icon-btn" id="theme-btn" onclick="toggleTheme()" title="Hell/Dunkel">🌓</div>
+    <div id="auth-header-btn"><button class="icon-btn" onclick="openLoginModal()" title="Anmelden">👤</button></div>
     <div class="icon-btn" id="notif-btn" onclick="handleNotif()" title="Benachrichtigungen">🔔</div>
     <div class="icon-btn print-hide" onclick="window.print()" title="Drucken / PDF">🖨️</div>
     <div class="icon-btn print-hide" onclick="shareApp()" title="Teilen">🔗</div>
@@ -321,6 +332,7 @@ html,body{min-height:100%;background:var(--bg);color:var(--tx);font-family:'DM S
 <div id="main"></div>
 </div>
 
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/suncalc/1.9.0/suncalc.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.min.js"></script>
 <script>
@@ -404,7 +416,120 @@ fr:{sub:'Planificateur Photo',search:'Entrez un lieu…',sbtn:'Chercher',
     cam_scenes:['Paysage','Ville','Portrait','Cascade','Voie Lactée','Traînées'],
     cam_icons:['🏔️','🏙️','👤','💧','🌌','⭐']
 }};
-// ── State ────────────────────────────────────────────────────────────────────
+// ── Supabase + Auth ──────────────────────────────────────────
+const SUPA_URL='https://cwvmjsasfcidyfssxkgi.supabase.co';
+const SUPA_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImN3dm1qc2FzZmNpZHlmc3N4a2dpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzgyMzkyMDUsImV4cCI6MjA5MzgxNTIwNX0.CPTEdINY26Nr4D5Fg6M54kmREvvRva2Ei4NtRnXw1Hg';
+const {createClient}=supabase;
+const sb=createClient(SUPA_URL,SUPA_KEY);
+let CURRENT_USER=null, IS_PRO=false;
+
+async function initSupabase(){
+  const {data:{session}}=await sb.auth.getSession();
+  if(session?.user) await loadUserPro(session.user);
+  sb.auth.onAuthStateChange(async(_,session)=>{
+    if(session?.user){await loadUserPro(session.user);}
+    else{CURRENT_USER=null;IS_PRO=false;}
+    updateAuthUI();
+  });
+}
+
+async function loadUserPro(user){
+  CURRENT_USER=user;
+  const {data}=await sb.from('profiles').select('is_pro').eq('id',user.id).single();
+  IS_PRO=data?.is_pro||false;
+}
+
+function updateAuthUI(){
+  const el=document.getElementById('auth-header-btn');
+  if(!el)return;
+  if(!CURRENT_USER){
+    el.innerHTML='<button class="icon-btn" onclick="openLoginModal()" title="Anmelden">👤</button>';
+  }else{
+    const initial=(CURRENT_USER.email||'U')[0].toUpperCase();
+    el.innerHTML=`<div class="icon-btn ${IS_PRO?'on':''}" onclick="openAccountMenu()" title="${CURRENT_USER.email}">${initial}</div>`;
+  }
+}
+
+function openLoginModal(){
+  // Simple inline login
+  const existing=document.getElementById('login-modal');
+  if(existing){existing.style.display='flex';return;}
+  const m=document.createElement('div');
+  m.id='login-modal';
+  m.style.cssText='position:fixed;inset:0;background:rgba(8,8,13,0.92);z-index:9000;display:flex;align-items:center;justify-content:center;padding:1.5rem;';
+  m.innerHTML=`<div style="background:#0E0E18;border:.5px solid var(--bd);border-radius:20px;width:100%;max-width:400px;padding:2rem;">
+    <div style="font-family:Playfair Display,Georgia,serif;font-size:22px;font-weight:700;margin-bottom:.5rem;">Anmelden</div>
+    <div style="font-size:13px;color:var(--mu);margin-bottom:1.5rem;">Für Pro-Features: Milchstrasse, Kamera-Settings, Tools, Packliste & mehr.</div>
+    <div style="margin-bottom:.75rem;">
+      <div style="font-size:11px;text-transform:uppercase;letter-spacing:.1em;color:var(--mu);margin-bottom:.4rem;">E-Mail</div>
+      <input id="lm-email" type="email" placeholder="deine@email.ch" style="width:100%;background:var(--s2);border:.5px solid var(--bd);border-radius:10px;color:var(--tx);font-family:inherit;font-size:14px;padding:10px 13px;outline:none;">
+    </div>
+    <div style="margin-bottom:1rem;">
+      <div style="font-size:11px;text-transform:uppercase;letter-spacing:.1em;color:var(--mu);margin-bottom:.4rem;">Passwort</div>
+      <input id="lm-pw" type="password" placeholder="Passwort" style="width:100%;background:var(--s2);border:.5px solid var(--bd);border-radius:10px;color:var(--tx);font-family:inherit;font-size:14px;padding:10px 13px;outline:none;" onkeydown="if(event.key==='Enter')doLogin()">
+    </div>
+    <button onclick="doLogin()" style="width:100%;background:var(--gold);border:none;border-radius:10px;color:#1A0E00;font-family:inherit;font-size:14px;font-weight:600;padding:12px;cursor:pointer;margin-bottom:.75rem;">Anmelden</button>
+    <button onclick="doSignup()" style="width:100%;background:none;border:.5px solid var(--bd);border-radius:10px;color:var(--mu);font-family:inherit;font-size:13px;padding:10px;cursor:pointer;margin-bottom:.75rem;">Neu registrieren</button>
+    <button onclick="doGoogle()" style="width:100%;background:var(--s2);border:.5px solid var(--bd);border-radius:10px;color:var(--tx);font-family:inherit;font-size:13px;padding:10px;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;margin-bottom:1rem;"><svg width="16" height="16" viewBox="0 0 18 18"><path fill="#4285F4" d="M17.64 9.2c0-.637-.057-1.251-.164-1.84H9v3.481h4.844a4.14 4.14 0 0 1-1.796 2.716v2.259h2.908c1.702-1.567 2.684-3.875 2.684-6.615z"/><path fill="#34A853" d="M9 18c2.43 0 4.467-.806 5.956-2.18l-2.908-2.259c-.806.54-1.837.86-3.048.86-2.344 0-4.328-1.584-5.036-3.711H.957v2.332A8.997 8.997 0 0 0 9 18z"/><path fill="#FBBC05" d="M3.964 10.71A5.41 5.41 0 0 1 3.682 9c0-.593.102-1.17.282-1.71V4.958H.957A8.996 8.996 0 0 0 0 9c0 1.452.348 2.827.957 4.042l3.007-2.332z"/><path fill="#EA4335" d="M9 3.58c1.321 0 2.508.454 3.44 1.345l2.582-2.58C13.463.891 11.426 0 9 0A8.997 8.997 0 0 0 .957 4.958L3.964 7.29C4.672 5.163 6.656 3.58 9 3.58z"/></svg>Mit Google anmelden</button>
+    <button onclick="document.getElementById('login-modal').style.display='none'" style="width:100%;background:none;border:none;color:var(--mu);font-family:inherit;font-size:13px;cursor:pointer;">Schliessen</button>
+  </div>`;
+  document.body.appendChild(m);
+  m.addEventListener('click',e=>{if(e.target===m)m.style.display='none';});
+}
+
+async function doLogin(){
+  const email=document.getElementById('lm-email').value.trim();
+  const pw=document.getElementById('lm-pw').value;
+  if(!email||!pw){showToast('⚠️ E-Mail und Passwort eingeben');return;}
+  const {error}=await sb.auth.signInWithPassword({email,password:pw});
+  if(error){showToast('❌ '+error.message);return;}
+  document.getElementById('login-modal').style.display='none';
+  showToast('✅ Angemeldet!');
+  if(S.lat)render();
+}
+
+async function doSignup(){
+  const email=document.getElementById('lm-email').value.trim();
+  const pw=document.getElementById('lm-pw').value;
+  if(!email||!pw){showToast('⚠️ E-Mail und Passwort eingeben');return;}
+  const {error}=await sb.auth.signUp({email,password:pw});
+  if(error){showToast('❌ '+error.message);return;}
+  showToast('✉️ Bestätigungs-E-Mail gesendet!');
+}
+
+async function doGoogle(){
+  await sb.auth.signInWithOAuth({provider:'google',options:{redirectTo:window.location.href}});
+}
+
+function openAccountMenu(){
+  const msg=IS_PRO
+    ?`✅ Pro-Account aktiv\n${CURRENT_USER.email}\n\nAbmelden?`
+    :`👤 ${CURRENT_USER.email}\n\nNoch kein Pro-Account.\nCHF 9 einmalig für alle Features.\n\nAbmelden?`;
+  if(confirm(msg)) sb.auth.signOut().then(()=>{showToast('Abgemeldet');if(S.lat)render();});
+}
+
+function proGate(content, featureName){
+  if(IS_PRO) return content;
+  return `<div class="pro-wrap">
+    <div class="pro-lock">${content}</div>
+    <div class="pro-overlay" onclick="showProModal('${featureName}')">
+      <div class="pro-overlay-icon">🔒</div>
+      <div class="pro-overlay-text"><strong>Pro-Feature</strong><br>${featureName}</div>
+      <button class="pro-overlay-btn">Pro kaufen – CHF 9 →</button>
+    </div>
+  </div>`;
+}
+
+function showProModal(feature){
+  showToast(`🔒 ${feature} ist ein Pro-Feature – CHF 9 einmalig`);
+  setTimeout(()=>{
+    if(confirm(`"${feature}" ist nur mit Pro verfügbar.\n\nCHF 9 einmalig – alle Features für immer.\n\nZur Kaufseite?`)){
+      window.open('https://buy.stripe.com/bJe8wPfsG6uQ7040XJ6Ri00','_blank');
+    }
+  },300);
+}
+
+// ── State ────────────────────────────────────────────────────────────────────────────────────────
 let S={lat:null,lng:null,name:'',date:new Date(),weather:null,lang:'de',tab:'light',
   spots:JSON.parse(localStorage.getItem('pp_spots3')||'[]'),
   scene:'landscape',notifEnabled:false,sunHour:12,lpOverlay:false};
@@ -753,7 +878,7 @@ function renderLight(){
       <div style="font-size:12px;color:var(--mu);line-height:1.5;margin-top:4px;">${goodMilky?'🌌 '+t('moonwalk_good'):t('moon_hint')}</div>
     </div>
   </div>
-  ${cameraCard(lc,wCode)}
+  ${proGate(cameraCard(lc,wCode),"Kamera-Einstellungen")}
   ${weather?.daily?`<div class="card"><div class="ch"><div class="ct">${t('forecast')}</div><div class="badge bgr">🌿 Bester Tag markiert</div></div><div class="wdays">${wdHtml}</div></div>`:''}
   <div class="card"><div class="ch"><div class="ct">${t('seasonal')}</div><div class="badge bgray">${new Date().toLocaleDateString('de-CH',{month:'long'})}</div></div><div class="season-grid">${seasonalTips(lat)}</div></div>
   </div>`;
@@ -899,7 +1024,7 @@ function renderNight(){
         '💡 Eingeschränkte Sichtbarkeit. Je weniger Mondlicht, desto besser für Sterne.'}
     </div>
   </div>
-  ${mwHtml}
+  ${proGate(mwHtml,"Milchstrassen-Fenster")}
   <div class="card">
     <div class="ch"><div class="ct">Mondlicht-Kalender – 14 Nächte</div><div class="badge bgr">&lt;25% = ideal</div></div>
     <div class="nights-grid">${nightCells}</div>
@@ -949,6 +1074,7 @@ function renderPlan(){
   const{lat,lng,date}=S;
   const times=SunCalc.getTimes(date,lat,lng);
   const{bars,rank}=yearlyChart(lat,lng);
+  const canSeePlan=IS_PRO;
   const shareUrl=`${location.href.split('?')[0]}?lat=${lat.toFixed(4)}&lng=${lng.toFixed(4)}&date=${date.toISOString().slice(0,10)}`;
   document.getElementById('main').innerHTML=`<div class="results">
   <div class="card">
@@ -1214,8 +1340,8 @@ function render(){
     case'map':renderMap();break;
     case'night':renderNight();break;
     case'plan':renderPlan();break;
-    case'tools':renderTools();break;
-    case'trip':renderTrip();break;
+    case'tools':IS_PRO?renderTools():renderProRequired("Foto-Tools","ND-Filter, Timelapse, Schärfentiefe & Belichtungsdreieck");break;
+    case'trip':IS_PRO?renderTrip():renderProRequired("Trip-Planer & Packliste","Mehrtages-Reisen planen, Packliste und mehr");break;
   }
 }
 function selectDay(ds){document.getElementById('di').value=ds;S.date=new Date(ds+'T12:00:00');render();}
@@ -1250,6 +1376,17 @@ function checkNotif(){
     new Notification(`📸 Nächster guter Fototag: ${dn}`,{body:`Score ${best.sc}/100 in ${S.name}`});
   }
 }
+function renderProRequired(title, desc){
+  document.getElementById('main').innerHTML=`<div style="text-align:center;padding:4rem 1rem;">
+    <div style="font-size:56px;margin-bottom:1.25rem;">🔒</div>
+    <div style="font-family:'Playfair Display',Georgia,serif;font-size:24px;font-weight:700;margin-bottom:.75rem;">${title}</div>
+    <div style="font-size:14px;color:var(--mu);max-width:320px;margin:0 auto 2rem;line-height:1.7;">${desc}<br><br>Einmalig <strong style="color:var(--gold)">CHF 9</strong> – alle Pro-Features für immer.</div>
+    <button onclick="showProModal('${title}')" style="background:var(--gold);border:none;border-radius:99px;padding:14px 32px;font-size:15px;font-weight:700;color:#1A0E00;cursor:pointer;font-family:inherit;margin-bottom:1rem;">Pro kaufen – CHF 9 →</button>
+    <br>
+    <button onclick="openLoginModal()" style="background:none;border:.5px solid var(--bd);border-radius:99px;padding:10px 24px;font-size:13px;color:var(--mu);cursor:pointer;font-family:inherit;">Bereits Pro? Anmelden</button>
+  </div>`;
+}
+
 function showEmpty(){
   document.getElementById('tab-bar').style.display='none';
   document.getElementById('main').innerHTML=`<div class="empty">
@@ -1589,6 +1726,7 @@ function closeOnboard(){
   localStorage.setItem('pp_onboard_done','1');
 }
 // Show onboarding after short delay on first visit
+initSupabase().then(()=>{updateAuthUI();if(S.lat)render();});
 setTimeout(showOnboard, 800);
 
 // ── Packing List ─────────────────────────────────────────────────────────────

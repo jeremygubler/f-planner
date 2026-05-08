@@ -5,7 +5,10 @@
       "id": "webhook",
       "name": "Stripe Webhook",
       "type": "n8n-nodes-base.webhook",
-      "position": [240, 300],
+      "position": [
+        240,
+        300
+      ],
       "parameters": {
         "path": "stripe-photoplanner-pro",
         "httpMethod": "POST",
@@ -17,14 +20,19 @@
       "id": "check_event",
       "name": "Stripe Event prüfen",
       "type": "n8n-nodes-base.if",
-      "position": [460, 300],
+      "position": [
+        460,
+        300
+      ],
       "parameters": {
         "conditions": {
-          "string": [{
-            "value1": "={{$json.body.type}}",
-            "operation": "equal",
-            "value2": "checkout.session.completed"
-          }]
+          "string": [
+            {
+              "value1": "={{$json.body.type}}",
+              "operation": "equal",
+              "value2": "checkout.session.completed"
+            }
+          ]
         }
       }
     },
@@ -32,7 +40,10 @@
       "id": "extract_data",
       "name": "Kundendaten extrahieren",
       "type": "n8n-nodes-base.set",
-      "position": [680, 260],
+      "position": [
+        680,
+        260
+      ],
       "parameters": {
         "values": {
           "string": [
@@ -56,7 +67,10 @@
       "id": "activate_pro",
       "name": "Pro in Supabase aktivieren",
       "type": "n8n-nodes-base.httpRequest",
-      "position": [900, 260],
+      "position": [
+        900,
+        260
+      ],
       "parameters": {
         "method": "POST",
         "url": "https://cwvmjsasfcidyfssxkgi.supabase.co/rest/v1/rpc/activate_pro",
@@ -96,36 +110,63 @@
       "id": "send_email",
       "name": "Willkommens-Email",
       "type": "n8n-nodes-base.emailSend",
-      "position": [1120, 260],
+      "position": [
+        1120,
+        260
+      ],
       "parameters": {
         "fromEmail": "jeremy@kmucare.ch",
         "toEmail": "={{$node['Kundendaten extrahieren'].json.customer_email}}",
         "subject": "🎉 PhotoPlanner Pro – du bist dabei!",
-        "text": "Hallo!\n\nDein PhotoPlanner Pro-Account ist jetzt aktiviert.\n\nMelde dich an unter: https://deine-domain.ch/community.html\n\nViel Spass und gutes Licht! 📸\n\nDas PhotoPlanner-Team",
-        "html": "<h2>🎉 Willkommen bei PhotoPlanner Pro!</h2><p>Dein Pro-Account ist jetzt aktiv. Du hast Zugang zu:</p><ul><li>🌌 Milchstrassen-Fenster Berechnung</li><li>📸 Kamera-Einstellungen je nach Szene</li><li>🔧 ND-Filter, Timelapse, DoF Tools</li><li>🗺️ Community Spots – einreichen & bewerten</li><li>📅 Jahres-Übersicht & historische Daten</li></ul><p><a href='https://deine-domain.ch' style='background:#E9A42E;color:#1A0E00;padding:10px 20px;border-radius:99px;text-decoration:none;font-weight:600;'>App öffnen →</a></p><p>Gutes Licht! 🌅</p>"
+        "text": "Hallo!\n\nDein PhotoPlanner Pro-Account ist jetzt aktiviert.\n\nMelde dich an unter: https://f-planner.netlify.app/community.html\n\nViel Spass und gutes Licht! 📸\n\nDas PhotoPlanner-Team",
+        "html": "<h2>🎉 Willkommen bei PhotoPlanner Pro!</h2><p>Dein Pro-Account ist jetzt aktiv. Du hast Zugang zu:</p><ul><li>🌌 Milchstrassen-Fenster Berechnung</li><li>📸 Kamera-Einstellungen je nach Szene</li><li>🔧 ND-Filter, Timelapse, DoF Tools</li><li>🗺️ Community Spots – einreichen & bewerten</li><li>📅 Jahres-Übersicht & historische Daten</li></ul><p><a href='https://f-planner.netlify.app' style='background:#E9A42E;color:#1A0E00;padding:10px 20px;border-radius:99px;text-decoration:none;font-weight:600;'>App öffnen →</a></p><p>Gutes Licht! 🌅</p>"
       }
     },
     {
       "id": "log",
       "name": "In Supabase loggen",
       "type": "n8n-nodes-base.httpRequest",
-      "position": [1120, 400],
+      "position": [
+        1120,
+        400
+      ],
       "parameters": {
         "method": "POST",
         "url": "https://cwvmjsasfcidyfssxkgi.supabase.co/rest/v1/payments",
         "headers": {
           "parameters": [
-            {"name": "apikey", "value": "HIER_ANON_KEY"},
-            {"name": "Authorization", "value": "Bearer HIER_SERVICE_ROLE_KEY"},
-            {"name": "Content-Type", "value": "application/json"}
+            {
+              "name": "apikey",
+              "value": "HIER_ANON_KEY"
+            },
+            {
+              "name": "Authorization",
+              "value": "Bearer HIER_SERVICE_ROLE_KEY"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
           ]
         },
         "body": {
           "parameters": [
-            {"name": "email", "value": "={{$node['Kundendaten extrahieren'].json.customer_email}}"},
-            {"name": "stripe_id", "value": "={{$node['Kundendaten extrahieren'].json.stripe_customer_id}}"},
-            {"name": "amount", "value": "={{$node['Kundendaten extrahieren'].json.amount_paid}}"},
-            {"name": "status", "value": "completed"}
+            {
+              "name": "email",
+              "value": "={{$node['Kundendaten extrahieren'].json.customer_email}}"
+            },
+            {
+              "name": "stripe_id",
+              "value": "={{$node['Kundendaten extrahieren'].json.stripe_customer_id}}"
+            },
+            {
+              "name": "amount",
+              "value": "={{$node['Kundendaten extrahieren'].json.amount_paid}}"
+            },
+            {
+              "name": "status",
+              "value": "completed"
+            }
           ]
         },
         "sendBody": true,
@@ -136,34 +177,73 @@
       "id": "ignore",
       "name": "Andere Events ignorieren",
       "type": "n8n-nodes-base.noOp",
-      "position": [680, 400],
+      "position": [
+        680,
+        400
+      ],
       "parameters": {}
     }
   ],
   "connections": {
     "Stripe Webhook": {
-      "main": [[{"node": "Stripe Event prüfen", "type": "main", "index": 0}]]
+      "main": [
+        [
+          {
+            "node": "Stripe Event prüfen",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
     },
     "Stripe Event prüfen": {
       "main": [
-        [{"node": "Kundendaten extrahieren", "type": "main", "index": 0}],
-        [{"node": "Andere Events ignorieren", "type": "main", "index": 0}]
+        [
+          {
+            "node": "Kundendaten extrahieren",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Andere Events ignorieren",
+            "type": "main",
+            "index": 0
+          }
+        ]
       ]
     },
     "Kundendaten extrahieren": {
       "main": [
         [
-          {"node": "Pro in Supabase aktivieren", "type": "main", "index": 0},
-          {"node": "In Supabase loggen", "type": "main", "index": 0}
+          {
+            "node": "Pro in Supabase aktivieren",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "In Supabase loggen",
+            "type": "main",
+            "index": 0
+          }
         ]
       ]
     },
     "Pro in Supabase aktivieren": {
-      "main": [[{"node": "Willkommens-Email", "type": "main", "index": 0}]]
+      "main": [
+        [
+          {
+            "node": "Willkommens-Email",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
     }
   },
   "_SETUP_ANLEITUNG": {
-    "1_webhook_url": "In Stripe Dashboard → Webhooks → Endpoint URL: https://kmc-ch.app.n8n.cloud/webhook/stripe-photoplanner-pro",
+    "1_webhook_url": "In Stripe Dashboard → Webhooks → Endpoint URL: https://gubler-gang.app.n8n.cloud/webhook/stripe-photoplanner-pro",
     "2_events": "Stripe Events aktivieren: checkout.session.completed, customer.subscription.created",
     "3_keys": "HIER_SERVICE_ROLE_KEY ersetzen mit dem neuen Service Role Key aus Supabase Dashboard → Settings → API",
     "4_email": "fromEmail anpassen auf deine Absender-Email",
