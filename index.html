@@ -224,20 +224,25 @@ html,body{min-height:100%;background:var(--bg);color:var(--tx);font-family:'DM S
 .hbf{border-radius:3px 3px 0 0;min-height:2px;}
 .hbl{font-size:8px;color:var(--mu);margin-top:3px;text-align:center;}
 
+[data-theme="light"]{--bg:#F5F2EC;--s1:rgba(0,0,0,0.04);--s2:rgba(0,0,0,0.07);--bd:rgba(0,0,0,0.1);--tx:#1A1612;--mu:rgba(26,22,18,0.5);--di:rgba(26,22,18,0.25);}
+.pro-wrap{position:relative;}.pro-lock{pointer-events:none;opacity:.4;filter:blur(1.5px);user-select:none;}
+.pro-overlay{position:absolute;inset:0;z-index:20;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;background:rgba(8,8,13,0.75);backdrop-filter:blur(4px);border-radius:var(--r);border:.5px solid var(--goldb);cursor:pointer;}
+.pro-overlay-icon{font-size:28px;}.pro-overlay-text{font-size:13px;color:var(--tx);font-weight:500;text-align:center;line-height:1.5;}
+.pro-overlay-btn{background:var(--gold);color:#1A0E00;border:none;border-radius:99px;padding:8px 20px;font-size:12px;font-weight:600;cursor:pointer;font-family:inherit;}
 .modal-wrap{position:fixed;inset:0;background:rgba(0,0,0,0.55);backdrop-filter:blur(8px);z-index:9000;display:flex;align-items:center;justify-content:center;padding:1.5rem;}
 .modal-box{background:var(--bg);border:.5px solid var(--bd);border-radius:20px;width:100%;max-width:400px;padding:2rem;box-shadow:0 20px 60px rgba(0,0,0,0.25);}
-.modal-box h2{font-family:'Playfair Display',Georgia,serif;font-size:22px;font-weight:700;margin-bottom:.5rem;color:var(--tx);}
+.modal-box h2{font-family:"Playfair Display",Georgia,serif;font-size:22px;font-weight:700;margin-bottom:.5rem;color:var(--tx);}
 .modal-box p{font-size:13px;color:var(--mu);margin-bottom:1.5rem;line-height:1.5;}
 .modal-lbl{font-size:11px;text-transform:uppercase;letter-spacing:.1em;color:var(--mu);margin-bottom:.4rem;font-weight:600;display:block;}
 .modal-input{width:100%;background:var(--s2);border:.5px solid var(--bd);border-radius:10px;color:var(--tx);font-family:inherit;font-size:14px;padding:10px 13px;outline:none;box-sizing:border-box;margin-bottom:.75rem;}
 .modal-input:focus{border-color:var(--goldb);}
-.modal-btn-primary{width:100%;background:var(--gold);border:none;border-radius:10px;color:#1A0E00;font-family:inherit;font-size:14px;font-weight:600;padding:12px;cursor:pointer;margin-bottom:.75rem;transition:background .15s;}
-.modal-btn-primary:hover{background:#F5B43A;}
-.modal-btn-secondary{width:100%;background:none;border:.5px solid var(--bd);border-radius:10px;color:var(--tx);font-family:inherit;font-size:13px;padding:10px;cursor:pointer;margin-bottom:.75rem;transition:all .15s;}
-.modal-btn-secondary:hover{background:var(--s2);}
-.modal-btn-google{width:100%;background:var(--s2);border:.5px solid var(--bd);border-radius:10px;color:var(--tx);font-family:inherit;font-size:13px;padding:10px;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;margin-bottom:1rem;transition:all .15s;}
-.modal-btn-google:hover{background:var(--bd);}
+.modal-btn-primary{width:100%;background:var(--gold);border:none;border-radius:10px;color:#1A0E00;font-family:inherit;font-size:14px;font-weight:600;padding:12px;cursor:pointer;margin-bottom:.75rem;}
+.modal-btn-secondary{width:100%;background:none;border:.5px solid var(--bd);border-radius:10px;color:var(--tx);font-family:inherit;font-size:13px;padding:10px;cursor:pointer;margin-bottom:.75rem;}
+.modal-btn-google{width:100%;background:var(--s2);border:.5px solid var(--bd);border-radius:10px;color:var(--tx);font-family:inherit;font-size:13px;padding:10px;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;margin-bottom:1rem;}
 .modal-btn-ghost{width:100%;background:none;border:none;color:var(--mu);font-family:inherit;font-size:13px;cursor:pointer;padding:6px;}
+.trial-bar{background:linear-gradient(135deg,rgba(107,159,232,0.12),rgba(107,159,232,0.05));border:.5px solid rgba(107,159,232,0.3);border-radius:var(--r);padding:.9rem 1.25rem;margin-bottom:1rem;display:flex;align-items:center;justify-content:space-between;gap:1rem;flex-wrap:wrap;}
+.trial-bar-title{font-size:14px;font-weight:600;color:var(--blue);margin-bottom:2px;}.trial-bar-text{font-size:12px;color:var(--mu);}
+.trial-time{font-size:20px;font-weight:700;color:var(--blue);}.trial-expired .trial-bar-title,.trial-expired .trial-time{color:var(--red);}
 /* Print */
 @media print{
   .bg-atm,.tab-bar,.search-row,.header .hdr-r,.icon-btn,.btn,.share-bar,.print-hide{display:none!important;}
@@ -250,23 +255,6 @@ html,body{min-height:100%;background:var(--bg);color:var(--tx);font-family:'DM S
 @keyframes slideUp{from{opacity:0;transform:translateY(20px);}to{opacity:1;transform:translateY(0);}}
 .offline-bar{background:rgba(248,113,113,0.15);border:0.5px solid rgba(248,113,113,0.3);border-radius:var(--rs);padding:9px 14px;font-size:12px;color:#F87171;margin-bottom:1rem;display:none;align-items:center;gap:8px;}
 .online-bar{background:var(--greeng);border:0.5px solid rgba(52,211,153,0.3);border-radius:var(--rs);padding:9px 14px;font-size:12px;color:var(--green);margin-bottom:1rem;display:none;align-items:center;gap:8px;}
-.pro-lock{position:relative;pointer-events:none;opacity:.45;filter:blur(1px);user-select:none;}
-.pro-lock::after{content:'';position:absolute;inset:0;z-index:10;cursor:pointer;border-radius:var(--r);}
-.pro-overlay{position:absolute;inset:0;z-index:20;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;background:rgba(8,8,13,0.75);backdrop-filter:blur(4px);border-radius:var(--r);border:.5px solid var(--goldb);pointer-events:all;cursor:pointer;}
-.pro-overlay-icon{font-size:32px;}
-.pro-overlay-text{font-size:13px;color:var(--tx);font-weight:500;text-align:center;line-height:1.5;}
-.pro-overlay-btn{background:var(--gold);color:#1A0E00;border:none;border-radius:99px;padding:8px 20px;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit;}
-.pro-wrap{position:relative;}
-.trial-bar{background:linear-gradient(135deg,rgba(107,159,232,0.12),rgba(107,159,232,0.05));border:.5px solid rgba(107,159,232,0.3);border-radius:var(--r);padding:.9rem 1.25rem;margin-bottom:1rem;display:flex;align-items:center;justify-content:space-between;gap:1rem;flex-wrap:wrap;}
-.trial-bar-text{font-size:13px;color:var(--tx);line-height:1.5;}
-.trial-bar-title{font-size:14px;font-weight:600;color:var(--blue);margin-bottom:2px;}
-.trial-time{font-family:'Playfair Display',Georgia,serif;font-size:22px;font-weight:700;color:var(--blue);}
-.trial-expired{background:linear-gradient(135deg,rgba(248,113,113,0.1),rgba(248,113,113,0.04));border-color:rgba(248,113,113,0.3);}
-.trial-expired .trial-bar-title{color:var(--red);}
-.trial-expired .trial-time{color:var(--red);}
-.pro-banner{background:linear-gradient(135deg,rgba(233,164,46,0.12),rgba(233,164,46,0.04));border:.5px solid var(--goldb);border-radius:var(--r);padding:1.25rem;margin-bottom:1rem;display:flex;align-items:center;justify-content:space-between;gap:1rem;flex-wrap:wrap;}
-.pro-banner-text{font-size:13px;color:var(--mu);line-height:1.5;}
-.pro-banner-title{font-size:15px;font-weight:600;color:var(--gold);margin-bottom:3px;}
 @media(max-width:540px){
   .wdays{grid-template-columns:repeat(4,1fr);}
   .two{grid-template-columns:1fr;}
@@ -292,7 +280,7 @@ html,body{min-height:100%;background:var(--bg);color:var(--tx);font-family:'DM S
       <button class="lang-btn" onclick="setLang('en')">EN</button>
       <button class="lang-btn" onclick="setLang('fr')">FR</button>
     </div>
-    <a href="community.html" class="icon-btn" title="Community Spots" style="text-decoration:none;">🌍</a>
+    <div class="icon-btn" id="theme-btn" onclick="toggleTheme()" title="Hell/Dunkel">🌓</div>
     <div class="icon-btn" id="theme-btn" onclick="toggleTheme()" title="Hell/Dunkel">🌓</div>
     <div id="auth-header-btn"><button class="icon-btn" onclick="openLoginModal()" title="Anmelden">👤</button></div>
     <div class="icon-btn" id="notif-btn" onclick="handleNotif()" title="Benachrichtigungen">🔔</div>
@@ -349,6 +337,7 @@ html,body{min-height:100%;background:var(--bg);color:var(--tx);font-family:'DM S
   <button class="tab" onclick="setTab('plan')" id="tab-plan">📅 Planung</button>
   <button class="tab" onclick="setTab('trip')" id="tab-trip">🗓️ Trip</button>
   <button class="tab" onclick="setTab('tools')" id="tab-tools">🔧 Tools</button>
+  <button class="tab" onclick="setTab('trip')" id="tab-trip">🗓️ Trip</button>
 </div>
 <div id="trial-banner"></div>
 <div id="main"></div>
@@ -372,7 +361,7 @@ de:{sub:'Foto-Reise-Planer',search:'Ort eingeben…',sbtn:'Suchen',
   MONTHS:['Jan','Feb','Mär','Apr','Mai','Jun','Jul','Aug','Sep','Okt','Nov','Dez'],
   DAYS:['So','Mo','Di','Mi','Do','Fr','Sa'],TODAY:'Heute',
   quality:'Fotoqualität des Tages',seasonal:'Saisonale Foto-Tipps',
-    best_time:S.lang==='en'?'Best Photo Time':S.lang==='fr'?'Meilleur Moment':'Beste Fotozeit',magic_light:S.lang==='en'?'Magical Light':S.lang==='fr'?'Lumière Magique':'Magisches Licht',timeline:'Zeitverlauf',
+    best_time:'Beste Fotozeit',magic_light:'Magisches Licht',timeline:'Zeitverlauf',
     moonlight_on:'Mondlicht aktiv',milkyway_ok:'✓ Milchstrasse',milkyway_no:'Mondlicht stark',
     morn_start:'🌅 Morgen Beginn',morn_sunrise:'☀️ Sonnenaufgang',morn_end:'🌤️ Morgen Ende',
     eve_start:'🌇 Abend Beginn',eve_sunset:'🌆 Sonnenuntergang',eve_end:'🌃 Abend Ende',
@@ -384,11 +373,7 @@ de:{sub:'Foto-Reise-Planer',search:'Ort eingeben…',sbtn:'Suchen',
     moon_names:['Neumond','Zunehmende Sichel','Erstes Viertel','Zunehmender Halbmond','Vollmond','Abnehmender Halbmond','Letztes Viertel','Abnehmende Sichel'],
     above_horiz:'über Horizont',below_horiz:'unter Horizont',
     cam_scenes:['Landschaft','Stadt','Portrait','Wasserfall','Milchstrasse','Sternspuren'],
-    cam_icons:['🏔️','🏙️','👤','💧','🌌','⭐'],
-    empty_title:'Plane deinen perfekten Fototrip',
-    empty_sub:'Ort eingeben und goldene Stunde, Milchstrassen-Fenster, Wetter-Score und Foto-Tools weltweit erhalten.',
-    pro_req_buy:'Pro kaufen – CHF 9 →',
-    pro_req_login:'Bereits Pro? Anmelden'
+    cam_icons:['🏔️','🏙️','👤','💧','🌌','⭐']
 },
 en:{sub:'Photo Travel Planner',search:'Enter location…',sbtn:'Search',
   t1:'🌅 Light',t2:'🗺️ Map',t3:'🌌 Night',t4:'📅 Planning',t5:'🔧 Tools',t6:'🗓️ Trip',
@@ -414,11 +399,7 @@ en:{sub:'Photo Travel Planner',search:'Enter location…',sbtn:'Search',
     moon_names:['New Moon','Waxing Crescent','First Quarter','Waxing Gibbous','Full Moon','Waning Gibbous','Last Quarter','Waning Crescent'],
     above_horiz:'above horizon',below_horiz:'below horizon',
     cam_scenes:['Landscape','Cityscape','Portrait','Waterfall','Milky Way','Star Trails'],
-    cam_icons:['🏔️','🏙️','👤','💧','🌌','⭐'],
-    empty_title:'Plan your perfect photo trip',
-    empty_sub:'Enter a location to get golden hour, Milky Way window, weather score, camera settings and photo tools worldwide.',
-    pro_req_buy:'Buy Pro – CHF 9 →',
-    pro_req_login:'Already Pro? Sign in'
+    cam_icons:['🏔️','🏙️','👤','💧','🌌','⭐']
 },
 fr:{sub:'Planificateur Photo',search:'Entrez un lieu…',sbtn:'Chercher',
   t1:'🌅 Lumière',t2:'🗺️ Carte',t3:'🌌 Nuit',t4:'📅 Planning',t5:'🔧 Outils',t6:'🗓️ Trip',
@@ -444,58 +425,59 @@ fr:{sub:'Planificateur Photo',search:'Entrez un lieu…',sbtn:'Chercher',
     moon_names:['Nouvelle Lune','Croissant','Premier Quartier','Gibbeuse Croissante','Pleine Lune','Gibbeuse Décroissante','Dernier Quartier','Croissant Décroissant'],
     above_horiz:'au-dessus horizon',below_horiz:'sous horizon',
     cam_scenes:['Paysage','Ville','Portrait','Cascade','Voie Lactée','Traînées'],
-    cam_icons:['🏔️','🏙️','👤','💧','🌌','⭐'],
-    empty_title:'Planifiez votre voyage photo parfait',
-    empty_sub:'Entrez un lieu pour obtenir l\'heure dorée, la Voie Lactée, le score météo et les outils photo.',
-    pro_req_buy:'Acheter Pro – CHF 9 →',
-    pro_req_login:'Déjà Pro? Se connecter'
+    cam_icons:['🏔️','🏙️','👤','💧','🌌','⭐']
 }};
-// ── Supabase + Auth ──────────────────────────────────────────
+// ── State ────────────────────────────────────────────────────────────────────
+let S={lat:null,lng:null,name:'',date:new Date(),weather:null,lang:'de',tab:'light',
+  spots:JSON.parse(localStorage.getItem('pp_spots3')||'[]'),
+  scene:'landscape',notifEnabled:false,sunHour:12,lpOverlay:false};
+let MAP=null,MMARKER=null,MLAYERS=[],LP_LAYER=null;
+function t(k){return(STR[S.lang]||STR.de)[k]||STR.de[k]||k;}
+// ── Init ─────────────────────────────────────────────────────────────────────
+
+// ── Theme Toggle ──────────────────────────────────────────────────────────────
+function toggleTheme(){
+  const curr=document.documentElement.getAttribute('data-theme');
+  const next=curr==='light'?'dark':'light';
+  document.documentElement.setAttribute('data-theme',next==='dark'?'':next);
+  localStorage.setItem('pp_theme',next);
+  document.getElementById('theme-btn').textContent=next==='light'?'🌙':'🌓';
+}
+(function initTheme(){
+  const saved=localStorage.getItem('pp_theme');
+  if(saved==='light'){document.documentElement.setAttribute('data-theme','light');const b=document.getElementById('theme-btn');if(b)b.textContent='🌙';}
+})();
+
+// ── Supabase + Auth ───────────────────────────────────────────────────────────
 const SUPA_URL='https://cwvmjsasfcidyfssxkgi.supabase.co';
 const SUPA_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImN3dm1qc2FzZmNpZHlmc3N4a2dpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzgyMzkyMDUsImV4cCI6MjA5MzgxNTIwNX0.CPTEdINY26Nr4D5Fg6M54kmREvvRva2Ei4NtRnXw1Hg';
 const {createClient}=supabase;
 const sb=createClient(SUPA_URL,SUPA_KEY);
-let CURRENT_USER=null, IS_PRO=false, IS_TRIAL=false, TRIAL_ENDS_AT=null;
+let CURRENT_USER=null,IS_PRO=false,IS_TRIAL=false,TRIAL_ENDS_AT=null;
 
 async function initSupabase(){
   try{
     const {data:{session}}=await sb.auth.getSession();
-    if(session?.user) await loadUserPro(session.user);
+    if(session?.user)await loadUserPro(session.user);
     sb.auth.onAuthStateChange(async(_,session)=>{
-      if(session?.user){await loadUserPro(session.user);}
+      if(session?.user)await loadUserPro(session.user);
       else{CURRENT_USER=null;IS_PRO=false;IS_TRIAL=false;}
-      updateAuthUI();
-      renderTrialBanner();
-      if(S.lat)render();
+      updateAuthUI();renderTrialBanner();
     });
-  }catch(e){
-    console.warn('Supabase init failed:',e);
-  }
+  }catch(e){console.warn('Supabase:',e);}
 }
 
 async function loadUserPro(user){
   CURRENT_USER=user;
   try{
-    const {data,error}=await sb.from('profiles')
-      .select('is_pro,trial_ends_at,stripe_customer_id')
-      .eq('id',user.id).single();
-    if(error)throw error;
+    const {data}=await sb.from('profiles').select('is_pro,trial_ends_at,stripe_customer_id').eq('id',user.id).single();
     const isPaid=!!(data?.stripe_customer_id&&data?.is_pro);
     const trialEnd=data?.trial_ends_at?new Date(data.trial_ends_at):null;
-    const trialActive=trialEnd&&trialEnd>new Date();
-    IS_TRIAL=trialActive&&!isPaid;
-    IS_PRO=isPaid||trialActive;
+    IS_TRIAL=!!(trialEnd&&trialEnd>new Date()&&!isPaid);
+    IS_PRO=isPaid||IS_TRIAL;
     TRIAL_ENDS_AT=trialEnd;
-  }catch(e){
-    // Fallback: trial_ends_at column might not exist yet
-    try{
-      const {data}=await sb.from('profiles')
-        .select('is_pro,stripe_customer_id')
-        .eq('id',user.id).single();
-      IS_PRO=data?.is_pro||false;
-      IS_TRIAL=false;
-      TRIAL_ENDS_AT=null;
-    }catch{}
+  }catch{
+    try{const {data}=await sb.from('profiles').select('is_pro').eq('id',user.id).single();IS_PRO=data?.is_pro||false;}catch{}
   }
 }
 
@@ -506,53 +488,81 @@ function updateAuthUI(){
     el.innerHTML='<button class="icon-btn" onclick="openLoginModal()" title="Anmelden">👤</button>';
   }else{
     const initial=(CURRENT_USER.email||'U')[0].toUpperCase();
-    el.innerHTML=`<div class="icon-btn ${IS_PRO?'on':''}" onclick="openAccountMenu()" title="${CURRENT_USER.email}">${initial}</div>`;
+    el.innerHTML='<div class="icon-btn '+(IS_PRO?'on':'')+'" onclick="openAccountMenu()" title="'+CURRENT_USER.email+'">'+initial+'</div>';
   }
 }
 
-function openLoginModal(){
-  const existing=document.getElementById('login-modal');
-  if(existing)existing.remove();
-  const m=document.createElement('div');
-  m.id='login-modal';
-  m.className='modal-wrap';
-  m.innerHTML=`<div class="modal-box">
-    <h2 style="font-family:'Playfair Display',Georgia,serif;font-size:22px;font-weight:700;margin-bottom:.5rem;color:var(--tx);">Anmelden</h2>
-    <p style="font-size:13px;color:var(--mu);margin-bottom:1.5rem;line-height:1.5;">Für Pro-Features: Milchstrasse, Kamera-Settings, Tools, Packliste & mehr.</p>
-    <label class="modal-lbl">E-Mail</label>
-    <input id="lm-email" class="modal-input" type="email" placeholder="deine@email.ch">
-    <label class="modal-lbl">Passwort</label>
-    <input id="lm-pw" class="modal-input" type="password" placeholder="Passwort" onkeydown="if(event.key==='Enter')doLogin()">
-    <button onclick="doLogin()" class="modal-btn-primary">Anmelden</button>
-    <button onclick="doSignup()" class="modal-btn-secondary">Neu registrieren</button>
-    <button onclick="doGoogle()" class="modal-btn-google">
-      <svg width="16" height="16" viewBox="0 0 18 18">
-        <path fill="#4285F4" d="M17.64 9.2c0-.637-.057-1.251-.164-1.84H9v3.481h4.844a4.14 4.14 0 0 1-1.796 2.716v2.259h2.908c1.702-1.567 2.684-3.875 2.684-6.615z"/>
-        <path fill="#34A853" d="M9 18c2.43 0 4.467-.806 5.956-2.18l-2.908-2.259c-.806.54-1.837.86-3.048.86-2.344 0-4.328-1.584-5.036-3.711H.957v2.332A8.997 8.997 0 0 0 9 18z"/>
-        <path fill="#FBBC05" d="M3.964 10.71A5.41 5.41 0 0 1 3.682 9c0-.593.102-1.17.282-1.71V4.958H.957A8.996 8.996 0 0 0 0 9c0 1.452.348 2.827.957 4.042l3.007-2.332z"/>
-        <path fill="#EA4335" d="M9 3.58c1.321 0 2.508.454 3.44 1.345l2.582-2.58C13.463.891 11.426 0 9 0A8.997 8.997 0 0 0 .957 4.958L3.964 7.29C4.672 5.163 6.656 3.58 9 3.58z"/>
-      </svg>
-      Mit Google anmelden
-    </button>
-    <button onclick="document.getElementById('login-modal').remove()" class="modal-btn-ghost">Schliessen</button>
-  </div>`;
+function getAccountBadge(){
+  if(IS_TRIAL)return '<span style="background:rgba(107,159,232,0.15);color:#6B9FE8;border-radius:99px;padding:3px 10px;font-size:11px;font-weight:600;">🎁 Trial – noch '+trialHoursLeft()+'h</span>';
+  if(IS_PRO)return '<span style="background:rgba(52,211,153,0.12);color:#34D399;border-radius:99px;padding:3px 10px;font-size:11px;font-weight:600;">✓ Pro aktiv</span>';
+  return '<span style="background:rgba(248,113,113,0.1);color:#F87171;border-radius:99px;padding:3px 10px;font-size:11px;font-weight:600;">Free</span>';
+}
+
+function doSignOut(){
+  sb.auth.signOut().then(()=>{
+    const m=document.getElementById('acct-modal');if(m)m.remove();
+    IS_PRO=false;IS_TRIAL=false;CURRENT_USER=null;
+    updateAuthUI();renderTrialBanner();showToast('Abgemeldet');
+  });
+}
+
+function openAccountMenu(){
+  const ex=document.getElementById('acct-modal');if(ex)ex.remove();
+  const m=document.createElement('div');m.id='acct-modal';m.className='modal-wrap';
+  const email=CURRENT_USER?.email||'';
+  m.innerHTML='<div class="modal-box" style="max-width:340px;padding:0;overflow:hidden;">'
+    +'<div style="background:linear-gradient(135deg,rgba(233,164,46,0.12),rgba(233,164,46,0.04));padding:1.5rem;text-align:center;border-bottom:.5px solid var(--bd);">'
+    +'<div style="width:52px;height:52px;background:var(--goldg);border:.5px solid var(--goldb);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:20px;font-weight:700;color:var(--gold);margin:0 auto 10px;">'+email[0]?.toUpperCase()+'</div>'
+    +'<div style="font-size:14px;font-weight:500;color:var(--tx);margin-bottom:6px;">'+email+'</div>'
+    +getAccountBadge()
+    +'</div>'
+    +'<div style="padding:1rem;">'
+    +(IS_PRO&&!IS_TRIAL?'':'<button onclick="window.open(\'https://buy.stripe.com/bJe8wPfsG6uQ7040XJ6Ri00\',\'_blank\')" class="modal-btn-primary">Pro kaufen – CHF 9 →</button>')
+    +'<button onclick="doSignOut()" class="modal-btn-secondary">Abmelden</button>'
+    +'<button onclick="document.getElementById(&quot;acct-modal&quot;).remove()" class="modal-btn-ghost">Schliessen</button>'
+    +'</div></div>';
   document.body.appendChild(m);
   m.addEventListener('click',e=>{if(e.target===m)m.remove();});
 }
+
+function openLoginModal(){
+  const ex=document.getElementById('login-modal');if(ex)ex.remove();
+  const m=document.createElement('div');
+  m.id='login-modal';
+  m.className='modal-wrap';
+  const svgG='<svg width="16" height="16" viewBox="0 0 18 18"><path fill="#4285F4" d="M17.64 9.2c0-.637-.057-1.251-.164-1.84H9v3.481h4.844a4.14 4.14 0 0 1-1.796 2.716v2.259h2.908c1.702-1.567 2.684-3.875 2.684-6.615z"/><path fill="#34A853" d="M9 18c2.43 0 4.467-.806 5.956-2.18l-2.908-2.259c-.806.54-1.837.86-3.048.86-2.344 0-4.328-1.584-5.036-3.711H.957v2.332A8.997 8.997 0 0 0 9 18z"/><path fill="#FBBC05" d="M3.964 10.71A5.41 5.41 0 0 1 3.682 9c0-.593.102-1.17.282-1.71V4.958H.957A8.996 8.996 0 0 0 0 9c0 1.452.348 2.827.957 4.042l3.007-2.332z"/><path fill="#EA4335" d="M9 3.58c1.321 0 2.508.454 3.44 1.345l2.582-2.58C13.463.891 11.426 0 9 0A8.997 8.997 0 0 0 .957 4.958L3.964 7.29C4.672 5.163 6.656 3.58 9 3.58z"/></svg>';
+  const box=document.createElement('div');
+  box.className='modal-box';
+  box.innerHTML=`<h2>Anmelden</h2>
+    <p>Für Pro-Features: Milchstrasse, Kamera-Settings, Tools, Packliste & mehr.</p>
+    <label class="modal-lbl">E-Mail</label>
+    <input id="lm-email" class="modal-input" type="email" placeholder="deine@email.ch">
+    <label class="modal-lbl">Passwort</label>
+    <input id="lm-pw" class="modal-input" type="password" placeholder="Passwort">
+    <button onclick="doLogin()" class="modal-btn-primary">Anmelden</button>
+    <button onclick="doSignup()" class="modal-btn-secondary">Neu registrieren</button>
+    <button onclick="doGoogle()" class="modal-btn-google">${svgG} Mit Google anmelden</button>
+    <button onclick="document.getElementById('login-modal').remove()" class="modal-btn-ghost">Schliessen</button>`;
+  box.querySelector('#lm-pw').addEventListener('keydown',e=>{if(e.key==='Enter')doLogin();});
+  m.appendChild(box);
+  document.body.appendChild(m);
+  m.addEventListener('click',e=>{if(e.target===m)m.remove();});
+}
+
 async function doLogin(){
-  const email=document.getElementById('lm-email').value.trim();
-  const pw=document.getElementById('lm-pw').value;
+  const email=document.getElementById('lm-email')?.value.trim();
+  const pw=document.getElementById('lm-pw')?.value;
   if(!email||!pw){showToast('⚠️ E-Mail und Passwort eingeben');return;}
   const {error}=await sb.auth.signInWithPassword({email,password:pw});
   if(error){showToast('❌ '+error.message);return;}
-  document.getElementById('login-modal').style.display='none';
+  document.getElementById('login-modal')?.remove();
   showToast('✅ Angemeldet!');
-  if(S.lat)render(); else showEmpty();
+  renderTrialBanner();if(S.lat)render();
 }
 
 async function doSignup(){
-  const email=document.getElementById('lm-email').value.trim();
-  const pw=document.getElementById('lm-pw').value;
+  const email=document.getElementById('lm-email')?.value.trim();
+  const pw=document.getElementById('lm-pw')?.value;
   if(!email||!pw){showToast('⚠️ E-Mail und Passwort eingeben');return;}
   const {error}=await sb.auth.signUp({email,password:pw});
   if(error){showToast('❌ '+error.message);return;}
@@ -563,76 +573,78 @@ async function doGoogle(){
   await sb.auth.signInWithOAuth({provider:'google',options:{redirectTo:window.location.href}});
 }
 
-function doSignOut(){
-  sb.auth.signOut().then(()=>{
-    const m=document.getElementById('acct-modal');
-    if(m)m.style.display='none';
-    IS_PRO=false;IS_TRIAL=false;CURRENT_USER=null;
-    updateAuthUI();
-    renderTrialBanner();
-    showToast('Abgemeldet');
-    if(S.lat)render();
-  });
-}
-function getAccountBadge(){
-  if(IS_TRIAL)return '<div style="display:inline-flex;align-items:center;gap:6px;background:rgba(107,159,232,0.12);border:.5px solid rgba(107,159,232,0.3);border-radius:99px;padding:4px 12px;font-size:12px;font-weight:600;color:#6B9FE8;margin-top:4px;">🎁 Testversion – noch '+trialHoursLeft()+'h</div>';
-  if(IS_PRO)return '<div style="display:inline-flex;align-items:center;gap:6px;background:rgba(52,211,153,0.12);border:.5px solid rgba(52,211,153,0.3);border-radius:99px;padding:4px 12px;font-size:12px;font-weight:600;color:#34D399;margin-top:4px;">✓ Pro-Account aktiv</div>';
-  return '<div style="display:inline-flex;align-items:center;gap:6px;background:rgba(248,113,113,0.1);border:.5px solid rgba(248,113,113,0.25);border-radius:99px;padding:4px 12px;font-size:12px;color:#F87171;margin-top:4px;">⏰ Testversion abgelaufen</div>';
-}
-function openAccountMenu(){
-  const existing=document.getElementById('acct-modal');
-  if(existing){existing.style.display='flex';return;}
-  const m=document.createElement('div');
-  m.id='acct-modal';
-  m.style.cssText='position:fixed;inset:0;background:rgba(8,8,13,0.85);z-index:9000;display:flex;align-items:center;justify-content:center;padding:1.5rem;';
-  const email=CURRENT_USER?.email||'';
-  const initial=email[0]?.toUpperCase()||'U';
-  m.innerHTML=`<div style="class=\"modal-box\" style=\"max-width:340px;padding:0;overflow:hidden;\">
-    <div style="background:linear-gradient(135deg,rgba(233,164,46,0.15),rgba(233,164,46,0.05));padding:1.75rem;text-align:center;border-bottom:.5px solid rgba(255,255,255,0.08);">
-      <div style="width:56px;height:56px;background:var(--goldg,rgba(233,164,46,0.18));border:.5px solid var(--goldb,rgba(233,164,46,0.3));border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:22px;font-weight:700;color:#E9A42E;margin:0 auto 12px;">${initial}</div>
-      <div style="font-size:14px;font-weight:500;color:#EDE8DF;margin-bottom:4px;">${email}</div>
-      ${getAccountBadge()}
-    </div>
-    <div style="padding:1rem;">
-      ${!IS_PRO?`<button onclick="window.open('https://buy.stripe.com/bJe8wPfsG6uQ7040XJ6Ri00','_blank')" style="width:100%;background:#E9A42E;border:none;border-radius:12px;color:#1A0E00;font-family:inherit;font-size:14px;font-weight:600;padding:12px;cursor:pointer;margin-bottom:8px;">🚀 Pro kaufen – CHF 9 →</button>`:''}
-      <button onclick="doSignOut()" style="width:100%;background:rgba(255,255,255,0.05);border:.5px solid rgba(255,255,255,0.1);border-radius:12px;color:rgba(237,232,223,0.6);font-family:inherit;font-size:13px;padding:10px;cursor:pointer;margin-bottom:6px;">Abmelden</button>
-      <button onclick="document.getElementById('acct-modal').style.display='none'" style="width:100%;background:none;border:none;color:rgba(237,232,223,0.35);font-family:inherit;font-size:13px;padding:8px;cursor:pointer;">Schliessen</button>
-    </div>
-  </div>`;
-  document.body.appendChild(m);
-  m.addEventListener('click',e=>{if(e.target===m)m.style.display='none';});
+// ── Pro Gate ──────────────────────────────────────────────────────────────────
+function proGate(content,featureName){
+  if(IS_PRO)return content;
+  const div=document.createElement('div');
+  div.className='pro-wrap';
+  div.innerHTML='<div class="pro-lock">'+content+'</div>'
+    +'<div class="pro-overlay"><div class="pro-overlay-icon">🔒</div>'
+    +'<div class="pro-overlay-text"><strong>Pro</strong><br>'+featureName+'</div>'
+    +'<button class="pro-overlay-btn">CHF 9 →</button>'
+    +'</div>';
+  div.querySelector('.pro-overlay').addEventListener('click',()=>showProModal(featureName));
+  return div.outerHTML;
 }
 
-function proGate(content, featureName){
-  if(IS_PRO) return content;
-  return `<div class="pro-wrap">
-    <div class="pro-lock">${content}</div>
-    <div class="pro-overlay" onclick="showProModal('${featureName}')">
-      <div class="pro-overlay-icon">🔒</div>
-      <div class="pro-overlay-text"><strong>Pro-Feature</strong><br>${featureName}</div>
-      <button class="pro-overlay-btn">${t('pro_req_buy')}</button>
-    </div>
-  </div>`;
+function showProModal(f){
+  showToast('🔒 '+f+' – Pro kaufen für CHF 9');
+  setTimeout(()=>{if(confirm(f+' ist nur mit Pro verfügbar.\nCHF 9 einmalig – alle Features.\n\nZur Kaufseite?'))window.open('https://buy.stripe.com/bJe8wPfsG6uQ7040XJ6Ri00','_blank');},300);
 }
 
-function showProModal(feature){
-  showToast(`🔒 ${feature} ist ein Pro-Feature – CHF 9 einmalig`);
-  setTimeout(()=>{
-    if(confirm(`"${feature}" ist nur mit Pro verfügbar.\n\nCHF 9 einmalig – alle Features für immer.\n\nZur Kaufseite?`)){
-      window.open('https://buy.stripe.com/bJe8wPfsG6uQ7040XJ6Ri00','_blank');
-    }
-  },300);
+function renderProRequired(title,desc){
+  const el=document.getElementById('main');
+  el.innerHTML='';
+  const div=document.createElement('div');
+  div.style.cssText='text-align:center;padding:4rem 1rem;';
+  div.innerHTML=`<div style="font-size:56px;margin-bottom:1.25rem;">🔒</div>
+    <div style="font-family:'Playfair Display',Georgia,serif;font-size:24px;font-weight:700;margin-bottom:.75rem;">${title}</div>
+    <div style="font-size:14px;color:var(--mu);max-width:320px;margin:0 auto 2rem;line-height:1.7;">${desc}<br><br>Einmalig <strong style="color:var(--gold)">CHF 9</strong> – alle Pro-Features für immer.</div>
+    <button onclick="window.open('https://buy.stripe.com/bJe8wPfsG6uQ7040XJ6Ri00','_blank')" style="background:var(--gold);border:none;border-radius:99px;padding:14px 32px;font-size:15px;font-weight:700;color:#1A0E00;cursor:pointer;font-family:inherit;margin-bottom:1rem;">Pro kaufen – CHF 9 →</button><br>
+    <button onclick="openLoginModal()" style="background:none;border:.5px solid var(--bd);border-radius:99px;padding:10px 24px;font-size:13px;color:var(--mu);cursor:pointer;font-family:inherit;">Bereits Pro? Anmelden</button>`;
+  el.appendChild(div);
 }
+// ── Trial ─────────────────────────────────────────────────────────────────────
+function trialHoursLeft(){return TRIAL_ENDS_AT?Math.max(0,Math.ceil((TRIAL_ENDS_AT-new Date())/3600000)):0;}
+function trialMinutesLeft(){return TRIAL_ENDS_AT?Math.max(0,Math.ceil((TRIAL_ENDS_AT-new Date())/60000)):0;}
 
-// ── State ────────────────────────────────────────────────────────────────────────────────────────
-let S={lat:null,lng:null,name:'',date:new Date(),weather:null,lang:'de',tab:'light',
-  spots:JSON.parse(localStorage.getItem('pp_spots3')||'[]'),
-  scene:'landscape',notifEnabled:false,sunHour:12,lpOverlay:false};
-let MAP=null,MMARKER=null,MLAYERS=[],LP_LAYER=null;
-function t(k){return(STR[S.lang]||STR.de)[k]||STR.de[k]||k;}
-// ── Init ─────────────────────────────────────────────────────────────────────
-(function(){
+function renderTrialBanner(){
   try{
+    const el=document.getElementById('trial-banner');
+    if(!el){return;}
+    if(!IS_TRIAL){el.innerHTML='';return;}
+    const h=trialHoursLeft(),mins=trialMinutesLeft();
+    const time=h>0?h+'h '+(mins%60)+'m':mins+' Min.';
+    const L=S.lang||'de';
+    el.innerHTML='<div class="trial-bar">'
+      +'<div><div class="trial-bar-title">🎁 '+(L==='en'?'1-Day Trial active':L==='fr'?'Essai 1 jour actif':'1-Tages-Testversion aktiv')+'</div>'
+      +'<div class="trial-bar-text">'+(L==='en'?'All Pro features. Expires in:':L==='fr'?'Toutes les fonctions Pro. Expire dans:':'Alle Pro-Features. Läuft ab in:')+'</div></div>'
+      +'<div style="text-align:center;flex-shrink:0;"><div style="font-size:10px;color:var(--mu);margin-bottom:2px;">'+(L==='en'?'Left':L==='fr'?'Reste':'Noch')+'</div><div class="trial-time">'+time+'</div></div>'
+      +'<button onclick="window.open(&quot;https://buy.stripe.com/bJe8wPfsG6uQ7040XJ6Ri00&quot;,&quot;_blank&quot;)" style="background:var(--blue);border:none;border-radius:99px;padding:10px 18px;font-size:13px;font-weight:600;color:#fff;cursor:pointer;white-space:nowrap;font-family:inherit;">'
+      +(L==='en'?'Get Pro – CHF 9':L==='fr'?'Acheter Pro – CHF 9':'Pro sichern – CHF 9')+'</button></div>';
+    setTimeout(renderTrialBanner,60000);
+  }catch(e){console.warn('Trial:',e);}
+}
+
+// ── Trip Planner ──────────────────────────────────────────────────────────────
+let TRIP={days:[],name:'Mein Fototrip'};
+(function(){const s=localStorage.getItem('pp_trip');if(s)try{TRIP=JSON.parse(s);}catch{}})();
+function saveTrip(){localStorage.setItem('pp_trip',JSON.stringify(TRIP));}
+function renderTrip(){
+  document.getElementById('main').innerHTML='<div class="results"><div class="card"><div class="ch"><div class="ct">🗓️ Trip-Planer</div><div class="badge bgray">'+TRIP.days.length+' Tage</div></div>'
+    +'<button class="btn btn-gold btn-sm" onclick="addTripDay()" style="margin-bottom:.75rem">+ Tag hinzufügen</button></div>'
+    +'<div id="trip-days">'+(TRIP.days.length?TRIP.days.map((d,i)=>'<div class="card" style="margin-bottom:.75rem;"><div style="font-weight:500">Tag '+(i+1)+': '+d.date+'</div><div style="font-size:12px;color:var(--mu)">'+d.location+'</div><button class="btn btn-sm" style="margin-top:.5rem" onclick="removeTripDay('+i+')">✕ Entfernen</button></div>').join(''):'<div style="text-align:center;padding:2rem;color:var(--mu)">Noch keine Tage geplant.</div>')+'</div></div>';
+}
+function addTripDay(){
+  if(!S.lat){showToast('Bitte zuerst Ort suchen');return;}
+  const d=new Date(S.date||new Date());
+  if(TRIP.days.length)d.setDate(new Date(TRIP.days[TRIP.days.length-1].date).getDate()+1);
+  TRIP.days.push({date:d.toISOString().slice(0,10),lat:S.lat,lng:S.lng,location:S.name});
+  saveTrip();renderTrip();
+}
+function removeTripDay(i){TRIP.days.splice(i,1);saveTrip();renderTrip();}
+
+(function(){
   const di=document.getElementById('di'),now=new Date();
   di.value=now.toISOString().slice(0,10);
   di.min=now.toISOString().slice(0,10);
@@ -640,8 +652,9 @@ function t(k){return(STR[S.lang]||STR.de)[k]||STR.de[k]||k;}
   di.max=mx.toISOString().slice(0,10);
   setInterval(()=>{document.getElementById('clock').textContent=new Date().toLocaleTimeString('de-CH',{hour:'2-digit',minute:'2-digit'});},20000);
   document.getElementById('clock').textContent=new Date().toLocaleTimeString('de-CH',{hour:'2-digit',minute:'2-digit'});
+  ['login-modal','acct-modal'].forEach(id=>{const el=document.getElementById(id);if(el)el.remove();});
+  initSupabase().then(()=>{updateAuthUI();renderTrialBanner();}).catch(e=>console.warn(e));
   showEmpty();
-  }catch(e){console.error('Init error:',e);}
 })();
 // ── Helpers ──────────────────────────────────────────────────────────────────
 function fmt(d){return(!d||isNaN(d))?'—':d.toLocaleTimeString('de-CH',{hour:'2-digit',minute:'2-digit'});}
@@ -653,54 +666,11 @@ function wmoInfo(c){
     71:['Leichter Schnee','🌨️'],73:['Schneefall','🌨️'],75:['Starker Schnee','❄️'],77:['Schneekörner','🌨️'],
     80:['Schauer','🌦️'],81:['Starke Schauer','🌧️'],82:['Heftige Schauer','⛈️'],
     85:['Schneeschauer','🌨️'],86:['Starke Schneeschauer','❄️'],95:['Gewitter','⛈️'],96:['Gewitter','⛈️'],99:['Gewitter','⛈️']};
-  const en={0:['Clear sky','☀️'],1:['Mainly clear','🌤️'],2:['Partly cloudy','⛅'],3:['Overcast','☁️'],
-    45:['Fog','🌫️'],48:['Icy fog','🌫️'],51:['Light drizzle','🌦️'],53:['Drizzle','🌦️'],55:['Heavy drizzle','🌧️'],
-    61:['Light rain','🌧️'],63:['Rain','🌧️'],65:['Heavy rain','🌧️'],
-    71:['Light snow','🌨️'],73:['Snowfall','🌨️'],75:['Heavy snow','❄️'],77:['Snow grains','🌨️'],
-    80:['Showers','🌦️'],81:['Heavy showers','🌧️'],82:['Violent showers','⛈️'],
-    85:['Snow showers','🌨️'],86:['Heavy snow showers','❄️'],95:['Thunderstorm','⛈️'],96:['Thunderstorm','⛈️'],99:['Thunderstorm','⛈️']};
-  const fr={0:['Ciel dégagé','☀️'],1:['Principalement clair','🌤️'],2:['Partiellement nuageux','⛅'],3:['Couvert','☁️'],
-    45:['Brouillard','🌫️'],48:['Brouillard givrant','🌫️'],51:['Bruine légère','🌦️'],53:['Bruine','🌦️'],55:['Bruine forte','🌧️'],
-    61:['Pluie légère','🌧️'],63:['Pluie','🌧️'],65:['Pluie forte','🌧️'],
-    71:['Neige légère','🌨️'],73:['Chutes de neige','🌨️'],75:['Neige forte','❄️'],77:['Grésil','🌨️'],
-    80:['Averses','🌦️'],81:['Fortes averses','🌧️'],82:['Averses violentes','⛈️'],
-    85:['Averses de neige','🌨️'],86:['Fortes averses de neige','❄️'],95:['Orage','⛈️'],96:['Orage','⛈️'],99:['Orage','⛈️']};
+  const en={0:['Clear sky','☀️'],1:['Mainly clear','🌤️'],2:['Partly cloudy','⛅'],3:['Overcast','☁️'],45:['Fog','🌫️'],48:['Icy fog','🌫️'],51:['Light drizzle','🌦️'],53:['Drizzle','🌦️'],55:['Heavy drizzle','🌧️'],61:['Light rain','🌧️'],63:['Rain','🌧️'],65:['Heavy rain','🌧️'],71:['Light snow','🌨️'],73:['Snowfall','🌨️'],75:['Heavy snow','❄️'],77:['Snow grains','🌨️'],80:['Showers','🌦️'],81:['Heavy showers','🌧️'],82:['Violent showers','⛈️'],85:['Snow showers','🌨️'],86:['Heavy snow showers','❄️'],95:['Thunderstorm','⛈️'],96:['Thunderstorm','⛈️'],99:['Thunderstorm','⛈️']};
+  const fr={0:['Ciel dégagé','☀️'],1:['Principalement clair','🌤️'],2:['Partiellement nuageux','⛅'],3:['Couvert','☁️'],45:['Brouillard','🌫️'],48:['Brouillard givrant','🌫️'],51:['Bruine légère','🌦️'],53:['Bruine','🌦️'],55:['Bruine forte','🌧️'],61:['Pluie légère','🌧️'],63:['Pluie','🌧️'],65:['Pluie forte','🌧️'],71:['Neige légère','🌨️'],73:['Chutes de neige','🌨️'],75:['Neige forte','❄️'],77:['Grésil','🌨️'],80:['Averses','🌦️'],81:['Fortes averses','🌧️'],82:['Averses violentes','⛈️'],85:['Averses de neige','🌨️'],86:['Fortes averses de neige','❄️'],95:['Orage','⛈️'],96:['Orage','⛈️'],99:['Orage','⛈️']};
   const m=S.lang==='en'?en:S.lang==='fr'?fr:de;
-  return m[c]||[S.lang==='en'?'Unknown':S.lang==='fr'?'Inconnu':'Unbekannt','❓'];
+  return m[c]||['?','❓'];
 }
-function photoScore(c){
-  const s={0:82,1:93,2:88,3:38,45:68,48:62,51:45,53:42,55:38,61:32,63:28,65:22,71:80,73:76,75:71,77:72,80:58,81:52,82:48,85:74,86:68,95:72,96:65,99:60};
-  return s[c]!==undefined?s[c]:50;
-}
-function scc(s){return s>=75?'sch':s>=50?'scm':'scl';}
-function scv(s){return s>=75?'var(--green)':s>=50?'var(--gold)':'var(--red)';}
-function moonIcon(ph){return['🌑','🌒','🌓','🌔','🌕','🌖','🌗','🌘'][Math.floor(ph*8)%8];}
-function moonName(ph){
-  const n=t('moon_names');
-  if(ph<0.03||ph>0.97)return n[0];
-  if(ph<0.22)return n[1];if(ph<0.28)return n[2];
-  if(ph<0.47)return n[3];if(ph<0.53)return n[4];
-  if(ph<0.72)return n[5];if(ph<0.78)return n[6];
-  return n[7];
-}
-function getTip(wCode,moonPhase){
-  const L=S.lang||'de';
-  if(moonPhase<0.08||moonPhase>0.92)return{de:'🌌 Neumond: perfekt für Milchstrassen-Fotografie!',en:'🌌 New moon: perfect for Milky Way photography!',fr:'🌌 Nouvelle lune: parfait pour la Voie Lactée!'}[L];
-  if(moonPhase>0.45&&moonPhase<0.55)return{de:'🌕 Vollmond: dramatisches Mondlicht für Nachtlandschaften.',en:'🌕 Full moon: dramatic moonlight for night landscapes.',fr:'🌕 Pleine lune: clair de lune dramatique pour les paysages nocturnes.'}[L];
-  const tips={
-    0:{de:'☀️ Klarer Himmel – goldene Stunde nicht verpassen!',en:'☀️ Clear sky – don\'t miss golden hour!',fr:'☀️ Ciel dégagé – ne ratez pas l\'heure dorée!'},
-    1:{de:'🌤️ Optimale Bedingungen! Dramatische Wolken + goldenes Licht.',en:'🌤️ Optimal conditions! Dramatic clouds + golden light.',fr:'🌤️ Conditions optimales! Nuages dramatiques + lumière dorée.'},
-    2:{de:'⛅ Lichtwechsel schaffen spannende Momente.',en:'⛅ Changing light creates exciting moments.',fr:'⛅ La lumière changeante crée des moments excitants.'},
-    3:{de:'☁️ Bedeckt: ideal für Wasserfälle, kein hartes Licht.',en:'☁️ Overcast: ideal for waterfalls, no harsh light.',fr:'☁️ Couvert: idéal pour les cascades, pas de lumière dure.'},
-    45:{de:'🌫️ Nebel! Frühaufstehen für Sonnenstrahlen im Nebel.',en:'🌫️ Fog! Wake up early for sun rays through mist.',fr:'🌫️ Brouillard! Levez-vous tôt pour les rayons de soleil dans la brume.'},
-    61:{de:'🌧️ Regen: Reflexionen und satte Farben nutzen.',en:'🌧️ Rain: use reflections and rich colors.',fr:'🌧️ Pluie: profitez des reflets et des couleurs riches.'},
-    71:{de:'❄️ Schnee: -1 EV Belichtungskorrektur für korrektes Weiss.',en:'❄️ Snow: -1 EV exposure compensation for correct white.',fr:'❄️ Neige: -1 EV de compensation d\'exposition pour le blanc correct.'},
-    95:{de:'⛈️ Gewitter: nur sicher vom Inneren aus fotografieren.',en:'⛈️ Thunderstorm: only photograph safely from indoors.',fr:'⛈️ Orage: photographiez uniquement en sécurité depuis l\'intérieur.'}
-  };
-  const t2=tips[wCode]||tips[Math.floor(wCode/10)*10]||{de:'🌄 Goldene und blaue Stunde nutzen.',en:'🌄 Use golden and blue hour.',fr:'🌄 Profitez de l\'heure dorée et bleue.'};
-  return t2[L]||t2.de;
-}
-
 function photoScore(c){
   const s={0:82,1:93,2:88,3:38,45:68,48:62,51:45,53:42,55:38,61:32,63:28,65:22,71:80,73:76,75:71,77:72,80:58,81:52,82:48,85:74,86:68,95:72,96:65,99:60};
   return s[c]!==undefined?s[c]:50;
@@ -912,10 +882,10 @@ function seasonalTips(lat){
   const m=new Date().getMonth();
   const isNorth=lat>0;
   const seasons={
-    spring:{icon:'🌸',name:'Frühling',tips:isNorth?'Kirschblüten, Löwenzahn-Felder, Morgennebel. Goldene Stunde wird länger!':'Herbstfarben, Laubwälder.'},
-    summer:{icon:'☀️',name:'Sommer',tips:isNorth?'Lange Tage, Mitternachtssonne (nördl. Breiten), Gewitter-Dramatik.':'Schnee & Eis auf Berggipfeln, klare Sichten.'},
-    autumn:{icon:'🍂',name:'Herbst',tips:isNorth?'Laub in Gold & Rot! Morgennebelstimmung. Kürzere, intensivere goldene Stunde.':'Frühlingsblüten erscheinen.'},
-    winter:{icon:'❄️',name:'Winter',tips:isNorth?'Schnee, Eis, kurze Tage = komprimiertes Licht. Nordlichter-Saison!':'Sommer, lange goldene Stunden.'}
+    spring:{icon:'🌸',name:{de:'Frühling',en:'Spring',fr:'Printemps'}[S.lang||'de'],tips:isNorth?'Kirschblüten, Löwenzahn-Felder, Morgennebel. Goldene Stunde wird länger!':'Herbstfarben, Laubwälder.'},
+    summer:{icon:'☀️',name:{de:'Sommer',en:'Summer',fr:'Été'}[S.lang||'de'],tips:isNorth?'Lange Tage, Mitternachtssonne (nördl. Breiten), Gewitter-Dramatik.':'Schnee & Eis auf Berggipfeln, klare Sichten.'},
+    autumn:{icon:'🍂',name:{de:'Herbst',en:'Autumn',fr:'Automne'}[S.lang||'de'],tips:isNorth?'Laub in Gold & Rot! Morgennebelstimmung. Kürzere, intensivere goldene Stunde.':'Frühlingsblüten erscheinen.'},
+    winter:{icon:'❄️',name:{de:'Winter',en:'Winter',fr:'Hiver'}[S.lang||'de'],tips:isNorth?'Schnee, Eis, kurze Tage = komprimiertes Licht. Nordlichter-Saison!':'Sommer, lange goldene Stunden.'}
   };
   const getNorth=m=>{if(m>=2&&m<=4)return'spring';if(m>=5&&m<=7)return'summer';if(m>=8&&m<=10)return'autumn';return'winter';};
   const getSouth=m=>{if(m>=2&&m<=4)return'autumn';if(m>=5&&m<=7)return'winter';if(m>=8&&m<=10)return'spring';return'summer';};
@@ -1021,7 +991,7 @@ function renderLight(){
       <div style="font-size:12px;color:var(--mu);line-height:1.5;margin-top:4px;">${goodMilky?'🌌 '+t('moonwalk_good'):t('moon_hint')}</div>
     </div>
   </div>
-  ${cameraCard(lc,wCode)}
+  ${proGate(cameraCard(lc,wCode),'Kamera-Einstellungen')}
   ${weather?.daily?`<div class="card"><div class="ch"><div class="ct">${t('forecast')}</div><div class="badge bgr">🌿 Bester Tag markiert</div></div><div class="wdays">${wdHtml}</div></div>`:''}
   <div class="card"><div class="ch"><div class="ct">${t('seasonal')}</div><div class="badge bgray">${new Date().toLocaleDateString('de-CH',{month:'long'})}</div></div><div class="season-grid">${seasonalTips(lat)}</div></div>
   </div>`;
@@ -1167,7 +1137,7 @@ function renderNight(){
         '💡 Eingeschränkte Sichtbarkeit. Je weniger Mondlicht, desto besser für Sterne.'}
     </div>
   </div>
-  ${mwHtml}
+  ${proGate(mwHtml,'Milchstrassen-Fenster')}
   <div class="card">
     <div class="ch"><div class="ct">Mondlicht-Kalender – 14 Nächte</div><div class="badge bgr">&lt;25% = ideal</div></div>
     <div class="nights-grid">${nightCells}</div>
@@ -1500,7 +1470,7 @@ function setLang(l){
   document.getElementById('q').placeholder=t('search');
   document.getElementById('btn-search').textContent=t('sbtn');
   ['light','map','night','plan','tools','trip'].forEach((tab,i)=>{const el=document.getElementById('tab-'+tab);if(el)el.textContent=t('t'+(i+1));});
-  if(S.lat)render();
+  if(S.lat)render(); else showEmpty();
 }
 async function handleNotif(){
   if(!('Notification'in window)){alert('Nicht unterstützt.');return;}
@@ -1858,27 +1828,6 @@ function closeOnboard(){
 }
 // Show onboarding after short delay on first visit
 setTimeout(showOnboard, 800);
-
-// ── App Init ─────────────────────────────────────────────────────────────────
-(function initApp(){
-  try{
-    // Init date
-    const di=document.getElementById('di');
-    if(di&&!di.value){const now=new Date();di.value=now.toISOString().slice(0,10);}
-    // Clock
-    const clockEl=document.getElementById('clock');
-    if(clockEl){
-      clockEl.textContent=new Date().toLocaleTimeString('de-CH',{hour:'2-digit',minute:'2-digit'});
-      setInterval(()=>{clockEl.textContent=new Date().toLocaleTimeString('de-CH',{hour:'2-digit',minute:'2-digit'});},20000);
-    }
-    // Init Supabase auth + show empty state
-    initSupabase().then(()=>{
-      updateAuthUI();
-      renderTrialBanner();
-    }).catch(e=>console.warn('Auth init:',e));
-    showEmpty();
-  }catch(e){console.error('App init error:',e);}
-})();
 
 // ── Packing List ─────────────────────────────────────────────────────────────
 const PACK_ITEMS={
