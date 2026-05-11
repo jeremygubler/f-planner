@@ -243,6 +243,20 @@ html,body{min-height:100%;background:var(--bg);color:var(--tx);font-family:'DM S
 .trial-bar{background:linear-gradient(135deg,rgba(107,159,232,0.12),rgba(107,159,232,0.05));border:.5px solid rgba(107,159,232,0.3);border-radius:var(--r);padding:.9rem 1.25rem;margin-bottom:1rem;display:flex;align-items:center;justify-content:space-between;gap:1rem;flex-wrap:wrap;}
 .trial-bar-title{font-size:14px;font-weight:600;color:var(--blue);margin-bottom:2px;}.trial-bar-text{font-size:12px;color:var(--mu);}
 .trial-time{font-size:20px;font-weight:700;color:var(--blue);}.trial-expired .trial-bar-title,.trial-expired .trial-time{color:var(--red);}
+.profile-modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.7);backdrop-filter:blur(10px);z-index:9500;display:flex;align-items:center;justify-content:center;padding:1.5rem;}
+.profile-modal{background:var(--bg);border:.5px solid var(--bd);border-radius:24px;width:100%;max-width:420px;padding:0;overflow:hidden;box-shadow:0 24px 64px rgba(0,0,0,0.3);}
+.profile-modal-hero{background:linear-gradient(135deg,rgba(233,164,46,0.15),rgba(107,159,232,0.1));padding:2rem;text-align:center;border-bottom:.5px solid var(--bd);}
+.profile-modal-emoji{font-size:56px;display:block;margin-bottom:.75rem;}
+.profile-modal-title{font-family:'Playfair Display',Georgia,serif;font-size:22px;font-weight:700;margin-bottom:.4rem;}
+.profile-modal-sub{font-size:13px;color:var(--mu);line-height:1.5;}
+.profile-modal-body{padding:1.5rem;}
+.profile-field{margin-bottom:1rem;}
+.profile-field label{font-size:11px;text-transform:uppercase;letter-spacing:.1em;color:var(--mu);font-weight:600;display:block;margin-bottom:.4rem;}
+.profile-field input,.profile-field select{width:100%;background:var(--s2);border:.5px solid var(--bd);border-radius:10px;color:var(--tx);font-family:inherit;font-size:14px;padding:10px 13px;outline:none;box-sizing:border-box;}
+.profile-field input:focus,.profile-field select:focus{border-color:var(--goldb);}
+.profile-avatar-row{display:flex;align-items:center;gap:12px;margin-bottom:1.5rem;}
+.profile-avatar-circle{width:60px;height:60px;border-radius:50%;background:var(--goldg);border:.5px solid var(--goldb);display:flex;align-items:center;justify-content:center;font-size:24px;font-weight:700;color:var(--gold);flex-shrink:0;overflow:hidden;}
+.profile-avatar-circle img{width:100%;height:100%;object-fit:cover;}
 /* Print */
 @media print{
   .bg-atm,.tab-bar,.search-row,.header .hdr-r,.icon-btn,.btn,.share-bar,.print-hide{display:none!important;}
@@ -460,8 +474,8 @@ async function initSupabase(){
     const {data:{session}}=await sb.auth.getSession();
     if(session?.user)await loadUserPro(session.user);
     sb.auth.onAuthStateChange(async(_,session)=>{
-      if(session?.user)await loadUserPro(session.user);
-      else{CURRENT_USER=null;IS_PRO=false;IS_TRIAL=false;}
+      if(session?.user){await loadUserPro(session.user);const p=await loadProfile(session.user.id);if(p){if(p.preferred_lang&&p.preferred_lang!==S.lang)setLang(p.preferred_lang);if(!p.profile_completed)setTimeout(showProfileCompletion,800);}}
+      else{CURRENT_USER=null;IS_PRO=false;IS_TRIAL=false;USER_PROFILE=null;}
       updateAuthUI();renderTrialBanner();
     });
   }catch(e){console.warn('Supabase:',e);}
@@ -512,12 +526,19 @@ function openAccountMenu(){
   const email=CURRENT_USER?.email||'';
   m.innerHTML='<div class="modal-box" style="max-width:340px;padding:0;overflow:hidden;">'
     +'<div style="background:linear-gradient(135deg,rgba(233,164,46,0.12),rgba(233,164,46,0.04));padding:1.5rem;text-align:center;border-bottom:.5px solid var(--bd);">'
-    +'<div style="width:52px;height:52px;background:var(--goldg);border:.5px solid var(--goldb);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:20px;font-weight:700;color:var(--gold);margin:0 auto 10px;">'+email[0]?.toUpperCase()+'</div>'
-    +'<div style="font-size:14px;font-weight:500;color:var(--tx);margin-bottom:6px;">'+email+'</div>'
+    +(USER_PROFILE?.avatar_url?'<img src="'+USER_PROFILE.avatar_url+'" style="width:52px;height:52px;border-radius:50%;object-fit:cover;margin:0 auto 10px;display:block;">':'<div style="width:52px;height:52px;background:var(--goldg);border:.5px solid var(--goldb);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:20px;font-weight:700;color:var(--gold);margin:0 auto 10px;">'+email[0]?.toUpperCase()+'</div>')
+    +'<div style="font-size:15px;font-weight:600;color:var(--tx);margin-bottom:2px;">'+(USER_PROFILE?.display_name||USER_PROFILE?.username||email.split("@")[0])+'</div>'
+    +'<div style="font-size:12px;color:var(--mu);margin-bottom:6px;">'+email+'</div>'
+    +(USER_PROFILE?.country?'<div style="font-size:12px;color:var(--mu);margin-bottom:4px;">'+USER_PROFILE.country+'</div>':'')
+    +(USER_PROFILE?.camera?'<div style="font-size:11px;color:var(--mu);">📷 '+USER_PROFILE.camera+'</div>':'')
+    +(USER_PROFILE?.bio?'<div style="font-size:12px;color:var(--mu);margin-top:4px;font-style:italic;">'+USER_PROFILE.bio+'</div>':'')
+    +(USER_PROFILE?.badge?'<div style="margin-top:6px;"><span style="background:rgba(233,164,46,0.15);color:var(--gold);border-radius:99px;padding:3px 10px;font-size:11px;font-weight:600;">'+getBadgeLabel(USER_PROFILE.badge)+'</span></div>':'')
+    +(USER_PROFILE?.spots_submitted>0?'<div style="font-size:11px;color:var(--mu);margin-top:4px;">📍 '+USER_PROFILE.spots_submitted+' Spots · ⭐ '+USER_PROFILE.total_votes_received+' Votes</div>':'')
     +getAccountBadge()
     +'</div>'
     +'<div style="padding:1rem;">'
     +(IS_PRO&&!IS_TRIAL?'':'<button onclick="window.open(\'https://buy.stripe.com/bJe8wPfsG6uQ7040XJ6Ri00\',\'_blank\')" class="modal-btn-primary">Pro kaufen – CHF 9 →</button>')
+    +'<button onclick="openProfileEdit()" class="modal-btn-secondary" style="margin-bottom:.5rem;">✏️ Profil bearbeiten</button>'
     +'<button onclick="doSignOut()" class="modal-btn-secondary">Abmelden</button>'
     +'<button onclick="document.getElementById(&quot;acct-modal&quot;).remove()" class="modal-btn-ghost">Schliessen</button>'
     +'</div></div>';
@@ -558,6 +579,7 @@ async function doLogin(){
   document.getElementById('login-modal')?.remove();
   showToast('✅ Angemeldet!');
   renderTrialBanner();if(S.lat)render();
+  setTimeout(async()=>{const p=await loadProfile(CURRENT_USER.id);if(p&&!p.profile_completed)showProfileCompletion();},500);
 }
 
 async function doSignup(){
@@ -626,6 +648,172 @@ function renderTrialBanner(){
   }catch(e){console.warn('Trial:',e);}
 }
 
+
+
+// ── Profile System ─────────────────────────────────────────────────────────
+let USER_PROFILE = null;
+
+async function loadProfile(userId){
+  try{
+    const {data} = await sb.from('profiles')
+      .select('display_name,username,country,camera,website,avatar_url,profile_completed,bio,instagram,photography_styles,home_location,preferred_lang,spots_submitted,total_votes_received,badge,is_verified')
+      .eq('id', userId).single();
+    USER_PROFILE = data;
+    return data;
+  }catch(e){return null;}
+}
+
+async function saveProfile(updates){
+  if(!CURRENT_USER)return;
+  try{
+    await sb.from('profiles').update(updates).eq('id', CURRENT_USER.id);
+    USER_PROFILE = {...USER_PROFILE, ...updates};
+    return true;
+  }catch(e){showToast('❌ Fehler beim Speichern');return false;}
+}
+
+function showProfileCompletion(){
+  const ex = document.getElementById('profile-completion-modal');
+  if(ex) ex.remove();
+  const overlay = document.createElement('div');
+  overlay.id = 'profile-completion-modal';
+  overlay.className = 'profile-modal-overlay';
+  const initial = (CURRENT_USER?.email||'U')[0].toUpperCase();
+  overlay.innerHTML = `<div class="profile-modal">
+    <div class="profile-modal-hero">
+      <span class="profile-modal-emoji">📸</span>
+      <div class="profile-modal-title">Willkommen bei PhotoPlanner!</div>
+      <div class="profile-modal-sub">Ergänze dein Profil damit die Community weiss wer du bist.<br>Alles optional – du kannst es jederzeit überspringen.</div>
+    </div>
+    <div class="profile-modal-body">
+      <div class="profile-avatar-row">
+        <div class="profile-avatar-circle" id="pm-avatar">${initial}</div>
+        <div>
+          <div style="font-size:13px;font-weight:500;">Profilbild</div>
+          <div style="font-size:12px;color:var(--mu);margin-bottom:6px;">JPG oder PNG, max. 2 MB</div>
+          <button onclick="document.getElementById('pm-avatar-file').click()" style="background:var(--s2);border:.5px solid var(--bd);border-radius:8px;padding:6px 14px;font-size:12px;color:var(--tx);cursor:pointer;font-family:inherit;">Foto wählen</button>
+          <input type="file" id="pm-avatar-file" accept="image/*" style="display:none" onchange="uploadAvatar(this)">
+        </div>
+      </div>
+      <div class="profile-field">
+        <label>Anzeigename</label>
+        <input id="pm-displayname" placeholder="z.B. Jeremy Gubler" value="${USER_PROFILE?.display_name||''}">
+      </div>
+      <div class="profile-field">
+        <label>Username</label>
+        <input id="pm-username" placeholder="z.B. jeremy_foto" value="${USER_PROFILE?.username||''}">
+      </div>
+      <div class="profile-field">
+        <label>Land</label>
+        <select id="pm-country">
+          <option value="">– Kein Land –</option>
+          ${getCountryOptions(USER_PROFILE?.country)}
+        </select>
+      </div>
+      <div class="profile-field">
+        <label>Hauptkamera (optional)</label>
+        <input id="pm-camera" placeholder="z.B. Canon EOS R10" value="${USER_PROFILE?.camera||''}">
+      </div>
+      <div class="profile-field">
+        <label>Instagram (optional)</label>
+        <input id="pm-instagram" placeholder="@dein_name" value="${USER_PROFILE?.instagram||''}">
+      </div>
+      <div class="profile-field">
+        <label>Website (optional)</label>
+        <input id="pm-website" placeholder="z.B. meinefotosite.ch" value="${USER_PROFILE?.website||''}">
+      </div>
+      <div class="profile-field">
+        <label>Über mich (optional)</label>
+        <input id="pm-bio" placeholder="z.B. Landschaftsfotograf aus Zürich" value="${USER_PROFILE?.bio||''}">
+      </div>
+      <div class="profile-field">
+        <label>Heimatort (optional)</label>
+        <input id="pm-homeloc" placeholder="z.B. Zürich, Schweiz" value="${USER_PROFILE?.home_location||''}">
+      </div>
+      <div class="profile-field">
+        <label>Fotografie-Stile</label>
+        <div style="display:flex;flex-wrap:wrap;gap:6px;margin-top:4px;" id="pm-styles">
+          ${['🏔️ Landschaft','🌌 Astro','🏙️ Stadt','💧 Wasserfall','👤 Portrait','🌸 Natur','❄️ Winter','🏗️ Architektur'].map(s=>{
+            const active=(USER_PROFILE?.photography_styles||[]).includes(s);
+            return '<button type="button" onclick="toggleStyle(this)" data-style="'+s+'" style="background:'+(active?'var(--goldg)':'var(--s2)')+';border:.5px solid '+(active?'var(--goldb)':'var(--bd)')+';border-radius:99px;padding:5px 12px;font-size:12px;color:'+(active?'var(--gold)':'var(--mu)')+';cursor:pointer;font-family:inherit;transition:all .15s;">'+s+'</button>';
+          }).join('')}
+        </div>
+      </div>
+      <div style="display:flex;gap:8px;margin-top:1.25rem;">
+        <button onclick="skipProfile()" style="flex:1;background:none;border:.5px solid var(--bd);border-radius:10px;padding:12px;color:var(--mu);font-family:inherit;font-size:13px;cursor:pointer;">Überspringen</button>
+        <button onclick="submitProfile()" style="flex:2;background:var(--gold);border:none;border-radius:10px;padding:12px;color:#1A0E00;font-family:inherit;font-size:14px;font-weight:600;cursor:pointer;">Profil speichern ✓</button>
+      </div>
+    </div>
+  </div>`;
+  document.body.appendChild(overlay);
+}
+
+function getCountryOptions(selected){
+  const countries=[['🇨🇭','Schweiz'],['🇩🇪','Deutschland'],['🇦🇹','Österreich'],['🇫🇷','Frankreich'],['🇮🇹','Italien'],['🇬🇧','United Kingdom'],['🇺🇸','USA'],['🇳🇱','Niederlande'],['🇧🇪','Belgien'],['🇪🇸','Spanien'],['🇵🇹','Portugal'],['🇸🇪','Schweden'],['🇳🇴','Norwegen'],['🇩🇰','Dänemark'],['🇫🇮','Finnland'],['🇯🇵','Japan'],['🇦🇺','Australien'],['🇨🇦','Kanada'],['🇧🇷','Brasilien'],['🇮🇳','Indien'],['🇨🇳','China'],['🌍','Anderes']];
+  return countries.map(([flag,name])=>`<option value="${flag} ${name}" ${selected===flag+' '+name?'selected':''}>${flag} ${name}</option>`).join('');
+}
+
+function getBadgeLabel(badge){
+  const map={'top_contributor':'🏆 Top Contributor','active_member':'⭐ Active Member','contributor':'📸 Contributor'};
+  return map[badge]||badge;
+}
+
+function toggleStyle(btn){
+  const active = btn.style.background.includes('goldg') || btn.dataset.active==='1';
+  if(!active){
+    btn.style.background='var(--goldg)';btn.style.borderColor='var(--goldb)';btn.style.color='var(--gold)';btn.dataset.active='1';
+  }else{
+    btn.style.background='var(--s2)';btn.style.borderColor='var(--bd)';btn.style.color='var(--mu)';btn.dataset.active='0';
+  }
+}
+
+async function uploadAvatar(input){
+  const file=input.files[0];
+  if(!file||!CURRENT_USER)return;
+  if(file.size>2*1024*1024){showToast('⚠️ Max. 2 MB');return;}
+  const ext=file.name.split('.').pop();
+  const path=`avatars/${CURRENT_USER.id}.${ext}`;
+  const {error}=await sb.storage.from('spot-images').upload(path,file,{contentType:file.type,upsert:true});
+  if(error){showToast('❌ Upload fehlgeschlagen');return;}
+  const {data:{publicUrl}}=sb.storage.from('spot-images').getPublicUrl(path);
+  USER_PROFILE={...USER_PROFILE,avatar_url:publicUrl};
+  const av=document.getElementById('pm-avatar');
+  if(av)av.innerHTML=`<img src="${publicUrl}" alt="Avatar">`;
+  showToast('✅ Profilbild hochgeladen');
+}
+
+async function submitProfile(){
+  const styles=[...document.querySelectorAll('#pm-styles button[data-active="1"]')].map(b=>b.dataset.style);
+  const updates={
+    display_name: document.getElementById('pm-displayname')?.value.trim()||null,
+    username: document.getElementById('pm-username')?.value.trim().replace(/[^a-z0-9_]/gi,'')||null,
+    country: document.getElementById('pm-country')?.value||null,
+    camera: document.getElementById('pm-camera')?.value.trim()||null,
+    instagram: document.getElementById('pm-instagram')?.value.trim().replace('@','')||null,
+    website: document.getElementById('pm-website')?.value.trim()||null,
+    bio: document.getElementById('pm-bio')?.value.trim()||null,
+    home_location: document.getElementById('pm-homeloc')?.value.trim()||null,
+    photography_styles: styles.length>0?styles:(USER_PROFILE?.photography_styles||[]),
+    avatar_url: USER_PROFILE?.avatar_url||null,
+    profile_completed: true
+  };
+  const ok=await saveProfile(updates);
+  if(ok){
+    document.getElementById('profile-completion-modal')?.remove();
+    updateAuthUI();
+    showToast('✅ Profil gespeichert!');
+  }
+}
+
+async function skipProfile(){
+  await saveProfile({profile_completed:true});
+  document.getElementById('profile-completion-modal')?.remove();
+}
+
+function openProfileEdit(){
+  document.getElementById('acct-modal')?.remove();
+  showProfileCompletion();
+}
 
 (function(){
   const di=document.getElementById('di'),now=new Date();
@@ -1459,6 +1647,7 @@ function setTab(tab){
 }
 function setLang(l){
   S.lang=l;
+  if(CURRENT_USER&&USER_PROFILE)saveProfile({preferred_lang:l}).catch(()=>{});
   document.querySelectorAll('.lang-btn').forEach(b=>b.classList.toggle('on',b.textContent===l.toUpperCase()));
   document.getElementById('hdr-sub').textContent=t('sub');
   document.getElementById('q').placeholder=t('search');

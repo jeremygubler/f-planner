@@ -500,6 +500,8 @@ function spotCard(sp){
       <div class="spot-cat">${CAT_ICONS[sp.category]||''} ${CAT_NAMES[sp.category]||sp.category}</div>
       <div class="spot-name">${sp.name}</div>
       <div class="spot-loc">📍 ${sp.location}</div>
+      ${sp.profiles?.username||sp.profiles?.display_name?`<div style="font-size:11px;color:var(--mu);margin-top:2px;">👤 ${sp.profiles?.username?"@"+sp.profiles.username:sp.profiles.display_name}${sp.profiles?.country?" · "+sp.profiles.country:""}${sp.profiles?.is_verified?" ✓":""}</div>`:""}
+      ${sp.profiles?.badge?`<div style="margin-top:2px;"><span style="background:rgba(233,164,46,0.1);color:var(--gold);border-radius:99px;padding:2px 8px;font-size:10px;">${{"top_contributor":"🏆 Top Contributor","active_member":"⭐ Active Member","contributor":"📸 Contributor"}[sp.profiles.badge]||sp.profiles.badge}</span></div>`:""}
       <div class="spot-desc">${sp.description||''}</div>
       <div class="spot-footer">
         <button class="vote-btn ${myVote?'on':''}" onclick="voteSpot(event,'${sp.id}')">
