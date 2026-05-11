@@ -372,7 +372,7 @@ de:{sub:'Foto-Reise-Planer',search:'Ort eingeben…',sbtn:'Suchen',
   MONTHS:['Jan','Feb','Mär','Apr','Mai','Jun','Jul','Aug','Sep','Okt','Nov','Dez'],
   DAYS:['So','Mo','Di','Mi','Do','Fr','Sa'],TODAY:'Heute',
   quality:'Fotoqualität des Tages',seasonal:'Saisonale Foto-Tipps',
-    best_time:'Beste Fotozeit',magic_light:'Magisches Licht',timeline:'Zeitverlauf',
+    best_time:S.lang==='en'?'Best Photo Time':S.lang==='fr'?'Meilleur Moment':'Beste Fotozeit',magic_light:S.lang==='en'?'Magical Light':S.lang==='fr'?'Lumière Magique':'Magisches Licht',timeline:'Zeitverlauf',
     moonlight_on:'Mondlicht aktiv',milkyway_ok:'✓ Milchstrasse',milkyway_no:'Mondlicht stark',
     morn_start:'🌅 Morgen Beginn',morn_sunrise:'☀️ Sonnenaufgang',morn_end:'🌤️ Morgen Ende',
     eve_start:'🌇 Abend Beginn',eve_sunset:'🌆 Sonnenuntergang',eve_end:'🌃 Abend Ende',
@@ -647,14 +647,60 @@ function t(k){return(STR[S.lang]||STR.de)[k]||STR.de[k]||k;}
 function fmt(d){return(!d||isNaN(d))?'—':d.toLocaleTimeString('de-CH',{hour:'2-digit',minute:'2-digit'});}
 function clamp(v,a,b){return Math.max(a,Math.min(b,v));}
 function wmoInfo(c){
-  const m={0:['Klarer Himmel','☀️'],1:['Überwiegend klar','🌤️'],2:['Teilweise bewölkt','⛅'],3:['Bedeckt','☁️'],
+  const de={0:['Klarer Himmel','☀️'],1:['Überwiegend klar','🌤️'],2:['Teilweise bewölkt','⛅'],3:['Bedeckt','☁️'],
     45:['Nebel','🌫️'],48:['Eisnebel','🌫️'],51:['Leichter Niesel','🌦️'],53:['Niesel','🌦️'],55:['Starker Niesel','🌧️'],
     61:['Leichter Regen','🌧️'],63:['Regen','🌧️'],65:['Starker Regen','🌧️'],
     71:['Leichter Schnee','🌨️'],73:['Schneefall','🌨️'],75:['Starker Schnee','❄️'],77:['Schneekörner','🌨️'],
     80:['Schauer','🌦️'],81:['Starke Schauer','🌧️'],82:['Heftige Schauer','⛈️'],
     85:['Schneeschauer','🌨️'],86:['Starke Schneeschauer','❄️'],95:['Gewitter','⛈️'],96:['Gewitter','⛈️'],99:['Gewitter','⛈️']};
-  return m[c]||['Unbekannt','❓'];
+  const en={0:['Clear sky','☀️'],1:['Mainly clear','🌤️'],2:['Partly cloudy','⛅'],3:['Overcast','☁️'],
+    45:['Fog','🌫️'],48:['Icy fog','🌫️'],51:['Light drizzle','🌦️'],53:['Drizzle','🌦️'],55:['Heavy drizzle','🌧️'],
+    61:['Light rain','🌧️'],63:['Rain','🌧️'],65:['Heavy rain','🌧️'],
+    71:['Light snow','🌨️'],73:['Snowfall','🌨️'],75:['Heavy snow','❄️'],77:['Snow grains','🌨️'],
+    80:['Showers','🌦️'],81:['Heavy showers','🌧️'],82:['Violent showers','⛈️'],
+    85:['Snow showers','🌨️'],86:['Heavy snow showers','❄️'],95:['Thunderstorm','⛈️'],96:['Thunderstorm','⛈️'],99:['Thunderstorm','⛈️']};
+  const fr={0:['Ciel dégagé','☀️'],1:['Principalement clair','🌤️'],2:['Partiellement nuageux','⛅'],3:['Couvert','☁️'],
+    45:['Brouillard','🌫️'],48:['Brouillard givrant','🌫️'],51:['Bruine légère','🌦️'],53:['Bruine','🌦️'],55:['Bruine forte','🌧️'],
+    61:['Pluie légère','🌧️'],63:['Pluie','🌧️'],65:['Pluie forte','🌧️'],
+    71:['Neige légère','🌨️'],73:['Chutes de neige','🌨️'],75:['Neige forte','❄️'],77:['Grésil','🌨️'],
+    80:['Averses','🌦️'],81:['Fortes averses','🌧️'],82:['Averses violentes','⛈️'],
+    85:['Averses de neige','🌨️'],86:['Fortes averses de neige','❄️'],95:['Orage','⛈️'],96:['Orage','⛈️'],99:['Orage','⛈️']};
+  const m=S.lang==='en'?en:S.lang==='fr'?fr:de;
+  return m[c]||[S.lang==='en'?'Unknown':S.lang==='fr'?'Inconnu':'Unbekannt','❓'];
 }
+function photoScore(c){
+  const s={0:82,1:93,2:88,3:38,45:68,48:62,51:45,53:42,55:38,61:32,63:28,65:22,71:80,73:76,75:71,77:72,80:58,81:52,82:48,85:74,86:68,95:72,96:65,99:60};
+  return s[c]!==undefined?s[c]:50;
+}
+function scc(s){return s>=75?'sch':s>=50?'scm':'scl';}
+function scv(s){return s>=75?'var(--green)':s>=50?'var(--gold)':'var(--red)';}
+function moonIcon(ph){return['🌑','🌒','🌓','🌔','🌕','🌖','🌗','🌘'][Math.floor(ph*8)%8];}
+function moonName(ph){
+  const n=t('moon_names');
+  if(ph<0.03||ph>0.97)return n[0];
+  if(ph<0.22)return n[1];if(ph<0.28)return n[2];
+  if(ph<0.47)return n[3];if(ph<0.53)return n[4];
+  if(ph<0.72)return n[5];if(ph<0.78)return n[6];
+  return n[7];
+}
+function getTip(wCode,moonPhase){
+  const L=S.lang||'de';
+  if(moonPhase<0.08||moonPhase>0.92)return{de:'🌌 Neumond: perfekt für Milchstrassen-Fotografie!',en:'🌌 New moon: perfect for Milky Way photography!',fr:'🌌 Nouvelle lune: parfait pour la Voie Lactée!'}[L];
+  if(moonPhase>0.45&&moonPhase<0.55)return{de:'🌕 Vollmond: dramatisches Mondlicht für Nachtlandschaften.',en:'🌕 Full moon: dramatic moonlight for night landscapes.',fr:'🌕 Pleine lune: clair de lune dramatique pour les paysages nocturnes.'}[L];
+  const tips={
+    0:{de:'☀️ Klarer Himmel – goldene Stunde nicht verpassen!',en:'☀️ Clear sky – don\'t miss golden hour!',fr:'☀️ Ciel dégagé – ne ratez pas l\'heure dorée!'},
+    1:{de:'🌤️ Optimale Bedingungen! Dramatische Wolken + goldenes Licht.',en:'🌤️ Optimal conditions! Dramatic clouds + golden light.',fr:'🌤️ Conditions optimales! Nuages dramatiques + lumière dorée.'},
+    2:{de:'⛅ Lichtwechsel schaffen spannende Momente.',en:'⛅ Changing light creates exciting moments.',fr:'⛅ La lumière changeante crée des moments excitants.'},
+    3:{de:'☁️ Bedeckt: ideal für Wasserfälle, kein hartes Licht.',en:'☁️ Overcast: ideal for waterfalls, no harsh light.',fr:'☁️ Couvert: idéal pour les cascades, pas de lumière dure.'},
+    45:{de:'🌫️ Nebel! Frühaufstehen für Sonnenstrahlen im Nebel.',en:'🌫️ Fog! Wake up early for sun rays through mist.',fr:'🌫️ Brouillard! Levez-vous tôt pour les rayons de soleil dans la brume.'},
+    61:{de:'🌧️ Regen: Reflexionen und satte Farben nutzen.',en:'🌧️ Rain: use reflections and rich colors.',fr:'🌧️ Pluie: profitez des reflets et des couleurs riches.'},
+    71:{de:'❄️ Schnee: -1 EV Belichtungskorrektur für korrektes Weiss.',en:'❄️ Snow: -1 EV exposure compensation for correct white.',fr:'❄️ Neige: -1 EV de compensation d\'exposition pour le blanc correct.'},
+    95:{de:'⛈️ Gewitter: nur sicher vom Inneren aus fotografieren.',en:'⛈️ Thunderstorm: only photograph safely from indoors.',fr:'⛈️ Orage: photographiez uniquement en sécurité depuis l\'intérieur.'}
+  };
+  const t2=tips[wCode]||tips[Math.floor(wCode/10)*10]||{de:'🌄 Goldene und blaue Stunde nutzen.',en:'🌄 Use golden and blue hour.',fr:'🌄 Profitez de l\'heure dorée et bleue.'};
+  return t2[L]||t2.de;
+}
+
 function photoScore(c){
   const s={0:82,1:93,2:88,3:38,45:68,48:62,51:45,53:42,55:38,61:32,63:28,65:22,71:80,73:76,75:71,77:72,80:58,81:52,82:48,85:74,86:68,95:72,96:65,99:60};
   return s[c]!==undefined?s[c]:50;
@@ -975,7 +1021,7 @@ function renderLight(){
       <div style="font-size:12px;color:var(--mu);line-height:1.5;margin-top:4px;">${goodMilky?'🌌 '+t('moonwalk_good'):t('moon_hint')}</div>
     </div>
   </div>
-  ${proGate(cameraCard(lc,wCode),"Kamera-Einstellungen")}
+  ${cameraCard(lc,wCode)}
   ${weather?.daily?`<div class="card"><div class="ch"><div class="ct">${t('forecast')}</div><div class="badge bgr">🌿 Bester Tag markiert</div></div><div class="wdays">${wdHtml}</div></div>`:''}
   <div class="card"><div class="ch"><div class="ct">${t('seasonal')}</div><div class="badge bgray">${new Date().toLocaleDateString('de-CH',{month:'long'})}</div></div><div class="season-grid">${seasonalTips(lat)}</div></div>
   </div>`;
@@ -1121,7 +1167,7 @@ function renderNight(){
         '💡 Eingeschränkte Sichtbarkeit. Je weniger Mondlicht, desto besser für Sterne.'}
     </div>
   </div>
-  ${proGate(mwHtml,"Milchstrassen-Fenster")}
+  ${mwHtml}
   <div class="card">
     <div class="ch"><div class="ct">Mondlicht-Kalender – 14 Nächte</div><div class="badge bgr">&lt;25% = ideal</div></div>
     <div class="nights-grid">${nightCells}</div>
@@ -1171,7 +1217,6 @@ function renderPlan(){
   const{lat,lng,date}=S;
   const times=SunCalc.getTimes(date,lat,lng);
   const{bars,rank}=yearlyChart(lat,lng);
-  const canSeePlan=IS_PRO;
   const shareUrl=`${location.href.split('?')[0]}?lat=${lat.toFixed(4)}&lng=${lng.toFixed(4)}&date=${date.toISOString().slice(0,10)}`;
   document.getElementById('main').innerHTML=`<div class="results">
   <div class="card">
@@ -1437,8 +1482,8 @@ function render(){
     case'map':renderMap();break;
     case'night':renderNight();break;
     case'plan':renderPlan();break;
-    case'tools':IS_PRO?renderTools():renderProRequired("Foto-Tools","ND-Filter, Timelapse, Schärfentiefe & Belichtungsdreieck");break;
-    case'trip':IS_PRO?renderTrip():renderProRequired("Trip-Planer & Packliste","Mehrtages-Reisen planen, Packliste und mehr");break;
+    case'tools':renderTools();break;
+    case'trip':renderTrip();break;
   }
 }
 function selectDay(ds){document.getElementById('di').value=ds;S.date=new Date(ds+'T12:00:00');render();}
@@ -1473,134 +1518,642 @@ function checkNotif(){
     new Notification(`📸 Nächster guter Fototag: ${dn}`,{body:`Score ${best.sc}/100 in ${S.name}`});
   }
 }
-// ── Trial helpers ────────────────────────────────────────────
-function trialHoursLeft(){
-  if(!TRIAL_ENDS_AT)return 0;
-  const ms=TRIAL_ENDS_AT-new Date();
-  return Math.max(0,Math.ceil(ms/3600000));
-}
-function trialMinutesLeft(){
-  if(!TRIAL_ENDS_AT)return 0;
-  const ms=TRIAL_ENDS_AT-new Date();
-  const mins=Math.ceil(ms/60000);
-  return Math.max(0,mins);
-}
-
-function renderTrialBanner(){
-  try{
-  const el=document.getElementById('trial-banner');
-  if(!el||!CURRENT_USER)return;
-  if(!IS_TRIAL&&(!TRIAL_ENDS_AT||IS_PRO&&!IS_TRIAL)){el.innerHTML='';return;}
-
-  const hours=trialHoursLeft();
-  const mins=trialMinutesLeft();
-  const expired=mins<=0&&!IS_PRO;
-
-  if(IS_TRIAL){
-    const timeStr=hours>0?`${hours}h ${mins%60}m`:`${mins} Min.`;
-    el.innerHTML=`<div class="trial-bar">
-      <div>
-        <div class="trial-bar-title">🎁 1-Tages-Testversion aktiv</div>
-        <div class="trial-bar-text">Du hast Zugang zu allen Pro-Features. Nach Ablauf nur noch Free.</div>
-      </div>
-      <div style="text-align:center;flex-shrink:0;">
-        <div style="font-size:10px;color:var(--mu);text-transform:uppercase;letter-spacing:.08em;margin-bottom:2px;">Noch</div>
-        <div class="trial-time">${timeStr}</div>
-      </div>
-      <button onclick="window.open('https://buy.stripe.com/bJe8wPfsG6uQ7040XJ6Ri00','_blank')" 
-        style="background:var(--blue);border:none;border-radius:99px;padding:10px 20px;font-size:13px;font-weight:600;color:#fff;cursor:pointer;white-space:nowrap;flex-shrink:0;font-family:inherit;">
-        Pro sichern – CHF 9 →
-      </button>
-    </div>`;
-    // Auto-update countdown
-    setTimeout(renderTrialBanner, 60000);
-  }else if(expired){
-    el.innerHTML=`<div class="trial-bar trial-expired">
-      <div>
-        <div class="trial-bar-title">⏰ Testversion abgelaufen</div>
-        <div class="trial-bar-text">Deine kostenlose Testversion ist beendet. Pro-Features sind gesperrt.</div>
-      </div>
-      <button onclick="window.open('https://buy.stripe.com/bJe8wPfsG6uQ7040XJ6Ri00','_blank')"
-        style="background:var(--gold);border:none;border-radius:99px;padding:10px 20px;font-size:13px;font-weight:600;color:#1A0E00;cursor:pointer;white-space:nowrap;flex-shrink:0;font-family:inherit;">
-        Pro kaufen – CHF 9 →
-      </button>
-    </div>`;
-  }else{
-    el.innerHTML='';
-  }
-  }catch(e){console.warn('Trial banner:',e);}
-}
-
-function renderProRequired(title, desc){
-  document.getElementById('main').innerHTML=`<div style="text-align:center;padding:4rem 1rem;">
-    <div style="font-size:56px;margin-bottom:1.25rem;">🔒</div>
-    <div style="font-family:'Playfair Display',Georgia,serif;font-size:24px;font-weight:700;margin-bottom:.75rem;">${title}</div>
-    <div style="font-size:14px;color:var(--mu);max-width:320px;margin:0 auto 2rem;line-height:1.7;">${desc}<br><br>Einmalig <strong style="color:var(--gold)">CHF 9</strong> – alle Pro-Features für immer.</div>
-    <button onclick="showProModal('${title}')" style="background:var(--gold);border:none;border-radius:99px;padding:14px 32px;font-size:15px;font-weight:700;color:#1A0E00;cursor:pointer;font-family:inherit;margin-bottom:1rem;">${t('pro_req_buy')}</button>
-    <br>
-    <button onclick="openLoginModal()" style="background:none;border:.5px solid var(--bd);border-radius:99px;padding:10px 24px;font-size:13px;color:var(--mu);cursor:pointer;font-family:inherit;">${t('pro_req_login')}</button>
-  </div>`;
-}
-
 function showEmpty(){
   document.getElementById('tab-bar').style.display='none';
   document.getElementById('main').innerHTML=`<div class="empty">
     <span class="empty-icon">🌄</span>
-    <div class="empty-title">${t('empty_title')}</div>
-    <div class="empty-sub">${t('empty_sub')}</div>
+    <div class="empty-title">Plane deinen perfekten Fototrip</div>
+    <div class="empty-sub">Ort eingeben und goldene Stunde, Milchstrassen-Fenster, Wetter-Score, Kamera-Einstellungen und Foto-Tools weltweit erhalten.</div>
     <div class="chips">
       ${['🏔️ Grindelwald','💧 Lauterbrunnen','🌊 Santorini','⛰️ Dolomiten','🏡 Hallstatt','🌿 Faroe Islands','🌌 Tromsø','🎈 Kappadokien','🏯 Kyoto','🌋 Teide','🐧 Patagonia','🦁 Serengeti'].map(s=>`<div class="chip" onclick="quickSearch('${s.replace(/^.+? /,'')}')">${s}</div>`).join('')}
     </div>
   </div>`;
 }
-
+// Load from URL params on startup
+(function(){
+  const p=new URLSearchParams(location.search);
+  if(p.get('lat')&&p.get('lng')){
+    S.lat=parseFloat(p.get('lat'));S.lng=parseFloat(p.get('lng'));
+    if(p.get('date'))S.date=new Date(p.get('date')+'T12:00:00');
+    S.name='Geteilter Ort';
+    loadData();
+  }
+})();
 </script>
+
 <script>
 // ── PWA Service Worker Registration ──────────────────────────────────────────
 if ('serviceWorker' in navigator) {
   window.addEventListener('load', async () => {
     try {
-      const swCode = `const CACHE='photoplanner-v3';self.addEventListener('install',e=>{e.waitUntil(caches.open(CACHE).then(c=>c.addAll(['./','./index.html']).catch(()=>{})).then(()=>self.skipWaiting()))});self.addEventListener('activate',e=>{e.waitUntil(caches.keys().then(keys=>Promise.all(keys.filter(k=>k!==CACHE).map(k=>caches.delete(k)))).then(()=>self.clients.claim()))});self.addEventListener('fetch',e=>{e.respondWith(caches.match(e.request).then(c=>c||fetch(e.request).catch(()=>new Response('Offline',{status:503}))))});`;
+      // Inline SW as Blob – works without external sw.js file
+      const swCode = `const CACHE = 'photoplanner-v3';
+const API_CACHE = 'photoplanner-api-v3';
+
+const STATIC = [
+  './',
+  './index.html',
+  'https://cdnjs.cloudflare.com/ajax/libs/suncalc/1.9.0/suncalc.min.js',
+  'https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.min.js',
+  'https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.min.css',
+  'https://cdn.jsdelivr.net/npm/@fontsource/playfair-display@5/400.css',
+  'https://cdn.jsdelivr.net/npm/@fontsource/playfair-display@5/700.css',
+];
+
+// ── Install: cache static assets ────────────────────────────────────────────
+self.addEventListener('install', e => {
+  e.waitUntil(
+    caches.open(CACHE)
+      .then(cache => cache.addAll(STATIC).catch(() => {}))
+      .then(() => self.skipWaiting())
+  );
+});
+
+// ── Activate: clean old caches ───────────────────────────────────────────────
+self.addEventListener('activate', e => {
+  e.waitUntil(
+    caches.keys().then(keys =>
+      Promise.all(
+        keys.filter(k => k !== CACHE && k !== API_CACHE)
+            .map(k => caches.delete(k))
+      )
+    ).then(() => self.clients.claim())
+  );
+});
+
+// ── Fetch: smart caching strategy ───────────────────────────────────────────
+self.addEventListener('fetch', e => {
+  const url = new URL(e.request.url);
+
+  // Weather & Geocoding: Network-first, cache fallback (24h TTL)
+  if (url.hostname === 'api.open-meteo.com' ||
+      url.hostname === 'nominatim.openstreetmap.org') {
+    e.respondWith(networkFirstWithTTL(e.request, API_CACHE, 24 * 60 * 60 * 1000));
+    return;
+  }
+
+  // Map tiles: Cache-first (tiles don't change)
+  if (url.hostname.includes('openstreetmap.org') ||
+      url.hostname.includes('lightpollutionmap.info')) {
+    e.respondWith(cacheFirst(e.request, CACHE));
+    return;
+  }
+
+  // Fonts & CDN libraries: Cache-first (versioned, stable)
+  if (url.hostname === 'cdnjs.cloudflare.com' ||
+      url.hostname === 'cdn.jsdelivr.net' ||
+      url.hostname === 'unpkg.com') {
+    e.respondWith(cacheFirst(e.request, CACHE));
+    return;
+  }
+
+  // App shell (index.html): Stale-while-revalidate
+  if (url.pathname === '/' || url.pathname.endsWith('.html')) {
+    e.respondWith(staleWhileRevalidate(e.request, CACHE));
+    return;
+  }
+
+  // Default: network with cache fallback
+  e.respondWith(
+    fetch(e.request).catch(() => caches.match(e.request))
+  );
+});
+
+// ── Cache strategies ─────────────────────────────────────────────────────────
+async function cacheFirst(req, cacheName) {
+  const cached = await caches.match(req);
+  if (cached) return cached;
+  try {
+    const fresh = await fetch(req);
+    if (fresh.ok) {
+      const cache = await caches.open(cacheName);
+      cache.put(req, fresh.clone());
+    }
+    return fresh;
+  } catch {
+    return new Response('Offline – cached version not available', { status: 503 });
+  }
+}
+
+async function staleWhileRevalidate(req, cacheName) {
+  const cache = await caches.open(cacheName);
+  const cached = await cache.match(req);
+  const fetchPromise = fetch(req).then(fresh => {
+    if (fresh.ok) cache.put(req, fresh.clone());
+    return fresh;
+  }).catch(() => null);
+  return cached || await fetchPromise || offlinePage();
+}
+
+async function networkFirstWithTTL(req, cacheName, ttl) {
+  try {
+    const fresh = await fetch(req);
+    if (fresh.ok) {
+      const cache = await caches.open(cacheName);
+      const resp = fresh.clone();
+      // Store with timestamp header
+      const headers = new Headers(resp.headers);
+      headers.set('x-cached-at', Date.now().toString());
+      const cachedResp = new Response(await resp.blob(), { headers });
+      cache.put(req, cachedResp);
+      return fresh;
+    }
+  } catch {}
+  // Cache fallback – check TTL
+  const cache = await caches.open(cacheName);
+  const cached = await cache.match(req);
+  if (cached) {
+    const cachedAt = parseInt(cached.headers.get('x-cached-at') || '0');
+    if (Date.now() - cachedAt < ttl) return cached;
+  }
+  return cached || new Response(
+    JSON.stringify({ error: 'offline', message: 'No network – showing cached data' }),
+    { status: 503, headers: { 'Content-Type': 'application/json' } }
+  );
+}
+
+function offlinePage() {
+  return new Response(\`
+    <!DOCTYPE html><html lang="de"><head><meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <title>PhotoPlanner – Offline</title>
+    <style>body{background:#08080D;color:#EDE8DF;font-family:system-ui;display:flex;align-items:center;justify-content:center;min-height:100vh;text-align:center;padding:2rem;}
+    h1{font-size:2rem;margin-bottom:1rem;}p{color:rgba(237,232,223,0.5);margin-bottom:2rem;}
+    button{background:#E9A42E;border:none;color:#1A0E00;padding:12px 24px;border-radius:12px;font-size:1rem;cursor:pointer;}
+    </style></head><body>
+    <div><div style="font-size:4rem;margin-bottom:1rem;">📷</div>
+    <h1>PhotoPlanner</h1>
+    <p>Keine Internetverbindung.<br>Bitte prüfe dein Netzwerk.</p>
+    <button onclick="location.reload()">Erneut versuchen</button></div>
+    </body></html>
+  \`, { headers: { 'Content-Type': 'text/html' } });
+}
+
+// ── Background Sync: Wetter-Update ──────────────────────────────────────────
+self.addEventListener('sync', e => {
+  if (e.tag === 'weather-sync') {
+    e.waitUntil(syncWeather());
+  }
+});
+
+async function syncWeather() {
+  // Triggered when back online – clients can request a re-fetch
+  const clients = await self.clients.matchAll();
+  clients.forEach(client => client.postMessage({ type: 'SYNC_WEATHER' }));
+}
+
+// ── Push Notifications ───────────────────────────────────────────────────────
+self.addEventListener('push', e => {
+  const data = e.data?.json() || {};
+  e.waitUntil(
+    self.registration.showNotification(data.title || '📸 PhotoPlanner', {
+      body: data.body || 'Gute Foto-Bedingungen heute!',
+      icon: './icons/icon-192.png',
+      badge: './icons/icon-72.png',
+      tag: 'photoplanner-alert',
+      renotify: true,
+      data: { url: data.url || './' }
+    })
+  );
+});
+
+self.addEventListener('notificationclick', e => {
+  e.notification.close();
+  e.waitUntil(clients.openWindow(e.notification.data?.url || './'));
+});
+`;
       const blob = new Blob([swCode], { type: 'application/javascript' });
       const swUrl = URL.createObjectURL(blob);
-      await navigator.serviceWorker.register(swUrl, { scope: './' });
+      const reg = await navigator.serviceWorker.register(swUrl, { scope: './' });
+      console.log('SW registered via Blob');
+
+      reg.addEventListener('updatefound', () => {
+        const newSW = reg.installing;
+        newSW.addEventListener('statechange', () => {
+          if (newSW.state === 'installed' && navigator.serviceWorker.controller) {
+            showUpdateToast();
+          }
+        });
+      });
+
+      navigator.serviceWorker.addEventListener('message', e => {
+        if (e.data?.type === 'SYNC_WEATHER' && S.lat) loadData();
+      });
     } catch (err) {
-      console.info('PWA offline caching not available.');
+      // Silently ignore – PWA features are enhancement only
+      console.info('PWA offline caching not available in this environment.');
     }
   });
 }
 
+// ── Install Prompt ────────────────────────────────────────────────────────────
 let deferredPrompt = null;
+
 window.addEventListener('beforeinstallprompt', e => {
-  e.preventDefault(); deferredPrompt = e;
+  e.preventDefault();
+  deferredPrompt = e;
   const btn = document.getElementById('install-btn');
   if (btn) btn.style.display = 'flex';
 });
+
 window.addEventListener('appinstalled', () => {
   const btn = document.getElementById('install-btn');
   if (btn) btn.style.display = 'none';
   deferredPrompt = null;
+  showToast('✅ PhotoPlanner wurde installiert!');
 });
+
 async function installPWA() {
-  if (!deferredPrompt) { showToast('📲 Nutze "Zum Homescreen hinzufügen" im Browser-Menü'); return; }
+  if (!deferredPrompt) {
+    showToast('ℹ️ Nutze "Zum Homescreen hinzufügen" im Browser-Menü');
+    return;
+  }
   deferredPrompt.prompt();
-  await deferredPrompt.userChoice;
+  const { outcome } = await deferredPrompt.userChoice;
   deferredPrompt = null;
+  if (outcome === 'accepted') showToast('✅ App wird installiert…');
 }
+
+// ── Online / Offline detection ────────────────────────────────────────────────
 function setOnlineStatus(online) {
   const offBar = document.getElementById('offline-bar');
-  const onBar = document.getElementById('online-bar');
+  const onBar  = document.getElementById('online-bar');
   if (!offBar || !onBar) return;
-  if (!online) { offBar.style.display = 'flex'; onBar.style.display = 'none'; }
-  else { offBar.style.display = 'none'; onBar.style.display = 'flex'; setTimeout(() => { onBar.style.display = 'none'; }, 3500); if (S?.lat) loadData(); }
+
+  if (!online) {
+    offBar.style.display = 'flex';
+    onBar.style.display  = 'none';
+  } else {
+    offBar.style.display = 'none';
+    // Show "back online" briefly
+    onBar.style.display = 'flex';
+    setTimeout(() => { onBar.style.display = 'none'; }, 3500);
+    // Reload weather if we have a location
+    if (S?.lat) loadData();
+  }
 }
-window.addEventListener('online', () => setOnlineStatus(true));
+
+window.addEventListener('online',  () => setOnlineStatus(true));
 window.addEventListener('offline', () => setOnlineStatus(false));
 if (!navigator.onLine) setOnlineStatus(false);
+
+// ── Update Toast ──────────────────────────────────────────────────────────────
+function showUpdateToast() {
+  showToast('🔄 Neue Version verfügbar – Seite neu laden?', true);
+}
+
+function showToast(msg, withReload = false) {
+  const el = document.createElement('div');
+  el.style.cssText = 'position:fixed;bottom:5rem;left:50%;transform:translateX(-50%);background:rgba(20,20,30,0.95);border:0.5px solid rgba(255,255,255,0.15);color:#EDE8DF;padding:10px 18px;border-radius:99px;font-size:13px;z-index:9999;white-space:nowrap;display:flex;align-items:center;gap:10px;box-shadow:0 4px 20px rgba(0,0,0,0.4);animation:slideUp .3s ease;';
+  el.textContent = msg;
+  if (withReload) {
+    const btn = document.createElement('button');
+    btn.textContent = 'Neu laden';
+    btn.style.cssText = 'background:var(--gold);color:#1A0E00;border:none;border-radius:99px;padding:4px 12px;font-size:12px;cursor:pointer;font-weight:500;';
+    btn.onclick = () => location.reload();
+    el.appendChild(btn);
+  }
+  document.body.appendChild(el);
+  if (!withReload) setTimeout(() => el.remove(), 3500);
+}
+
+
+// ── Theme Toggle ─────────────────────────────────────────────────────────────
+function toggleTheme(){
+  const curr=document.documentElement.getAttribute('data-theme');
+  const next=curr==='light'?'dark':'light';
+  document.documentElement.setAttribute('data-theme',next==='dark'?'':next);
+  localStorage.setItem('pp_theme',next);
+  document.getElementById('theme-btn').textContent=next==='light'?'🌙':'🌓';
+}
+(function initTheme(){
+  const saved=localStorage.getItem('pp_theme');
+  const prefersDark=window.matchMedia('(prefers-color-scheme: dark)').matches;
+  const theme=saved||(prefersDark?'dark':'light');
+  if(theme==='light'){
+    document.documentElement.setAttribute('data-theme','light');
+    const btn=document.getElementById('theme-btn');
+    if(btn)btn.textContent='🌙';
+  }
+})();
+
+// ── Onboarding ───────────────────────────────────────────────────────────────
+let obSlide=0;
+function showOnboard(){
+  if(localStorage.getItem('pp_onboard_done'))return;
+  const el=document.getElementById('onboard');
+  if(el)el.style.display='flex';
+}
+function obNext(){
+  obSlide++;
+  if(obSlide>2){closeOnboard();return;}
+  document.querySelectorAll('.onboard-slide').forEach((s,i)=>s.classList.toggle('active',i===obSlide));
+  document.querySelectorAll('.onboard-dot').forEach((d,i)=>d.classList.toggle('active',i===obSlide));
+  if(obSlide===2)document.getElementById('ob-next').textContent='Los geht\'s 🚀';
+}
+function closeOnboard(){
+  const el=document.getElementById('onboard');
+  if(el)el.style.display='none';
+  localStorage.setItem('pp_onboard_done','1');
+}
+// Show onboarding after short delay on first visit
+setTimeout(showOnboard, 800);
+
+// ── Packing List ─────────────────────────────────────────────────────────────
+const PACK_ITEMS={
+  'Kamera & Optik':[
+    {id:'cam',label:'Kamera-Body'},
+    {id:'lens1',label:'Hauptobjektiv'},
+    {id:'lens2',label:'Weitwinkel (für Milchstrasse)'},
+    {id:'lens3',label:'Teleobjektiv'},
+    {id:'filter_pol',label:'Polarisationsfilter'},
+    {id:'filter_nd',label:'ND-Filter (3, 6, 10 Stops)'},
+    {id:'filter_uv',label:'UV-/Schutzfilter'},
+    {id:'lens_cloth',label:'Linsenreinigungstücher'},
+  ],
+  'Stativ & Stabilisierung':[
+    {id:'tripod',label:'Stativ'},
+    {id:'ballhead',label:'Kugelkopf'},
+    {id:'remote',label:'Fernauslöser / Intervallometer'},
+    {id:'sandbag',label:'Sandsack (für Wind)'},
+  ],
+  'Strom & Speicher':[
+    {id:'batt1',label:'Akku 1 (geladen)'},
+    {id:'batt2',label:'Akku 2 (Ersatz)'},
+    {id:'charger',label:'Ladegerät'},
+    {id:'sd1',label:'Speicherkarte 1'},
+    {id:'sd2',label:'Speicherkarte 2 (Ersatz)'},
+    {id:'powerbank',label:'Powerbank'},
+  ],
+  'Licht & Zubehör':[
+    {id:'headlamp',label:'Stirnlampe (für Nacht)'},
+    {id:'reflector',label:'Reflektor / Diffusor'},
+    {id:'led',label:'LED-Panel (Portrait)'},
+    {id:'gaffer',label:'Gaffer Tape'},
+  ],
+  'Wetter & Schutz':[
+    {id:'raincover',label:'Kamera-Regenschutz'},
+    {id:'jacket',label:'Wetterfeste Jacke'},
+    {id:'gloves',label:'Handschuhe (für Kälte)'},
+    {id:'drybox',label:'Trockenbox / Silica Gel'},
+  ],
+  'Navigation & Planung':[
+    {id:'phone',label:'Smartphone mit PhotoPlanner'},
+    {id:'compass',label:'Kompass / GPS'},
+    {id:'map',label:'Offline-Karte heruntergeladen'},
+    {id:'notebook',label:'Notizbuch für Settings'},
+  ],
+};
+
+function renderPackList(){
+  const packed=JSON.parse(localStorage.getItem('pp_pack')||'{}');
+  const total=Object.values(PACK_ITEMS).flat().length;
+  const done=Object.values(packed).filter(Boolean).length;
+  const pct=Math.round(done/total*100);
+  let html=`<div class="card">
+    <div class="ch">
+      <div class="ct">${t('pack')}</div>
+      <div class="badge ${pct===100?'bgr':pct>50?'bg':'bgray'}">${done}/${total} bereit</div>
+    </div>
+    <div class="sbar" style="margin-bottom:1rem;"><div class="sbar-f" style="width:${pct}%;background:${pct===100?'var(--green)':'var(--gold)'};"></div></div>
+    <div style="display:flex;gap:8px;margin-bottom:1rem;">
+      <button class="btn btn-sm" onclick="packAll(true)">✅ Alle</button>
+      <button class="btn btn-sm" onclick="packAll(false)">↺ Reset</button>
+    </div>`;
+  for(const [cat,items] of Object.entries(PACK_ITEMS)){
+    html+=`<div class="pack-category">${cat}</div>`;
+    items.forEach(item=>{
+      const isDone=!!packed[item.id];
+      html+=`<div class="pack-item" onclick="togglePack('${item.id}')">
+        <div class="pack-check ${isDone?'done':''}">${isDone?'✓':''}</div>
+        <div class="pack-label ${isDone?'done':''}">${item.label}</div>
+      </div>`;
+    });
+  }
+  html+='</div>';
+  return html;
+}
+function togglePack(id){
+  const p=JSON.parse(localStorage.getItem('pp_pack')||'{}');
+  p[id]=!p[id];
+  localStorage.setItem('pp_pack',JSON.stringify(p));
+  const el=document.getElementById('pack-section');
+  if(el)el.innerHTML=renderPackList();
+}
+function packAll(val){
+  const p={};
+  Object.values(PACK_ITEMS).flat().forEach(i=>p[i.id]=val);
+  localStorage.setItem('pp_pack',JSON.stringify(p));
+  const el=document.getElementById('pack-section');
+  if(el)el.innerHTML=renderPackList();
+}
+
+// ── Historical Weather ────────────────────────────────────────────────────────
+async function loadHistorical(lat,lng,year){
+  const end=`${year}-12-31`,start=`${year}-01-01`;
+  try{
+    const r=await fetch(`https://archive-api.open-meteo.com/v1/archive?latitude=${lat}&longitude=${lng}&start_date=${start}&end_date=${end}&daily=weathercode&timezone=auto`);
+    return await r.json();
+  }catch{return null;}
+}
+
+async function renderHistorical(container){
+  container.innerHTML='<div class="loading"><div class="spin"></div>Historische Daten werden geladen…</div>';
+  const yr=new Date().getFullYear()-1;
+  const data=await loadHistorical(S.lat,S.lng,yr);
+  if(!data?.daily){container.innerHTML='<div style="font-size:13px;color:var(--mu);padding:1rem;">Keine historischen Daten verfügbar.</div>';return;}
+  
+  // Group by month, average score
+  const monthly=Array.from({length:12},()=>({scores:[],days:0}));
+  data.daily.time.forEach((d,i)=>{
+    const m=new Date(d).getMonth();
+    const sc=photoScore(data.daily.weathercode[i]);
+    monthly[m].scores.push(sc);
+    monthly[m].days++;
+  });
+  const avgScores=monthly.map(m=>m.scores.length?Math.round(m.scores.reduce((a,b)=>a+b,0)/m.scores.length):0);
+  const maxSc=Math.max(...avgScores);
+  const MN=t('MONTHS');
+  
+  const bars=avgScores.map((sc,i)=>{
+    const pct=maxSc>0?(sc/maxSc*100).toFixed(1):0;
+    const isBest=sc===maxSc;
+    return`<div class="hb">
+      <div class="hbo" onclick="goToMonth(${i})">
+        <div class="hbf" style="height:${pct}%;background:${isBest?'var(--gold)':scv(sc)};opacity:${isBest?1:.6};"></div>
+      </div>
+      <div class="hbl">${MN[i]}</div>
+    </div>`;
+  }).join('');
+
+  const bestMonth=avgScores.indexOf(maxSc);
+  const sorted=[...avgScores.map((sc,i)=>({sc,i}))].sort((a,b)=>b.sc-a.sc);
+  
+  container.innerHTML=`<div class="card">
+    <div class="ch"><div class="ct">${t('hist')} ${yr}</div><div class="badge bg">Durchschnittlicher Foto-Score</div></div>
+    <div class="hist-bar">${bars}</div>
+    <div style="font-size:11px;color:var(--mu);text-align:center;margin-bottom:1rem;">Auf Monat klicken → zu diesem Datum springen</div>
+    <div style="font-size:13px;margin-bottom:.5rem;font-weight:500;">🥇 Beste Monate ${yr}:</div>
+    ${sorted.slice(0,3).map(({sc,i},rank)=>`<div style="display:flex;align-items:center;gap:10px;padding:7px 12px;background:var(--s2);border-radius:var(--rs);margin-bottom:5px;">
+      <span>${['🥇','🥈','🥉'][rank]}</span>
+      <span style="flex:1;font-weight:500;">${MN[i]}</span>
+      <span class="badge ${sc>=75?'bg':sc>=50?'bb':'bgray'}">${sc}/100</span>
+    </div>`).join('')}
+    <div class="tip">💡 Historische Daten geben keinen Garantie, aber zeigen klimatische Tendenzen zuverlässig.</div>
+  </div>`;
+}
+
+function goToMonth(m){
+  const yr=new Date().getFullYear();
+  const d=new Date(yr,m,15);
+  document.getElementById('di').value=d.toISOString().slice(0,10);
+  S.date=d;
+  setTab('light');
+}
+
+// ── Multi-Day Trip Planner ────────────────────────────────────────────────────
+let TRIP={days:[],name:'Mein Fototrip'};
+(function(){const saved=localStorage.getItem('pp_trip');if(saved)try{TRIP=JSON.parse(saved);}catch{}})();
+
+function saveTrip(){localStorage.setItem('pp_trip',JSON.stringify(TRIP));}
+
+function renderTrip(){
+  const hasLoc=S.lat&&S.lng;
+  document.getElementById('main').innerHTML=`<div class="results">
+  <!-- Trip Header -->
+  <div class="card">
+    <div class="ch">
+      <div class="ct">${t('trip_planner')}</div>
+      <div class="badge bgray">${TRIP.days.length} Tage</div>
+    </div>
+    <div style="display:flex;gap:8px;margin-bottom:.75rem;flex-wrap:wrap;">
+      <input class="sinput" id="trip-name" value="${TRIP.name}" placeholder="Trip-Name…" 
+        style="flex:1;min-width:160px;height:38px;padding:0 12px;font-size:13px;"
+        onchange="TRIP.name=this.value;saveTrip()">
+      <button class="btn btn-gold btn-sm" onclick="addTripDay()">+ ${t('add_day')}</button>
+      <button class="btn btn-sm" onclick="clearTrip()">↺ Reset</button>
+    </div>
+    ${!hasLoc?'<div style="font-size:12px;color:var(--mu);">Bitte zuerst einen Ort suchen.</div>':''}
+  </div>
+
+  <!-- Days -->
+  <div id="trip-days">${renderTripDays()}</div>
+
+  <!-- Packing List -->
+  <div id="pack-section">${renderPackList()}</div>
+  </div>`;
+}
+
+function renderTripDays(){
+  if(!TRIP.days.length)return`<div style="text-align:center;padding:2rem;color:var(--mu);font-size:14px;">Noch keine Tage geplant.<br>Klicke "+ Tag hinzufügen" um zu starten.</div>`;
+  return TRIP.days.map((day,idx)=>{
+    const d=new Date(day.date+'T12:00:00');
+    const times=SunCalc.getTimes(d,day.lat||S.lat,day.lng||S.lng);
+    const mi=SunCalc.getMoonIllumination(d);
+    const wCode=day.wCode||2;
+    const sc=photoScore(wCode);
+    const [wDesc,wIcon]=wmoInfo(wCode);
+    const MN=t('MONTHS'), DAYS=t('DAYS');
+    const dn=`${DAYS[d.getDay()]}, ${d.getDate()}. ${MN[d.getMonth()]}`;
+    return`<div class="day-card">
+      <div class="day-hdr">
+        <div>
+          <div class="day-num">Tag ${idx+1}</div>
+          <div style="font-size:14px;font-weight:500;margin-top:4px;">${dn}</div>
+          <div style="font-size:12px;color:var(--mu);">${day.location||S.name}</div>
+        </div>
+        <div style="text-align:right;">
+          <div class="day-score" style="color:${scv(sc)}">${sc}<span style="font-size:13px;opacity:.5">/100</span></div>
+          <div style="font-size:12px;color:var(--mu);">${wIcon} ${wDesc}</div>
+          <button class="btn btn-sm" style="margin-top:6px;" onclick="removeTripDay(${idx})">✕ Entfernen</button>
+        </div>
+      </div>
+      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;font-size:12px;">
+        <div style="background:var(--s2);border-radius:var(--rs);padding:8px;text-align:center;">
+          <div style="color:var(--gold);font-weight:500;">${fmt(times.dawn)}</div>
+          <div style="color:var(--mu);margin-top:2px;">🌅 Gold Morgen</div>
+        </div>
+        <div style="background:var(--s2);border-radius:var(--rs);padding:8px;text-align:center;">
+          <div style="color:var(--gold);font-weight:500;">${fmt(times.goldenHour)}</div>
+          <div style="color:var(--mu);margin-top:2px;">🌇 Gold Abend</div>
+        </div>
+        <div style="background:var(--s2);border-radius:var(--rs);padding:8px;text-align:center;">
+          <div style="color:var(--blue);font-weight:500;">${Math.round(mi.fraction*100)}%</div>
+          <div style="color:var(--mu);margin-top:2px;">${moonIcon(mi.phase)} Mond</div>
+        </div>
+      </div>
+      <textarea placeholder="Notizen für diesen Tag…" style="width:100%;background:var(--s1);border:.5px solid var(--bd);border-radius:var(--rs);color:var(--tx);font-family:inherit;font-size:12px;padding:8px 10px;margin-top:.75rem;resize:none;outline:none;height:50px;"
+        onchange="TRIP.days[${idx}].note=this.value;saveTrip()">${day.note||''}</textarea>
+    </div>`;
+  }).join('');
+}
+
+async function addTripDay(){
+  if(!S.lat){alert('Bitte zuerst einen Ort suchen.');return;}
+  // Find next date after last day
+  const lastDate=TRIP.days.length?new Date(TRIP.days[TRIP.days.length-1].date+'T12:00:00'):new Date(S.date);
+  const nextDate=new Date(lastDate);
+  if(TRIP.days.length)nextDate.setDate(nextDate.getDate()+1);
+  const ds=nextDate.toISOString().slice(0,10);
+  
+  // Get weather for this day if available
+  let wCode=2;
+  if(S.weather?.daily){
+    const idx=S.weather.daily.time.indexOf(ds);
+    if(idx>=0)wCode=S.weather.daily.weathercode[idx];
+  }
+  
+  TRIP.days.push({date:ds,lat:S.lat,lng:S.lng,location:S.name,wCode,note:''});
+  saveTrip();
+  
+  const el=document.getElementById('trip-days');
+  if(el)el.innerHTML=renderTripDays();
+}
+
+function removeTripDay(idx){
+  TRIP.days.splice(idx,1);
+  saveTrip();
+  const el=document.getElementById('trip-days');
+  if(el)el.innerHTML=renderTripDays();
+}
+
+function clearTrip(){
+  if(!confirm('Trip zurücksetzen?'))return;
+  TRIP={days:[],name:'Mein Fototrip'};
+  saveTrip();
+  renderTrip();
+}
+
+// ── renderPlan: add historical weather ──────────────────────────────────────
+const _origRenderPlan=renderPlan;
+function renderPlan(){
+  _origRenderPlan();
+  // Append historical weather section
+  const main=document.getElementById('main');
+  if(!main||!S.lat)return;
+  const histDiv=document.createElement('div');
+  histDiv.id='hist-weather';
+  main.querySelector('.results')?.appendChild(histDiv);
+  renderHistorical(histDiv);
+}
+
+// ── iOS standalone detection ──────────────────────────────────────────────────
+if (window.navigator.standalone === false && /iPhone|iPad/.test(navigator.userAgent)) {
+  // Show iOS install hint after 3s if not already installed
+  setTimeout(() => {
+    if (!localStorage.getItem('pp_ios_hint')) {
+      showToast('📲 Auf iPhone: Teilen → Zum Home-Bildschirm');
+      localStorage.setItem('pp_ios_hint', '1');
+    }
+  }, 3000);
+}
+
+// ── URL param tab routing ─────────────────────────────────────────────────────
 (function() {
   const p = new URLSearchParams(location.search);
   const tab = p.get('tab');
   if (tab && ['light','map','night','plan','tools'].includes(tab)) {
+    // Will be applied after data loads
     setTimeout(() => { if (S.lat) setTab(tab); }, 500);
   }
 })();
