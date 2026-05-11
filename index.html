@@ -626,23 +626,6 @@ function renderTrialBanner(){
   }catch(e){console.warn('Trial:',e);}
 }
 
-// ── Trip Planner ──────────────────────────────────────────────────────────────
-let TRIP={days:[],name:'Mein Fototrip'};
-(function(){const s=localStorage.getItem('pp_trip');if(s)try{TRIP=JSON.parse(s);}catch{}})();
-function saveTrip(){localStorage.setItem('pp_trip',JSON.stringify(TRIP));}
-function renderTrip(){
-  document.getElementById('main').innerHTML='<div class="results"><div class="card"><div class="ch"><div class="ct">🗓️ Trip-Planer</div><div class="badge bgray">'+TRIP.days.length+' Tage</div></div>'
-    +'<button class="btn btn-gold btn-sm" onclick="addTripDay()" style="margin-bottom:.75rem">+ Tag hinzufügen</button></div>'
-    +'<div id="trip-days">'+(TRIP.days.length?TRIP.days.map((d,i)=>'<div class="card" style="margin-bottom:.75rem;"><div style="font-weight:500">Tag '+(i+1)+': '+d.date+'</div><div style="font-size:12px;color:var(--mu)">'+d.location+'</div><button class="btn btn-sm" style="margin-top:.5rem" onclick="removeTripDay('+i+')">✕ Entfernen</button></div>').join(''):'<div style="text-align:center;padding:2rem;color:var(--mu)">Noch keine Tage geplant.</div>')+'</div></div>';
-}
-function addTripDay(){
-  if(!S.lat){showToast('Bitte zuerst Ort suchen');return;}
-  const d=new Date(S.date||new Date());
-  if(TRIP.days.length)d.setDate(new Date(TRIP.days[TRIP.days.length-1].date).getDate()+1);
-  TRIP.days.push({date:d.toISOString().slice(0,10),lat:S.lat,lng:S.lng,location:S.name});
-  saveTrip();renderTrip();
-}
-function removeTripDay(i){TRIP.days.splice(i,1);saveTrip();renderTrip();}
 
 (function(){
   const di=document.getElementById('di'),now=new Date();
@@ -687,13 +670,21 @@ function moonName(ph){
   return n[7];
 }
 function getTip(wCode,moonPhase){
-  if(moonPhase<0.08||moonPhase>0.92)return'🌌 Neumond: perfekt für Milchstrassen-Fotografie!';
-  if(moonPhase>0.45&&moonPhase<0.55)return'🌕 Vollmond: dramatisches Mondlicht für Nachtlandschaften.';
-  const tips={0:'☀️ Klarer Himmel – goldene Stunde nicht verpassen!',1:'🌤️ Optimale Bedingungen! Dramatische Wolken + goldenes Licht.',
-    2:'⛅ Lichtwechsel schaffen spannende Momente.',3:'☁️ Bedeckt: ideal für Wasserfälle, kein hartes Licht.',
-    45:'🌫️ Nebel! Frühaufstehen für Sonnenstrahlen im Nebel.',61:'🌧️ Regen: Reflexionen und satte Farben nutzen.',
-    71:'❄️ Schnee: -1 EV Belichtungskorrektur für korrektes Weiss.',95:'⛈️ Gewitter: nur sicher vom Inneren aus fotografieren.'};
-  return tips[wCode]||tips[Math.floor(wCode/10)*10]||'🌄 Goldene und blaue Stunde nutzen.';
+  const L=S.lang||'de';
+  if(moonPhase<0.08||moonPhase>0.92)return{de:'🌌 Neumond: perfekt für Milchstrassen-Fotografie!',en:'🌌 New moon: perfect for Milky Way photography!',fr:'🌌 Nouvelle lune: parfait pour la Voie Lactée!'}[L];
+  if(moonPhase>0.45&&moonPhase<0.55)return{de:'🌕 Vollmond: dramatisches Mondlicht für Nachtlandschaften.',en:'🌕 Full moon: dramatic moonlight for night landscapes.',fr:'🌕 Pleine lune: clair de lune dramatique.'}[L];
+  const tips={
+    0:{de:'☀️ Klarer Himmel – goldene Stunde nicht verpassen!',en:'☀️ Clear sky – don\'t miss golden hour!',fr:'☀️ Ciel dégagé – ne ratez pas l\'heure dorée!'},
+    1:{de:'🌤️ Optimale Bedingungen! Dramatische Wolken + goldenes Licht.',en:'🌤️ Optimal! Dramatic clouds + golden light.',fr:'🌤️ Optimal! Nuages dramatiques + lumière dorée.'},
+    2:{de:'⛅ Lichtwechsel schaffen spannende Momente.',en:'⛅ Changing light creates exciting moments.',fr:'⛅ La lumière changeante crée des moments excitants.'},
+    3:{de:'☁️ Bedeckt: ideal für Wasserfälle, kein hartes Licht.',en:'☁️ Overcast: ideal for waterfalls, no harsh light.',fr:'☁️ Couvert: idéal pour les cascades, pas de lumière dure.'},
+    45:{de:'🌫️ Nebel! Frühaufstehen für Sonnenstrahlen im Nebel.',en:'🌫️ Fog! Wake up early for sun rays through mist.',fr:'🌫️ Brouillard! Levez-vous tôt pour les rayons de soleil.'},
+    61:{de:'🌧️ Regen: Reflexionen und satte Farben nutzen.',en:'🌧️ Rain: use reflections and rich colors.',fr:'🌧️ Pluie: profitez des reflets et des couleurs vives.'},
+    71:{de:'❄️ Schnee: -1 EV Belichtungskorrektur für korrektes Weiss.',en:'❄️ Snow: -1 EV exposure compensation for correct white.',fr:'❄️ Neige: -1 IL de compensation pour le blanc correct.'},
+    95:{de:'⛈️ Gewitter: nur sicher vom Inneren aus fotografieren.',en:'⛈️ Thunderstorm: only photograph safely from indoors.',fr:'⛈️ Orage: photographiez uniquement depuis l\'intérieur.'}
+  };
+  const t2=tips[wCode]||tips[Math.floor(wCode/10)*10]||{de:'🌄 Goldene und blaue Stunde nutzen.',en:'🌄 Use golden and blue hour.',fr:'🌄 Profitez de l\'heure dorée et bleue.'};
+  return typeof t2==='string'?t2:(t2[L]||t2.de);
 }
 // ── Galactic Center ──────────────────────────────────────────────────────────
 function gcAlt(date,lat,lng){
@@ -881,11 +872,12 @@ function yearlyChart(lat,lng){
 function seasonalTips(lat){
   const m=new Date().getMonth();
   const isNorth=lat>0;
+  const L=S.lang||'de';
   const seasons={
-    spring:{icon:'🌸',name:{de:'Frühling',en:'Spring',fr:'Printemps'}[S.lang||'de'],tips:isNorth?'Kirschblüten, Löwenzahn-Felder, Morgennebel. Goldene Stunde wird länger!':'Herbstfarben, Laubwälder.'},
-    summer:{icon:'☀️',name:{de:'Sommer',en:'Summer',fr:'Été'}[S.lang||'de'],tips:isNorth?'Lange Tage, Mitternachtssonne (nördl. Breiten), Gewitter-Dramatik.':'Schnee & Eis auf Berggipfeln, klare Sichten.'},
-    autumn:{icon:'🍂',name:{de:'Herbst',en:'Autumn',fr:'Automne'}[S.lang||'de'],tips:isNorth?'Laub in Gold & Rot! Morgennebelstimmung. Kürzere, intensivere goldene Stunde.':'Frühlingsblüten erscheinen.'},
-    winter:{icon:'❄️',name:{de:'Winter',en:'Winter',fr:'Hiver'}[S.lang||'de'],tips:isNorth?'Schnee, Eis, kurze Tage = komprimiertes Licht. Nordlichter-Saison!':'Sommer, lange goldene Stunden.'}
+    spring:{icon:'🌸',name:{de:'Frühling',en:'Spring',fr:'Printemps'}[S.lang||'de'],tips:isNorth?{de:'Kirschblüten, Löwenzahn-Felder, Morgennebel. Goldene Stunde wird länger!',en:'Cherry blossoms, morning mist. Golden hour gets longer!',fr:'Cerisiers en fleurs, brume matinale.'}[L]:{de:'Herbstfarben, Laubwälder.',en:'Autumn colors.',fr:'Couleurs d\'automne.'}[L]},
+    summer:{icon:'☀️',name:{de:'Sommer',en:'Summer',fr:'Été'}[S.lang||'de'],tips:isNorth?{de:'Lange Tage, Mitternachtssonne, Gewitter-Dramatik.',en:'Long days, midnight sun, dramatic thunderstorms.',fr:'Longues journées, soleil de minuit, orages.'}[L]:{de:'Schnee auf Berggipfeln, klare Sichten.',en:'Snow on peaks, clear views.',fr:'Neige sur les sommets.'}[L]},
+    autumn:{icon:'🍂',name:{de:'Herbst',en:'Autumn',fr:'Automne'}[S.lang||'de'],tips:isNorth?{de:'Laub in Gold & Rot! Morgennebelstimmung.',en:'Golden & red foliage! Morning mist.',fr:'Feuillage doré et rouge! Brume matinale.'}[L]:{de:'Frühlingsblüten.',en:'Spring blossoms.',fr:'Fleurs de printemps.'}[L]},
+    winter:{icon:'❄️',name:{de:'Winter',en:'Winter',fr:'Hiver'}[S.lang||'de'],tips:isNorth?{de:'Schnee, kurze Tage = komprimiertes Licht. Nordlichter-Saison!',en:'Snow, short days = compressed light. Northern lights season!',fr:'Neige, courtes journées = lumière compressée. Saison des aurores!'}[L]:{de:'Sommer, lange goldene Stunden.',en:'Summer, long golden hours.',fr:'Été, longues heures dorées.'}[L]}
   };
   const getNorth=m=>{if(m>=2&&m<=4)return'spring';if(m>=5&&m<=7)return'summer';if(m>=8&&m<=10)return'autumn';return'winter';};
   const getSouth=m=>{if(m>=2&&m<=4)return'autumn';if(m>=5&&m<=7)return'winter';if(m>=8&&m<=10)return'spring';return'summer';};
@@ -938,7 +930,7 @@ function renderLight(){
       </div>
       <div style="flex:1;">
         <div class="sbar"><div class="sbar-f" style="width:${sc}%;background:${scv(sc)};"></div></div>
-        ${tmax!==null?`<div style="font-size:11px;color:var(--mu);">${Math.round(tmax)}°/${Math.round(tmin)}° · ${precip}% Regen · ${Math.round(wind)} km/h</div>`:''}
+        ${tmax!==null?`<div style="font-size:11px;color:var(--mu);">${Math.round(tmax)}°/${Math.round(tmin)}° · ${precip}% ${S.lang==='en'?'Rain':S.lang==='fr'?'Pluie':'Regen'} · ${Math.round(wind)} km/h</div>`:''}
       </div>
     </div>
     <div class="tip">${getTip(wCode,moonIllum.phase)}</div>
@@ -992,7 +984,7 @@ function renderLight(){
     </div>
   </div>
   ${proGate(cameraCard(lc,wCode),'Kamera-Einstellungen')}
-  ${weather?.daily?`<div class="card"><div class="ch"><div class="ct">${t('forecast')}</div><div class="badge bgr">🌿 Bester Tag markiert</div></div><div class="wdays">${wdHtml}</div></div>`:''}
+  ${weather?.daily?`<div class="card"><div class="ch"><div class="ct">${t('forecast')}</div><div class="badge bgr">${S.lang==='en'?'🌿 Best day marked':S.lang==='fr'?'🌿 Meilleur jour':'🌿 Bester Tag markiert'}</div></div><div class="wdays">${wdHtml}</div></div>`:''}
   <div class="card"><div class="ch"><div class="ct">${t('seasonal')}</div><div class="badge bgray">${new Date().toLocaleDateString('de-CH',{month:'long'})}</div></div><div class="season-grid">${seasonalTips(lat)}</div></div>
   </div>`;
 }
