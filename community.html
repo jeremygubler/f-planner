@@ -236,6 +236,15 @@ nav{position:sticky;top:0;z-index:200;background:rgba(7,7,12,0.88);backdrop-filt
           <button type="button" onclick="useGPSForSpot()" title="Meinen Standort nutzen" style="height:46px;padding:0 14px;background:var(--s2);border:.5px solid var(--bd);border-radius:var(--r);color:var(--tx);cursor:pointer;font-size:18px;flex-shrink:0;transition:all .15s;" onmouseover="this.style.borderColor='var(--gold)'" onmouseout="this.style.borderColor='var(--bd)'">📍</button>
         </div>
         <div id="geo-results"></div>
+        <div style="margin-top:6px;">
+          <details style="cursor:pointer;">
+            <summary style="font-size:11px;color:var(--mu);user-select:none;">🌐 Koordinaten manuell eingeben</summary>
+            <div style="display:flex;gap:8px;margin-top:8px;">
+              <input class="form-input" id="f-lat" placeholder="Breitengrad z.B. 46.8182" type="number" step="any" style="flex:1;height:38px;font-size:13px;" oninput="updateCoordsFromInput()">
+              <input class="form-input" id="f-lng" placeholder="Längengrad z.B. 8.2275" type="number" step="any" style="flex:1;height:38px;font-size:13px;" oninput="updateCoordsFromInput()">
+            </div>
+          </details>
+        </div>
       </div>
       <div class="form-group">
         <label class="form-label">Kategorie *</label>
@@ -259,7 +268,7 @@ nav{position:sticky;top:0;z-index:200;background:rgba(7,7,12,0.88);backdrop-filt
         <label class="file-upload-label" id="file-upload-label" onclick="document.getElementById('f-img-file').click()">
           <span id="file-upload-text">📷 Foto auswählen…</span>
         </label>
-        <input type="file" id="f-img-file" accept="image/*" style="display:none" onchange="handleFileUpload(this)">
+        <input type="file" id="f-img-file" accept="image/*" style="display:none" onchange="handleFileUpload(this);readEXIF(this)">
         <img class="img-preview" id="img-preview" alt="" style="display:none;margin-top:8px;border-radius:8px;max-width:100%;">
         <div class="mod-status" id="mod-status"></div>
       </div>
@@ -612,6 +621,75 @@ function useGPSForSpot(){
     alert('Standort konnte nicht ermittelt werden.');
     btn.textContent='📍';btn.disabled=false;
   });
+}
+
+function updateCoordsFromInput(){
+  const lat=parseFloat(document.getElementById('f-lat').value);
+  const lng=parseFloat(document.getElementById('f-lng').value);
+  if(!isNaN(lat)&&!isNaN(lng)&&lat>=-90&&lat<=90&&lng>=-180&&lng<=180){
+    formData.lat=lat;formData.lng=lng;
+    showToast('📍 Koordinaten gesetzt: '+lat.toFixed(4)+', '+lng.toFixed(4));
+  }
+}
+
+function readEXIF(input){
+  const file=input.files[0];
+  if(!file)return;
+  const reader=new FileReader();
+  reader.onload=function(e){
+    const view=new DataView(e.target.result);
+    if(view.getUint16(0,false)!==0xFFD8)return; // not JPEG
+    let offset=2;
+    while(offset<view.byteLength){
+      if(view.getUint16(offset,false)===0xFFE1){
+        const exifLen=view.getUint16(offset+2,false);
+        const exif=new DataView(e.target.result,offset+4,exifLen-2);
+        const enc=new TextDecoder();
+        if(enc.decode(new Uint8Array(e.target.result,offset+4,4))!=='Exif')break;
+        const little=exif.getUint16(6,false)===0x4949;
+        const ifdOffset=exif.getUint32(10,little)+6;
+        const entries=exif.getUint16(ifdOffset,little);
+        let gpsOffset=-1;
+        for(let i=0;i<entries;i++){
+          const tag=exif.getUint16(ifdOffset+2+i*12,little);
+          if(tag===0x8825){gpsOffset=exif.getUint32(ifdOffset+2+i*12+8,little)+6;break;}
+        }
+        if(gpsOffset<0)break;
+        const gpsEntries=exif.getUint16(gpsOffset,little);
+        let latVal=null,lngVal=null,latRef='N',lngRef='E';
+        for(let i=0;i<gpsEntries;i++){
+          const tag=exif.getUint16(gpsOffset+2+i*12,little);
+          const valOffset=exif.getUint32(gpsOffset+2+i*12+8,little)+6;
+          if(tag===1)latRef=String.fromCharCode(exif.getUint8(gpsOffset+2+i*12+8));
+          if(tag===3)lngRef=String.fromCharCode(exif.getUint8(gpsOffset+2+i*12+8));
+          if(tag===2||tag===4){
+            const d=exif.getUint32(valOffset,little)/exif.getUint32(valOffset+4,little);
+            const m=exif.getUint32(valOffset+8,little)/exif.getUint32(valOffset+12,little);
+            const s=exif.getUint32(valOffset+16,little)/exif.getUint32(valOffset+20,little);
+            const dec=d+m/60+s/3600;
+            if(tag===2)latVal=dec; else lngVal=dec;
+          }
+        }
+        if(latVal!==null&&lngVal!==null){
+          const lat=latRef==='S'?-latVal:latVal;
+          const lng=lngRef==='W'?-lngVal:lngVal;
+          formData.lat=lat;formData.lng=lng;
+          document.getElementById('f-lat').value=lat.toFixed(6);
+          document.getElementById('f-lng').value=lng.toFixed(6);
+          // Reverse geocode
+          fetch(`https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lng}&format=json`)
+            .then(r=>r.json()).then(d=>{
+              const name=d.address?.city||d.address?.town||d.address?.village||d.address?.county||'';
+              if(name){document.getElementById('f-loc').value=name;}
+            }).catch(()=>{});
+          showToast('📍 GPS aus Foto: '+lat.toFixed(4)+', '+lng.toFixed(4));
+        }
+        break;
+      }
+      offset+=2+view.getUint16(offset+2,false);
+    }
+  };
+  reader.readAsArrayBuffer(file.slice(0,65536));
 }
 
 function debounceGeo(val){
