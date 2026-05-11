@@ -1859,6 +1859,27 @@ function closeOnboard(){
 // Show onboarding after short delay on first visit
 setTimeout(showOnboard, 800);
 
+// ── App Init ─────────────────────────────────────────────────────────────────
+(function initApp(){
+  try{
+    // Init date
+    const di=document.getElementById('di');
+    if(di&&!di.value){const now=new Date();di.value=now.toISOString().slice(0,10);}
+    // Clock
+    const clockEl=document.getElementById('clock');
+    if(clockEl){
+      clockEl.textContent=new Date().toLocaleTimeString('de-CH',{hour:'2-digit',minute:'2-digit'});
+      setInterval(()=>{clockEl.textContent=new Date().toLocaleTimeString('de-CH',{hour:'2-digit',minute:'2-digit'});},20000);
+    }
+    // Init Supabase auth + show empty state
+    initSupabase().then(()=>{
+      updateAuthUI();
+      renderTrialBanner();
+    }).catch(e=>console.warn('Auth init:',e));
+    showEmpty();
+  }catch(e){console.error('App init error:',e);}
+})();
+
 // ── Packing List ─────────────────────────────────────────────────────────────
 const PACK_ITEMS={
   'Kamera & Optik':[
