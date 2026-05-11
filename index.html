@@ -471,7 +471,7 @@ async function loadUserPro(user){
   CURRENT_USER=user;
   try{
     const {data}=await sb.from('profiles').select('is_pro,trial_ends_at,stripe_customer_id').eq('id',user.id).single();
-    const isPaid=!!(data?.stripe_customer_id&&data?.is_pro);
+    const isPaid=!!(data?.is_pro);
     const trialEnd=data?.trial_ends_at?new Date(data.trial_ends_at):null;
     IS_TRIAL=!!(trialEnd&&trialEnd>new Date()&&!isPaid);
     IS_PRO=isPaid||IS_TRIAL;
@@ -570,7 +570,7 @@ async function doSignup(){
 }
 
 async function doGoogle(){
-  await sb.auth.signInWithOAuth({provider:'google',options:{redirectTo:window.location.href}});
+  await sb.auth.signInWithOAuth({provider:'google',options:{redirectTo:'https://jeremygubler.github.io/f-planner/'}});
 }
 
 // ── Pro Gate ──────────────────────────────────────────────────────────────────
