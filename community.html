@@ -736,16 +736,22 @@ async function handleFileUpload(input){
   // Upload to Supabase Storage
   document.getElementById('mod-status').style.display='flex';
   document.getElementById('mod-status').innerHTML='<span style="color:var(--gold)">⏳ Bild wird hochgeladen…</span>';
+  const submitBtn=document.querySelector('button[onclick="submitSpot()"]');
+  if(submitBtn){submitBtn.disabled=true;submitBtn.style.opacity='0.5';}
   const ext = file.name.split('.').pop();
   const path = `spots/${Date.now()}_${Math.random().toString(36).slice(2)}.${ext}`;
   const {data, error} = await sb.storage.from('spot-images').upload(path, file, {contentType: file.type});
   if(error){
     document.getElementById('mod-status').innerHTML='<span style="color:var(--red)">❌ Upload fehlgeschlagen</span>';
     showToast('❌ Upload fehlgeschlagen: ' + error.message);
+    const submitBtnErr=document.querySelector('button[onclick="submitSpot()"]');
+    if(submitBtnErr){submitBtnErr.disabled=false;submitBtnErr.style.opacity='1';}
     return;
   }
   const {data:{publicUrl}} = sb.storage.from('spot-images').getPublicUrl(path);
   formData.imageUrl = publicUrl;
+  const submitBtn2=document.querySelector('button[onclick="submitSpot()"]');
+  if(submitBtn2){submitBtn2.disabled=false;submitBtn2.style.opacity='1';}
   // AI Moderation
   document.getElementById('mod-status').innerHTML='<span style="color:var(--gold)">🤖 KI prüft Bild…</span>';
   await moderateImage(publicUrl);
@@ -807,7 +813,13 @@ async function submitSpot(){
   const loc=document.getElementById('f-loc').value.trim();
   const desc=document.getElementById('f-desc').value.trim();
   const img=formData.imageUrl||'';
-  if(!name||!formData.lat||!img){showToast('⚠️ Bitte alle Pflichtfelder inkl. Foto ausfüllen');return;}
+  if(!name){showToast('⚠️ Bitte Name eingeben');return;}
+  if(!formData.lat){showToast('⚠️ Bitte Ort suchen oder Koordinaten eingeben');return;}
+  if(!img){
+    const uploading=document.getElementById('mod-status')?.innerHTML?.includes('hochgeladen');
+    showToast(uploading?'⏳ Bitte warten – Bild wird noch hochgeladen…':'⚠️ Bitte ein Foto hochladen');
+    return;
+  }
   if(!formData.modOk){showToast('⚠️ Warte auf Bild-Prüfung');return;}
   const {error}=await sb.from('spots').insert({
     user_id:CURRENT_USER.id, name, lat:formData.lat, lng:formData.lng,
