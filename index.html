@@ -384,7 +384,11 @@ de:{sub:'Foto-Reise-Planer',search:'Ort eingeben…',sbtn:'Suchen',
     moon_names:['Neumond','Zunehmende Sichel','Erstes Viertel','Zunehmender Halbmond','Vollmond','Abnehmender Halbmond','Letztes Viertel','Abnehmende Sichel'],
     above_horiz:'über Horizont',below_horiz:'unter Horizont',
     cam_scenes:['Landschaft','Stadt','Portrait','Wasserfall','Milchstrasse','Sternspuren'],
-    cam_icons:['🏔️','🏙️','👤','💧','🌌','⭐']
+    cam_icons:['🏔️','🏙️','👤','💧','🌌','⭐'],
+    empty_title:'Plane deinen perfekten Fototrip',
+    empty_sub:'Ort eingeben und goldene Stunde, Milchstrassen-Fenster, Wetter-Score und Foto-Tools weltweit erhalten.',
+    pro_req_buy:'Pro kaufen – CHF 9 →',
+    pro_req_login:'Bereits Pro? Anmelden'
 },
 en:{sub:'Photo Travel Planner',search:'Enter location…',sbtn:'Search',
   t1:'🌅 Light',t2:'🗺️ Map',t3:'🌌 Night',t4:'📅 Planning',t5:'🔧 Tools',t6:'🗓️ Trip',
@@ -410,7 +414,11 @@ en:{sub:'Photo Travel Planner',search:'Enter location…',sbtn:'Search',
     moon_names:['New Moon','Waxing Crescent','First Quarter','Waxing Gibbous','Full Moon','Waning Gibbous','Last Quarter','Waning Crescent'],
     above_horiz:'above horizon',below_horiz:'below horizon',
     cam_scenes:['Landscape','Cityscape','Portrait','Waterfall','Milky Way','Star Trails'],
-    cam_icons:['🏔️','🏙️','👤','💧','🌌','⭐']
+    cam_icons:['🏔️','🏙️','👤','💧','🌌','⭐'],
+    empty_title:'Plan your perfect photo trip',
+    empty_sub:'Enter a location to get golden hour, Milky Way window, weather score, camera settings and photo tools worldwide.',
+    pro_req_buy:'Buy Pro – CHF 9 →',
+    pro_req_login:'Already Pro? Sign in'
 },
 fr:{sub:'Planificateur Photo',search:'Entrez un lieu…',sbtn:'Chercher',
   t1:'🌅 Lumière',t2:'🗺️ Carte',t3:'🌌 Nuit',t4:'📅 Planning',t5:'🔧 Outils',t6:'🗓️ Trip',
@@ -436,7 +444,11 @@ fr:{sub:'Planificateur Photo',search:'Entrez un lieu…',sbtn:'Chercher',
     moon_names:['Nouvelle Lune','Croissant','Premier Quartier','Gibbeuse Croissante','Pleine Lune','Gibbeuse Décroissante','Dernier Quartier','Croissant Décroissant'],
     above_horiz:'au-dessus horizon',below_horiz:'sous horizon',
     cam_scenes:['Paysage','Ville','Portrait','Cascade','Voie Lactée','Traînées'],
-    cam_icons:['🏔️','🏙️','👤','💧','🌌','⭐']
+    cam_icons:['🏔️','🏙️','👤','💧','🌌','⭐'],
+    empty_title:'Planifiez votre voyage photo parfait',
+    empty_sub:'Entrez un lieu pour obtenir l\'heure dorée, la Voie Lactée, le score météo et les outils photo.',
+    pro_req_buy:'Acheter Pro – CHF 9 →',
+    pro_req_login:'Déjà Pro? Se connecter'
 }};
 // ── Supabase + Auth ──────────────────────────────────────────
 const SUPA_URL='https://cwvmjsasfcidyfssxkgi.supabase.co';
@@ -535,7 +547,7 @@ async function doLogin(){
   if(error){showToast('❌ '+error.message);return;}
   document.getElementById('login-modal').style.display='none';
   showToast('✅ Angemeldet!');
-  if(S.lat)render();
+  if(S.lat)render(); else showEmpty();
 }
 
 async function doSignup(){
@@ -598,7 +610,7 @@ function proGate(content, featureName){
     <div class="pro-overlay" onclick="showProModal('${featureName}')">
       <div class="pro-overlay-icon">🔒</div>
       <div class="pro-overlay-text"><strong>Pro-Feature</strong><br>${featureName}</div>
-      <button class="pro-overlay-btn">Pro kaufen – CHF 9 →</button>
+      <button class="pro-overlay-btn">${t('pro_req_buy')}</button>
     </div>
   </div>`;
 }
@@ -1524,9 +1536,9 @@ function renderProRequired(title, desc){
     <div style="font-size:56px;margin-bottom:1.25rem;">🔒</div>
     <div style="font-family:'Playfair Display',Georgia,serif;font-size:24px;font-weight:700;margin-bottom:.75rem;">${title}</div>
     <div style="font-size:14px;color:var(--mu);max-width:320px;margin:0 auto 2rem;line-height:1.7;">${desc}<br><br>Einmalig <strong style="color:var(--gold)">CHF 9</strong> – alle Pro-Features für immer.</div>
-    <button onclick="showProModal('${title}')" style="background:var(--gold);border:none;border-radius:99px;padding:14px 32px;font-size:15px;font-weight:700;color:#1A0E00;cursor:pointer;font-family:inherit;margin-bottom:1rem;">Pro kaufen – CHF 9 →</button>
+    <button onclick="showProModal('${title}')" style="background:var(--gold);border:none;border-radius:99px;padding:14px 32px;font-size:15px;font-weight:700;color:#1A0E00;cursor:pointer;font-family:inherit;margin-bottom:1rem;">${t('pro_req_buy')}</button>
     <br>
-    <button onclick="openLoginModal()" style="background:none;border:.5px solid var(--bd);border-radius:99px;padding:10px 24px;font-size:13px;color:var(--mu);cursor:pointer;font-family:inherit;">Bereits Pro? Anmelden</button>
+    <button onclick="openLoginModal()" style="background:none;border:.5px solid var(--bd);border-radius:99px;padding:10px 24px;font-size:13px;color:var(--mu);cursor:pointer;font-family:inherit;">${t('pro_req_login')}</button>
   </div>`;
 }
 
@@ -1534,642 +1546,10 @@ function showEmpty(){
   document.getElementById('tab-bar').style.display='none';
   document.getElementById('main').innerHTML=`<div class="empty">
     <span class="empty-icon">🌄</span>
-    <div class="empty-title">Plane deinen perfekten Fototrip</div>
-    <div class="empty-sub">Ort eingeben und goldene Stunde, Milchstrassen-Fenster, Wetter-Score, Kamera-Einstellungen und Foto-Tools weltweit erhalten.</div>
+    <div class="empty-title">${t('empty_title')}</div>
+    <div class="empty-sub">${t('empty_sub')}</div>
     <div class="chips">
       ${['🏔️ Grindelwald','💧 Lauterbrunnen','🌊 Santorini','⛰️ Dolomiten','🏡 Hallstatt','🌿 Faroe Islands','🌌 Tromsø','🎈 Kappadokien','🏯 Kyoto','🌋 Teide','🐧 Patagonia','🦁 Serengeti'].map(s=>`<div class="chip" onclick="quickSearch('${s.replace(/^.+? /,'')}')">${s}</div>`).join('')}
     </div>
   </div>`;
 }
-// Load from URL params on startup
-(function(){
-  const p=new URLSearchParams(location.search);
-  if(p.get('lat')&&p.get('lng')){
-    S.lat=parseFloat(p.get('lat'));S.lng=parseFloat(p.get('lng'));
-    if(p.get('date'))S.date=new Date(p.get('date')+'T12:00:00');
-    S.name='Geteilter Ort';
-    loadData();
-  }
-})();
-</script>
-
-<script>
-// ── PWA Service Worker Registration ──────────────────────────────────────────
-if ('serviceWorker' in navigator) {
-  window.addEventListener('load', async () => {
-    try {
-      // Inline SW as Blob – works without external sw.js file
-      const swCode = `const CACHE = 'photoplanner-v3';
-const API_CACHE = 'photoplanner-api-v3';
-
-const STATIC = [
-  './',
-  './index.html',
-  'https://cdnjs.cloudflare.com/ajax/libs/suncalc/1.9.0/suncalc.min.js',
-  'https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.min.js',
-  'https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.min.css',
-  'https://cdn.jsdelivr.net/npm/@fontsource/playfair-display@5/400.css',
-  'https://cdn.jsdelivr.net/npm/@fontsource/playfair-display@5/700.css',
-];
-
-// ── Install: cache static assets ────────────────────────────────────────────
-self.addEventListener('install', e => {
-  e.waitUntil(
-    caches.open(CACHE)
-      .then(cache => cache.addAll(STATIC).catch(() => {}))
-      .then(() => self.skipWaiting())
-  );
-});
-
-// ── Activate: clean old caches ───────────────────────────────────────────────
-self.addEventListener('activate', e => {
-  e.waitUntil(
-    caches.keys().then(keys =>
-      Promise.all(
-        keys.filter(k => k !== CACHE && k !== API_CACHE)
-            .map(k => caches.delete(k))
-      )
-    ).then(() => self.clients.claim())
-  );
-});
-
-// ── Fetch: smart caching strategy ───────────────────────────────────────────
-self.addEventListener('fetch', e => {
-  const url = new URL(e.request.url);
-
-  // Weather & Geocoding: Network-first, cache fallback (24h TTL)
-  if (url.hostname === 'api.open-meteo.com' ||
-      url.hostname === 'nominatim.openstreetmap.org') {
-    e.respondWith(networkFirstWithTTL(e.request, API_CACHE, 24 * 60 * 60 * 1000));
-    return;
-  }
-
-  // Map tiles: Cache-first (tiles don't change)
-  if (url.hostname.includes('openstreetmap.org') ||
-      url.hostname.includes('lightpollutionmap.info')) {
-    e.respondWith(cacheFirst(e.request, CACHE));
-    return;
-  }
-
-  // Fonts & CDN libraries: Cache-first (versioned, stable)
-  if (url.hostname === 'cdnjs.cloudflare.com' ||
-      url.hostname === 'cdn.jsdelivr.net' ||
-      url.hostname === 'unpkg.com') {
-    e.respondWith(cacheFirst(e.request, CACHE));
-    return;
-  }
-
-  // App shell (index.html): Stale-while-revalidate
-  if (url.pathname === '/' || url.pathname.endsWith('.html')) {
-    e.respondWith(staleWhileRevalidate(e.request, CACHE));
-    return;
-  }
-
-  // Default: network with cache fallback
-  e.respondWith(
-    fetch(e.request).catch(() => caches.match(e.request))
-  );
-});
-
-// ── Cache strategies ─────────────────────────────────────────────────────────
-async function cacheFirst(req, cacheName) {
-  const cached = await caches.match(req);
-  if (cached) return cached;
-  try {
-    const fresh = await fetch(req);
-    if (fresh.ok) {
-      const cache = await caches.open(cacheName);
-      cache.put(req, fresh.clone());
-    }
-    return fresh;
-  } catch {
-    return new Response('Offline – cached version not available', { status: 503 });
-  }
-}
-
-async function staleWhileRevalidate(req, cacheName) {
-  const cache = await caches.open(cacheName);
-  const cached = await cache.match(req);
-  const fetchPromise = fetch(req).then(fresh => {
-    if (fresh.ok) cache.put(req, fresh.clone());
-    return fresh;
-  }).catch(() => null);
-  return cached || await fetchPromise || offlinePage();
-}
-
-async function networkFirstWithTTL(req, cacheName, ttl) {
-  try {
-    const fresh = await fetch(req);
-    if (fresh.ok) {
-      const cache = await caches.open(cacheName);
-      const resp = fresh.clone();
-      // Store with timestamp header
-      const headers = new Headers(resp.headers);
-      headers.set('x-cached-at', Date.now().toString());
-      const cachedResp = new Response(await resp.blob(), { headers });
-      cache.put(req, cachedResp);
-      return fresh;
-    }
-  } catch {}
-  // Cache fallback – check TTL
-  const cache = await caches.open(cacheName);
-  const cached = await cache.match(req);
-  if (cached) {
-    const cachedAt = parseInt(cached.headers.get('x-cached-at') || '0');
-    if (Date.now() - cachedAt < ttl) return cached;
-  }
-  return cached || new Response(
-    JSON.stringify({ error: 'offline', message: 'No network – showing cached data' }),
-    { status: 503, headers: { 'Content-Type': 'application/json' } }
-  );
-}
-
-function offlinePage() {
-  return new Response(\`
-    <!DOCTYPE html><html lang="de"><head><meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width,initial-scale=1">
-    <title>PhotoPlanner – Offline</title>
-    <style>body{background:#08080D;color:#EDE8DF;font-family:system-ui;display:flex;align-items:center;justify-content:center;min-height:100vh;text-align:center;padding:2rem;}
-    h1{font-size:2rem;margin-bottom:1rem;}p{color:rgba(237,232,223,0.5);margin-bottom:2rem;}
-    button{background:#E9A42E;border:none;color:#1A0E00;padding:12px 24px;border-radius:12px;font-size:1rem;cursor:pointer;}
-    </style></head><body>
-    <div><div style="font-size:4rem;margin-bottom:1rem;">📷</div>
-    <h1>PhotoPlanner</h1>
-    <p>Keine Internetverbindung.<br>Bitte prüfe dein Netzwerk.</p>
-    <button onclick="location.reload()">Erneut versuchen</button></div>
-    </body></html>
-  \`, { headers: { 'Content-Type': 'text/html' } });
-}
-
-// ── Background Sync: Wetter-Update ──────────────────────────────────────────
-self.addEventListener('sync', e => {
-  if (e.tag === 'weather-sync') {
-    e.waitUntil(syncWeather());
-  }
-});
-
-async function syncWeather() {
-  // Triggered when back online – clients can request a re-fetch
-  const clients = await self.clients.matchAll();
-  clients.forEach(client => client.postMessage({ type: 'SYNC_WEATHER' }));
-}
-
-// ── Push Notifications ───────────────────────────────────────────────────────
-self.addEventListener('push', e => {
-  const data = e.data?.json() || {};
-  e.waitUntil(
-    self.registration.showNotification(data.title || '📸 PhotoPlanner', {
-      body: data.body || 'Gute Foto-Bedingungen heute!',
-      icon: './icons/icon-192.png',
-      badge: './icons/icon-72.png',
-      tag: 'photoplanner-alert',
-      renotify: true,
-      data: { url: data.url || './' }
-    })
-  );
-});
-
-self.addEventListener('notificationclick', e => {
-  e.notification.close();
-  e.waitUntil(clients.openWindow(e.notification.data?.url || './'));
-});
-`;
-      const blob = new Blob([swCode], { type: 'application/javascript' });
-      const swUrl = URL.createObjectURL(blob);
-      const reg = await navigator.serviceWorker.register(swUrl, { scope: './' });
-      console.log('SW registered via Blob');
-
-      reg.addEventListener('updatefound', () => {
-        const newSW = reg.installing;
-        newSW.addEventListener('statechange', () => {
-          if (newSW.state === 'installed' && navigator.serviceWorker.controller) {
-            showUpdateToast();
-          }
-        });
-      });
-
-      navigator.serviceWorker.addEventListener('message', e => {
-        if (e.data?.type === 'SYNC_WEATHER' && S.lat) loadData();
-      });
-    } catch (err) {
-      // Silently ignore – PWA features are enhancement only
-      console.info('PWA offline caching not available in this environment.');
-    }
-  });
-}
-
-// ── Install Prompt ────────────────────────────────────────────────────────────
-let deferredPrompt = null;
-
-window.addEventListener('beforeinstallprompt', e => {
-  e.preventDefault();
-  deferredPrompt = e;
-  const btn = document.getElementById('install-btn');
-  if (btn) btn.style.display = 'flex';
-});
-
-window.addEventListener('appinstalled', () => {
-  const btn = document.getElementById('install-btn');
-  if (btn) btn.style.display = 'none';
-  deferredPrompt = null;
-  showToast('✅ PhotoPlanner wurde installiert!');
-});
-
-async function installPWA() {
-  if (!deferredPrompt) {
-    showToast('ℹ️ Nutze "Zum Homescreen hinzufügen" im Browser-Menü');
-    return;
-  }
-  deferredPrompt.prompt();
-  const { outcome } = await deferredPrompt.userChoice;
-  deferredPrompt = null;
-  if (outcome === 'accepted') showToast('✅ App wird installiert…');
-}
-
-// ── Online / Offline detection ────────────────────────────────────────────────
-function setOnlineStatus(online) {
-  const offBar = document.getElementById('offline-bar');
-  const onBar  = document.getElementById('online-bar');
-  if (!offBar || !onBar) return;
-
-  if (!online) {
-    offBar.style.display = 'flex';
-    onBar.style.display  = 'none';
-  } else {
-    offBar.style.display = 'none';
-    // Show "back online" briefly
-    onBar.style.display = 'flex';
-    setTimeout(() => { onBar.style.display = 'none'; }, 3500);
-    // Reload weather if we have a location
-    if (S?.lat) loadData();
-  }
-}
-
-window.addEventListener('online',  () => setOnlineStatus(true));
-window.addEventListener('offline', () => setOnlineStatus(false));
-if (!navigator.onLine) setOnlineStatus(false);
-
-// ── Update Toast ──────────────────────────────────────────────────────────────
-function showUpdateToast() {
-  showToast('🔄 Neue Version verfügbar – Seite neu laden?', true);
-}
-
-function showToast(msg, withReload = false) {
-  const el = document.createElement('div');
-  el.style.cssText = 'position:fixed;bottom:5rem;left:50%;transform:translateX(-50%);background:rgba(20,20,30,0.95);border:0.5px solid rgba(255,255,255,0.15);color:#EDE8DF;padding:10px 18px;border-radius:99px;font-size:13px;z-index:9999;white-space:nowrap;display:flex;align-items:center;gap:10px;box-shadow:0 4px 20px rgba(0,0,0,0.4);animation:slideUp .3s ease;';
-  el.textContent = msg;
-  if (withReload) {
-    const btn = document.createElement('button');
-    btn.textContent = 'Neu laden';
-    btn.style.cssText = 'background:var(--gold);color:#1A0E00;border:none;border-radius:99px;padding:4px 12px;font-size:12px;cursor:pointer;font-weight:500;';
-    btn.onclick = () => location.reload();
-    el.appendChild(btn);
-  }
-  document.body.appendChild(el);
-  if (!withReload) setTimeout(() => el.remove(), 3500);
-}
-
-
-// ── Theme Toggle ─────────────────────────────────────────────────────────────
-function toggleTheme(){
-  const curr=document.documentElement.getAttribute('data-theme');
-  const next=curr==='light'?'dark':'light';
-  document.documentElement.setAttribute('data-theme',next==='dark'?'':next);
-  localStorage.setItem('pp_theme',next);
-  document.getElementById('theme-btn').textContent=next==='light'?'🌙':'🌓';
-}
-(function initTheme(){
-  const saved=localStorage.getItem('pp_theme');
-  const prefersDark=window.matchMedia('(prefers-color-scheme: dark)').matches;
-  const theme=saved||(prefersDark?'dark':'light');
-  if(theme==='light'){
-    document.documentElement.setAttribute('data-theme','light');
-    const btn=document.getElementById('theme-btn');
-    if(btn)btn.textContent='🌙';
-  }
-})();
-
-// ── Onboarding ───────────────────────────────────────────────────────────────
-let obSlide=0;
-function showOnboard(){
-  if(localStorage.getItem('pp_onboard_done'))return;
-  const el=document.getElementById('onboard');
-  if(el)el.style.display='flex';
-}
-function obNext(){
-  obSlide++;
-  if(obSlide>2){closeOnboard();return;}
-  document.querySelectorAll('.onboard-slide').forEach((s,i)=>s.classList.toggle('active',i===obSlide));
-  document.querySelectorAll('.onboard-dot').forEach((d,i)=>d.classList.toggle('active',i===obSlide));
-  if(obSlide===2)document.getElementById('ob-next').textContent='Los geht\'s 🚀';
-}
-function closeOnboard(){
-  const el=document.getElementById('onboard');
-  if(el)el.style.display='none';
-  localStorage.setItem('pp_onboard_done','1');
-}
-// Show onboarding after short delay on first visit
-initSupabase().then(()=>{updateAuthUI();renderTrialBanner();if(S.lat)render();});
-setTimeout(showOnboard, 800);
-
-// ── Packing List ─────────────────────────────────────────────────────────────
-const PACK_ITEMS={
-  'Kamera & Optik':[
-    {id:'cam',label:'Kamera-Body'},
-    {id:'lens1',label:'Hauptobjektiv'},
-    {id:'lens2',label:'Weitwinkel (für Milchstrasse)'},
-    {id:'lens3',label:'Teleobjektiv'},
-    {id:'filter_pol',label:'Polarisationsfilter'},
-    {id:'filter_nd',label:'ND-Filter (3, 6, 10 Stops)'},
-    {id:'filter_uv',label:'UV-/Schutzfilter'},
-    {id:'lens_cloth',label:'Linsenreinigungstücher'},
-  ],
-  'Stativ & Stabilisierung':[
-    {id:'tripod',label:'Stativ'},
-    {id:'ballhead',label:'Kugelkopf'},
-    {id:'remote',label:'Fernauslöser / Intervallometer'},
-    {id:'sandbag',label:'Sandsack (für Wind)'},
-  ],
-  'Strom & Speicher':[
-    {id:'batt1',label:'Akku 1 (geladen)'},
-    {id:'batt2',label:'Akku 2 (Ersatz)'},
-    {id:'charger',label:'Ladegerät'},
-    {id:'sd1',label:'Speicherkarte 1'},
-    {id:'sd2',label:'Speicherkarte 2 (Ersatz)'},
-    {id:'powerbank',label:'Powerbank'},
-  ],
-  'Licht & Zubehör':[
-    {id:'headlamp',label:'Stirnlampe (für Nacht)'},
-    {id:'reflector',label:'Reflektor / Diffusor'},
-    {id:'led',label:'LED-Panel (Portrait)'},
-    {id:'gaffer',label:'Gaffer Tape'},
-  ],
-  'Wetter & Schutz':[
-    {id:'raincover',label:'Kamera-Regenschutz'},
-    {id:'jacket',label:'Wetterfeste Jacke'},
-    {id:'gloves',label:'Handschuhe (für Kälte)'},
-    {id:'drybox',label:'Trockenbox / Silica Gel'},
-  ],
-  'Navigation & Planung':[
-    {id:'phone',label:'Smartphone mit PhotoPlanner'},
-    {id:'compass',label:'Kompass / GPS'},
-    {id:'map',label:'Offline-Karte heruntergeladen'},
-    {id:'notebook',label:'Notizbuch für Settings'},
-  ],
-};
-
-function renderPackList(){
-  const packed=JSON.parse(localStorage.getItem('pp_pack')||'{}');
-  const total=Object.values(PACK_ITEMS).flat().length;
-  const done=Object.values(packed).filter(Boolean).length;
-  const pct=Math.round(done/total*100);
-  let html=`<div class="card">
-    <div class="ch">
-      <div class="ct">${t('pack')}</div>
-      <div class="badge ${pct===100?'bgr':pct>50?'bg':'bgray'}">${done}/${total} bereit</div>
-    </div>
-    <div class="sbar" style="margin-bottom:1rem;"><div class="sbar-f" style="width:${pct}%;background:${pct===100?'var(--green)':'var(--gold)'};"></div></div>
-    <div style="display:flex;gap:8px;margin-bottom:1rem;">
-      <button class="btn btn-sm" onclick="packAll(true)">✅ Alle</button>
-      <button class="btn btn-sm" onclick="packAll(false)">↺ Reset</button>
-    </div>`;
-  for(const [cat,items] of Object.entries(PACK_ITEMS)){
-    html+=`<div class="pack-category">${cat}</div>`;
-    items.forEach(item=>{
-      const isDone=!!packed[item.id];
-      html+=`<div class="pack-item" onclick="togglePack('${item.id}')">
-        <div class="pack-check ${isDone?'done':''}">${isDone?'✓':''}</div>
-        <div class="pack-label ${isDone?'done':''}">${item.label}</div>
-      </div>`;
-    });
-  }
-  html+='</div>';
-  return html;
-}
-function togglePack(id){
-  const p=JSON.parse(localStorage.getItem('pp_pack')||'{}');
-  p[id]=!p[id];
-  localStorage.setItem('pp_pack',JSON.stringify(p));
-  const el=document.getElementById('pack-section');
-  if(el)el.innerHTML=renderPackList();
-}
-function packAll(val){
-  const p={};
-  Object.values(PACK_ITEMS).flat().forEach(i=>p[i.id]=val);
-  localStorage.setItem('pp_pack',JSON.stringify(p));
-  const el=document.getElementById('pack-section');
-  if(el)el.innerHTML=renderPackList();
-}
-
-// ── Historical Weather ────────────────────────────────────────────────────────
-async function loadHistorical(lat,lng,year){
-  const end=`${year}-12-31`,start=`${year}-01-01`;
-  try{
-    const r=await fetch(`https://archive-api.open-meteo.com/v1/archive?latitude=${lat}&longitude=${lng}&start_date=${start}&end_date=${end}&daily=weathercode&timezone=auto`);
-    return await r.json();
-  }catch{return null;}
-}
-
-async function renderHistorical(container){
-  container.innerHTML='<div class="loading"><div class="spin"></div>Historische Daten werden geladen…</div>';
-  const yr=new Date().getFullYear()-1;
-  const data=await loadHistorical(S.lat,S.lng,yr);
-  if(!data?.daily){container.innerHTML='<div style="font-size:13px;color:var(--mu);padding:1rem;">Keine historischen Daten verfügbar.</div>';return;}
-  
-  // Group by month, average score
-  const monthly=Array.from({length:12},()=>({scores:[],days:0}));
-  data.daily.time.forEach((d,i)=>{
-    const m=new Date(d).getMonth();
-    const sc=photoScore(data.daily.weathercode[i]);
-    monthly[m].scores.push(sc);
-    monthly[m].days++;
-  });
-  const avgScores=monthly.map(m=>m.scores.length?Math.round(m.scores.reduce((a,b)=>a+b,0)/m.scores.length):0);
-  const maxSc=Math.max(...avgScores);
-  const MN=t('MONTHS');
-  
-  const bars=avgScores.map((sc,i)=>{
-    const pct=maxSc>0?(sc/maxSc*100).toFixed(1):0;
-    const isBest=sc===maxSc;
-    return`<div class="hb">
-      <div class="hbo" onclick="goToMonth(${i})">
-        <div class="hbf" style="height:${pct}%;background:${isBest?'var(--gold)':scv(sc)};opacity:${isBest?1:.6};"></div>
-      </div>
-      <div class="hbl">${MN[i]}</div>
-    </div>`;
-  }).join('');
-
-  const bestMonth=avgScores.indexOf(maxSc);
-  const sorted=[...avgScores.map((sc,i)=>({sc,i}))].sort((a,b)=>b.sc-a.sc);
-  
-  container.innerHTML=`<div class="card">
-    <div class="ch"><div class="ct">${t('hist')} ${yr}</div><div class="badge bg">Durchschnittlicher Foto-Score</div></div>
-    <div class="hist-bar">${bars}</div>
-    <div style="font-size:11px;color:var(--mu);text-align:center;margin-bottom:1rem;">Auf Monat klicken → zu diesem Datum springen</div>
-    <div style="font-size:13px;margin-bottom:.5rem;font-weight:500;">🥇 Beste Monate ${yr}:</div>
-    ${sorted.slice(0,3).map(({sc,i},rank)=>`<div style="display:flex;align-items:center;gap:10px;padding:7px 12px;background:var(--s2);border-radius:var(--rs);margin-bottom:5px;">
-      <span>${['🥇','🥈','🥉'][rank]}</span>
-      <span style="flex:1;font-weight:500;">${MN[i]}</span>
-      <span class="badge ${sc>=75?'bg':sc>=50?'bb':'bgray'}">${sc}/100</span>
-    </div>`).join('')}
-    <div class="tip">💡 Historische Daten geben keinen Garantie, aber zeigen klimatische Tendenzen zuverlässig.</div>
-  </div>`;
-}
-
-function goToMonth(m){
-  const yr=new Date().getFullYear();
-  const d=new Date(yr,m,15);
-  document.getElementById('di').value=d.toISOString().slice(0,10);
-  S.date=d;
-  setTab('light');
-}
-
-// ── Multi-Day Trip Planner ────────────────────────────────────────────────────
-let TRIP={days:[],name:'Mein Fototrip'};
-(function(){const saved=localStorage.getItem('pp_trip');if(saved)try{TRIP=JSON.parse(saved);}catch{}})();
-
-function saveTrip(){localStorage.setItem('pp_trip',JSON.stringify(TRIP));}
-
-function renderTrip(){
-  const hasLoc=S.lat&&S.lng;
-  document.getElementById('main').innerHTML=`<div class="results">
-  <!-- Trip Header -->
-  <div class="card">
-    <div class="ch">
-      <div class="ct">${t('trip_planner')}</div>
-      <div class="badge bgray">${TRIP.days.length} Tage</div>
-    </div>
-    <div style="display:flex;gap:8px;margin-bottom:.75rem;flex-wrap:wrap;">
-      <input class="sinput" id="trip-name" value="${TRIP.name}" placeholder="Trip-Name…" 
-        style="flex:1;min-width:160px;height:38px;padding:0 12px;font-size:13px;"
-        onchange="TRIP.name=this.value;saveTrip()">
-      <button class="btn btn-gold btn-sm" onclick="addTripDay()">+ ${t('add_day')}</button>
-      <button class="btn btn-sm" onclick="clearTrip()">↺ Reset</button>
-    </div>
-    ${!hasLoc?'<div style="font-size:12px;color:var(--mu);">Bitte zuerst einen Ort suchen.</div>':''}
-  </div>
-
-  <!-- Days -->
-  <div id="trip-days">${renderTripDays()}</div>
-
-  <!-- Packing List -->
-  <div id="pack-section">${renderPackList()}</div>
-  </div>`;
-}
-
-function renderTripDays(){
-  if(!TRIP.days.length)return`<div style="text-align:center;padding:2rem;color:var(--mu);font-size:14px;">Noch keine Tage geplant.<br>Klicke "+ Tag hinzufügen" um zu starten.</div>`;
-  return TRIP.days.map((day,idx)=>{
-    const d=new Date(day.date+'T12:00:00');
-    const times=SunCalc.getTimes(d,day.lat||S.lat,day.lng||S.lng);
-    const mi=SunCalc.getMoonIllumination(d);
-    const wCode=day.wCode||2;
-    const sc=photoScore(wCode);
-    const [wDesc,wIcon]=wmoInfo(wCode);
-    const MN=t('MONTHS'), DAYS=t('DAYS');
-    const dn=`${DAYS[d.getDay()]}, ${d.getDate()}. ${MN[d.getMonth()]}`;
-    return`<div class="day-card">
-      <div class="day-hdr">
-        <div>
-          <div class="day-num">Tag ${idx+1}</div>
-          <div style="font-size:14px;font-weight:500;margin-top:4px;">${dn}</div>
-          <div style="font-size:12px;color:var(--mu);">${day.location||S.name}</div>
-        </div>
-        <div style="text-align:right;">
-          <div class="day-score" style="color:${scv(sc)}">${sc}<span style="font-size:13px;opacity:.5">/100</span></div>
-          <div style="font-size:12px;color:var(--mu);">${wIcon} ${wDesc}</div>
-          <button class="btn btn-sm" style="margin-top:6px;" onclick="removeTripDay(${idx})">✕ Entfernen</button>
-        </div>
-      </div>
-      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;font-size:12px;">
-        <div style="background:var(--s2);border-radius:var(--rs);padding:8px;text-align:center;">
-          <div style="color:var(--gold);font-weight:500;">${fmt(times.dawn)}</div>
-          <div style="color:var(--mu);margin-top:2px;">🌅 Gold Morgen</div>
-        </div>
-        <div style="background:var(--s2);border-radius:var(--rs);padding:8px;text-align:center;">
-          <div style="color:var(--gold);font-weight:500;">${fmt(times.goldenHour)}</div>
-          <div style="color:var(--mu);margin-top:2px;">🌇 Gold Abend</div>
-        </div>
-        <div style="background:var(--s2);border-radius:var(--rs);padding:8px;text-align:center;">
-          <div style="color:var(--blue);font-weight:500;">${Math.round(mi.fraction*100)}%</div>
-          <div style="color:var(--mu);margin-top:2px;">${moonIcon(mi.phase)} Mond</div>
-        </div>
-      </div>
-      <textarea placeholder="Notizen für diesen Tag…" style="width:100%;background:var(--s1);border:.5px solid var(--bd);border-radius:var(--rs);color:var(--tx);font-family:inherit;font-size:12px;padding:8px 10px;margin-top:.75rem;resize:none;outline:none;height:50px;"
-        onchange="TRIP.days[${idx}].note=this.value;saveTrip()">${day.note||''}</textarea>
-    </div>`;
-  }).join('');
-}
-
-async function addTripDay(){
-  if(!S.lat){alert('Bitte zuerst einen Ort suchen.');return;}
-  // Find next date after last day
-  const lastDate=TRIP.days.length?new Date(TRIP.days[TRIP.days.length-1].date+'T12:00:00'):new Date(S.date);
-  const nextDate=new Date(lastDate);
-  if(TRIP.days.length)nextDate.setDate(nextDate.getDate()+1);
-  const ds=nextDate.toISOString().slice(0,10);
-  
-  // Get weather for this day if available
-  let wCode=2;
-  if(S.weather?.daily){
-    const idx=S.weather.daily.time.indexOf(ds);
-    if(idx>=0)wCode=S.weather.daily.weathercode[idx];
-  }
-  
-  TRIP.days.push({date:ds,lat:S.lat,lng:S.lng,location:S.name,wCode,note:''});
-  saveTrip();
-  
-  const el=document.getElementById('trip-days');
-  if(el)el.innerHTML=renderTripDays();
-}
-
-function removeTripDay(idx){
-  TRIP.days.splice(idx,1);
-  saveTrip();
-  const el=document.getElementById('trip-days');
-  if(el)el.innerHTML=renderTripDays();
-}
-
-function clearTrip(){
-  if(!confirm('Trip zurücksetzen?'))return;
-  TRIP={days:[],name:'Mein Fototrip'};
-  saveTrip();
-  renderTrip();
-}
-
-// ── renderPlan: add historical weather ──────────────────────────────────────
-const _origRenderPlan=renderPlan;
-function renderPlan(){
-  _origRenderPlan();
-  // Append historical weather section
-  const main=document.getElementById('main');
-  if(!main||!S.lat)return;
-  const histDiv=document.createElement('div');
-  histDiv.id='hist-weather';
-  main.querySelector('.results')?.appendChild(histDiv);
-  renderHistorical(histDiv);
-}
-
-// ── iOS standalone detection ──────────────────────────────────────────────────
-if (window.navigator.standalone === false && /iPhone|iPad/.test(navigator.userAgent)) {
-  // Show iOS install hint after 3s if not already installed
-  setTimeout(() => {
-    if (!localStorage.getItem('pp_ios_hint')) {
-      showToast('📲 Auf iPhone: Teilen → Zum Home-Bildschirm');
-      localStorage.setItem('pp_ios_hint', '1');
-    }
-  }, 3000);
-}
-
-// ── URL param tab routing ─────────────────────────────────────────────────────
-(function() {
-  const p = new URLSearchParams(location.search);
-  const tab = p.get('tab');
-  if (tab && ['light','map','night','plan','tools'].includes(tab)) {
-    // Will be applied after data loads
-    setTimeout(() => { if (S.lat) setTab(tab); }, 500);
-  }
-})();
-</script>
-</body>
-</html>
