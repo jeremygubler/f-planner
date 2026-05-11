@@ -1553,3 +1553,57 @@ function showEmpty(){
     </div>
   </div>`;
 }
+
+</script>
+<script>
+// ── PWA Service Worker Registration ──────────────────────────────────────────
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', async () => {
+    try {
+      const swCode = `const CACHE='photoplanner-v3';self.addEventListener('install',e=>{e.waitUntil(caches.open(CACHE).then(c=>c.addAll(['./','./index.html']).catch(()=>{})).then(()=>self.skipWaiting()))});self.addEventListener('activate',e=>{e.waitUntil(caches.keys().then(keys=>Promise.all(keys.filter(k=>k!==CACHE).map(k=>caches.delete(k)))).then(()=>self.clients.claim()))});self.addEventListener('fetch',e=>{e.respondWith(caches.match(e.request).then(c=>c||fetch(e.request).catch(()=>new Response('Offline',{status:503}))))});`;
+      const blob = new Blob([swCode], { type: 'application/javascript' });
+      const swUrl = URL.createObjectURL(blob);
+      await navigator.serviceWorker.register(swUrl, { scope: './' });
+    } catch (err) {
+      console.info('PWA offline caching not available.');
+    }
+  });
+}
+
+let deferredPrompt = null;
+window.addEventListener('beforeinstallprompt', e => {
+  e.preventDefault(); deferredPrompt = e;
+  const btn = document.getElementById('install-btn');
+  if (btn) btn.style.display = 'flex';
+});
+window.addEventListener('appinstalled', () => {
+  const btn = document.getElementById('install-btn');
+  if (btn) btn.style.display = 'none';
+  deferredPrompt = null;
+});
+async function installPWA() {
+  if (!deferredPrompt) { showToast('📲 Nutze "Zum Homescreen hinzufügen" im Browser-Menü'); return; }
+  deferredPrompt.prompt();
+  await deferredPrompt.userChoice;
+  deferredPrompt = null;
+}
+function setOnlineStatus(online) {
+  const offBar = document.getElementById('offline-bar');
+  const onBar = document.getElementById('online-bar');
+  if (!offBar || !onBar) return;
+  if (!online) { offBar.style.display = 'flex'; onBar.style.display = 'none'; }
+  else { offBar.style.display = 'none'; onBar.style.display = 'flex'; setTimeout(() => { onBar.style.display = 'none'; }, 3500); if (S?.lat) loadData(); }
+}
+window.addEventListener('online', () => setOnlineStatus(true));
+window.addEventListener('offline', () => setOnlineStatus(false));
+if (!navigator.onLine) setOnlineStatus(false);
+(function() {
+  const p = new URLSearchParams(location.search);
+  const tab = p.get('tab');
+  if (tab && ['light','map','night','plan','tools'].includes(tab)) {
+    setTimeout(() => { if (S.lat) setTab(tab); }, 500);
+  }
+})();
+</script>
+</body>
+</html>
