@@ -1484,8 +1484,8 @@ function showEmpty(){
   document.getElementById('tab-bar').style.display='none';
   document.getElementById('main').innerHTML=`<div class="empty">
     <span class="empty-icon">🌄</span>
-    <div class="empty-title">Plane deinen perfekten Fototrip</div>
-    <div class="empty-sub">Ort eingeben und goldene Stunde, Milchstrassen-Fenster, Wetter-Score, Kamera-Einstellungen und Foto-Tools weltweit erhalten.</div>
+    <div class="empty-title">${S.lang==='en'?'Plan your perfect photo trip':S.lang==='fr'?'Planifiez votre voyage photo parfait':'Plane deinen perfekten Fototrip'}</div>
+    <div class="empty-sub">${S.lang==='en'?'Enter a location to get golden hour, Milky Way window, weather score and photo tools worldwide.':S.lang==='fr'?'Entrez un lieu pour obtenir l\'heure dorée, la Voie Lactée et les outils photo.':'Ort eingeben und goldene Stunde, Milchstrassen-Fenster, Wetter-Score und Foto-Tools weltweit erhalten.'}</div>
     <div class="chips">
       ${['🏔️ Grindelwald','💧 Lauterbrunnen','🌊 Santorini','⛰️ Dolomiten','🏡 Hallstatt','🌿 Faroe Islands','🌌 Tromsø','🎈 Kappadokien','🏯 Kyoto','🌋 Teide','🐧 Patagonia','🦁 Serengeti'].map(s=>`<div class="chip" onclick="quickSearch('${s.replace(/^.+? /,'')}')">${s}</div>`).join('')}
     </div>
@@ -1509,8 +1509,8 @@ if ('serviceWorker' in navigator) {
   window.addEventListener('load', async () => {
     try {
       // Inline SW as Blob – works without external sw.js file
-      const swCode = `const CACHE = 'photoplanner-v3';
-const API_CACHE = 'photoplanner-api-v3';
+      const swCode = `const CACHE = 'photoplanner-v5';
+const API_CACHE = 'photoplanner-api-v5';
 
 const STATIC = [
   './',
