@@ -1049,6 +1049,8 @@ function renderSpotList(){
 }
 function initMap(){
   const container=document.getElementById('map-c');if(!container)return;
+  // If MAP exists but its container is no longer in the DOM, destroy and reinit
+  if(MAP&&!document.body.contains(MAP.getContainer())){MAP.remove();MAP=null;}
   if(!MAP){
     MAP=L.map('map-c').setView([S.lat,S.lng],12);
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{attribution:'© OpenStreetMap'}).addTo(MAP);
