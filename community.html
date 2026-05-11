@@ -231,7 +231,10 @@ nav{position:sticky;top:0;z-index:200;background:rgba(7,7,12,0.88);backdrop-filt
       </div>
       <div class="form-group">
         <label class="form-label">Ort suchen *</label>
-        <input class="form-input" id="f-loc" placeholder="Ortname eingeben…" oninput="debounceGeo(this.value)">
+        <div style="display:flex;gap:8px;">
+          <input class="form-input" id="f-loc" placeholder="Ortname eingeben…" oninput="debounceGeo(this.value)" style="flex:1;">
+          <button type="button" onclick="useGPSForSpot()" title="Meinen Standort nutzen" style="height:46px;padding:0 14px;background:var(--s2);border:.5px solid var(--bd);border-radius:var(--r);color:var(--tx);cursor:pointer;font-size:18px;flex-shrink:0;transition:all .15s;" onmouseover="this.style.borderColor='var(--gold)'" onmouseout="this.style.borderColor='var(--bd)'">📍</button>
+        </div>
         <div id="geo-results"></div>
       </div>
       <div class="form-group">
@@ -587,6 +590,28 @@ function setCat(cat,btn){
   formData.cat=cat;
   document.querySelectorAll('.cat-btn').forEach(b=>b.classList.remove('on'));
   btn.classList.add('on');
+}
+
+function useGPSForSpot(){
+  if(!navigator.geolocation){alert('GPS nicht verfügbar.');return;}
+  const btn=event.target;
+  btn.textContent='⏳';btn.disabled=true;
+  navigator.geolocation.getCurrentPosition(async pos=>{
+    const lat=pos.coords.latitude,lng=pos.coords.longitude;
+    formData.lat=lat;formData.lng=lng;
+    try{
+      const r=await fetch(`https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lng}&format=json`);
+      const d=await r.json();
+      const name=d.address?.city||d.address?.town||d.address?.village||d.address?.county||'Mein Standort';
+      document.getElementById('f-loc').value=name;
+      formData.locName=name;
+    }catch{document.getElementById('f-loc').value='Mein Standort';}
+    btn.textContent='✅';btn.disabled=false;
+    setTimeout(()=>btn.textContent='📍',2000);
+  },()=>{
+    alert('Standort konnte nicht ermittelt werden.');
+    btn.textContent='📍';btn.disabled=false;
+  });
 }
 
 function debounceGeo(val){
