@@ -75,6 +75,9 @@ nav{position:sticky;top:0;z-index:200;background:rgba(7,7,12,0.88);backdrop-filt
 .cat-btn{background:var(--card2);border:.5px solid var(--bd);border-radius:var(--rs);padding:8px 6px;text-align:center;cursor:pointer;font-family:inherit;font-size:11px;color:var(--mu);transition:all .15s;}
 .cat-btn:hover,.cat-btn.on{background:var(--goldg);border-color:var(--goldb);color:var(--gold);}
 .cat-icon{font-size:18px;display:block;margin-bottom:3px;}
+.file-upload-label{display:flex;align-items:center;justify-content:center;width:100%;height:80px;background:var(--s2);border:1.5px dashed var(--bd);border-radius:var(--r);cursor:pointer;font-size:14px;color:var(--mu);transition:all .2s;}
+.file-upload-label:hover{border-color:var(--gold);color:var(--gold);}
+.file-upload-label.has-file{border-style:solid;border-color:var(--green);color:var(--green);}
 .img-preview{width:100%;height:160px;object-fit:cover;border-radius:var(--rs);margin-top:.5rem;display:none;border:.5px solid var(--bd);}
 .mod-status{margin-top:.75rem;border-radius:var(--rs);padding:10px 14px;font-size:13px;display:none;}
 .mod-pending{background:rgba(107,159,232,0.1);border:.5px solid rgba(107,159,232,0.3);color:var(--blue);}
@@ -249,9 +252,12 @@ nav{position:sticky;top:0;z-index:200;background:rgba(7,7,12,0.88);backdrop-filt
         <textarea class="form-textarea" id="f-desc" placeholder="Was macht diesen Spot besonders? Tipps, beste Jahreszeit…"></textarea>
       </div>
       <div class="form-group">
-        <label class="form-label">Bild *</label>
-        <input class="form-input" id="f-img" placeholder="https://… (Bild-URL)" oninput="previewImage(this.value)">
-        <img class="img-preview" id="img-preview" alt="">
+        <label class="form-label">Bild * (max. 5 MB)</label>
+        <label class="file-upload-label" id="file-upload-label" onclick="document.getElementById('f-img-file').click()">
+          <span id="file-upload-text">📷 Foto auswählen…</span>
+        </label>
+        <input type="file" id="f-img-file" accept="image/*" style="display:none" onchange="handleFileUpload(this)">
+        <img class="img-preview" id="img-preview" alt="" style="display:none;margin-top:8px;border-radius:8px;max-width:100%;">
         <div class="mod-status" id="mod-status"></div>
       </div>
       <div class="form-grid">
@@ -603,6 +609,39 @@ function selectGeo(lat,lng,name){
 }
 
 let prevTimer=null;
+async function handleFileUpload(input){
+  const file = input.files[0];
+  if(!file) return;
+  if(file.size > 5*1024*1024){showToast('⚠️ Bild zu gross – max. 5 MB');input.value='';return;}
+  // Preview
+  const reader = new FileReader();
+  reader.onload = e => {
+    const preview = document.getElementById('img-preview');
+    preview.src = e.target.result;
+    preview.style.display = 'block';
+  };
+  reader.readAsDataURL(file);
+  // Update label
+  document.getElementById('file-upload-text').textContent = '✅ ' + file.name;
+  document.getElementById('file-upload-label').classList.add('has-file');
+  // Upload to Supabase Storage
+  document.getElementById('mod-status').style.display='flex';
+  document.getElementById('mod-status').innerHTML='<span style="color:var(--gold)">⏳ Bild wird hochgeladen…</span>';
+  const ext = file.name.split('.').pop();
+  const path = `spots/${Date.now()}_${Math.random().toString(36).slice(2)}.${ext}`;
+  const {data, error} = await sb.storage.from('spot-images').upload(path, file, {contentType: file.type});
+  if(error){
+    document.getElementById('mod-status').innerHTML='<span style="color:var(--red)">❌ Upload fehlgeschlagen</span>';
+    showToast('❌ Upload fehlgeschlagen: ' + error.message);
+    return;
+  }
+  const {data:{publicUrl}} = sb.storage.from('spot-images').getPublicUrl(path);
+  formData.imageUrl = publicUrl;
+  // AI Moderation
+  document.getElementById('mod-status').innerHTML='<span style="color:var(--gold)">🤖 KI prüft Bild…</span>';
+  await moderateImage(publicUrl);
+}
+
 function previewImage(url){
   clearTimeout(prevTimer); formData.modOk=false;
   document.getElementById('mod-status').style.display='none';
@@ -658,8 +697,8 @@ async function submitSpot(){
   const name=document.getElementById('f-name').value.trim();
   const loc=document.getElementById('f-loc').value.trim();
   const desc=document.getElementById('f-desc').value.trim();
-  const img=document.getElementById('f-img').value.trim();
-  if(!name||!formData.lat||!img){showToast('⚠️ Bitte alle Pflichtfelder ausfüllen');return;}
+  const img=formData.imageUrl||'';
+  if(!name||!formData.lat||!img){showToast('⚠️ Bitte alle Pflichtfelder inkl. Foto ausfüllen');return;}
   if(!formData.modOk){showToast('⚠️ Warte auf Bild-Prüfung');return;}
   const {error}=await sb.from('spots').insert({
     user_id:CURRENT_USER.id, name, lat:formData.lat, lng:formData.lng,
