@@ -432,26 +432,45 @@ const sb=createClient(SUPA_URL,SUPA_KEY);
 let CURRENT_USER=null, IS_PRO=false, IS_TRIAL=false, TRIAL_ENDS_AT=null;
 
 async function initSupabase(){
-  const {data:{session}}=await sb.auth.getSession();
-  if(session?.user) await loadUserPro(session.user);
-  sb.auth.onAuthStateChange(async(_,session)=>{
-    if(session?.user){await loadUserPro(session.user);}
-    else{CURRENT_USER=null;IS_PRO=false;}
-    updateAuthUI();
-  });
+  try{
+    const {data:{session}}=await sb.auth.getSession();
+    if(session?.user) await loadUserPro(session.user);
+    sb.auth.onAuthStateChange(async(_,session)=>{
+      if(session?.user){await loadUserPro(session.user);}
+      else{CURRENT_USER=null;IS_PRO=false;IS_TRIAL=false;}
+      updateAuthUI();
+      renderTrialBanner();
+      if(S.lat)render();
+    });
+  }catch(e){
+    console.warn('Supabase init failed:',e);
+  }
 }
 
 async function loadUserPro(user){
   CURRENT_USER=user;
-  const {data}=await sb.from('profiles')
-    .select('is_pro,trial_ends_at,stripe_customer_id')
-    .eq('id',user.id).single();
-  const isPaid=!!(data?.stripe_customer_id&&data?.is_pro);
-  const trialEnd=data?.trial_ends_at?new Date(data.trial_ends_at):null;
-  const trialActive=trialEnd&&trialEnd>new Date();
-  IS_TRIAL=trialActive&&!isPaid;
-  IS_PRO=isPaid||trialActive;
-  TRIAL_ENDS_AT=trialEnd;
+  try{
+    const {data,error}=await sb.from('profiles')
+      .select('is_pro,trial_ends_at,stripe_customer_id')
+      .eq('id',user.id).single();
+    if(error)throw error;
+    const isPaid=!!(data?.stripe_customer_id&&data?.is_pro);
+    const trialEnd=data?.trial_ends_at?new Date(data.trial_ends_at):null;
+    const trialActive=trialEnd&&trialEnd>new Date();
+    IS_TRIAL=trialActive&&!isPaid;
+    IS_PRO=isPaid||trialActive;
+    TRIAL_ENDS_AT=trialEnd;
+  }catch(e){
+    // Fallback: trial_ends_at column might not exist yet
+    try{
+      const {data}=await sb.from('profiles')
+        .select('is_pro,stripe_customer_id')
+        .eq('id',user.id).single();
+      IS_PRO=data?.is_pro||false;
+      IS_TRIAL=false;
+      TRIAL_ENDS_AT=null;
+    }catch{}
+  }
 }
 
 function updateAuthUI(){
@@ -574,6 +593,7 @@ let MAP=null,MMARKER=null,MLAYERS=[],LP_LAYER=null;
 function t(k){return(STR[S.lang]||STR.de)[k]||STR.de[k]||k;}
 // ── Init ─────────────────────────────────────────────────────────────────────
 (function(){
+  try{
   const di=document.getElementById('di'),now=new Date();
   di.value=now.toISOString().slice(0,10);
   di.min=now.toISOString().slice(0,10);
@@ -582,6 +602,7 @@ function t(k){return(STR[S.lang]||STR.de)[k]||STR.de[k]||k;}
   setInterval(()=>{document.getElementById('clock').textContent=new Date().toLocaleTimeString('de-CH',{hour:'2-digit',minute:'2-digit'});},20000);
   document.getElementById('clock').textContent=new Date().toLocaleTimeString('de-CH',{hour:'2-digit',minute:'2-digit'});
   showEmpty();
+  }catch(e){console.error('Init error:',e);}
 })();
 // ── Helpers ──────────────────────────────────────────────────────────────────
 function fmt(d){return(!d||isNaN(d))?'—':d.toLocaleTimeString('de-CH',{hour:'2-digit',minute:'2-digit'});}
@@ -1427,6 +1448,7 @@ function trialMinutesLeft(){
 }
 
 function renderTrialBanner(){
+  try{
   const el=document.getElementById('trial-banner');
   if(!el||!CURRENT_USER)return;
   if(!IS_TRIAL&&(!TRIAL_ENDS_AT||IS_PRO&&!IS_TRIAL)){el.innerHTML='';return;}
@@ -1467,6 +1489,7 @@ function renderTrialBanner(){
   }else{
     el.innerHTML='';
   }
+  }catch(e){console.warn('Trial banner:',e);}
 }
 
 function renderProRequired(title, desc){title, desc){
@@ -2120,6 +2143,7 @@ if (window.navigator.standalone === false && /iPhone|iPad/.test(navigator.userAg
     setTimeout(() => { if (S.lat) setTab(tab); }, 500);
   }
 })();
+}
 </script>
 </body>
 </html>
