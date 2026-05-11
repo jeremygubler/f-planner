@@ -490,7 +490,7 @@ function openLoginModal(){
   if(existing){existing.style.display='flex';return;}
   const m=document.createElement('div');
   m.id='login-modal';
-  m.style.cssText='position:fixed;inset:0;background:rgba(8,8,13,0.92);z-index:9000;display:flex;align-items:center;justify-content:center;padding:1.5rem;';
+  m.style.cssText='position:fixed;inset:0;background:rgba(0,0,0,0.6);backdrop-filter:blur(8px);z-index:9000;display:flex;align-items:center;justify-content:center;padding:1.5rem;';
   m.innerHTML=`<div style="background:#0E0E18;border:.5px solid var(--bd);border-radius:20px;width:100%;max-width:400px;padding:2rem;">
     <div style="font-family:Playfair Display,Georgia,serif;font-size:22px;font-weight:700;margin-bottom:.5rem;">Anmelden</div>
     <div style="font-size:13px;color:var(--mu);margin-bottom:1.5rem;">Für Pro-Features: Milchstrasse, Kamera-Settings, Tools, Packliste & mehr.</div>
@@ -535,6 +535,17 @@ async function doGoogle(){
   await sb.auth.signInWithOAuth({provider:'google',options:{redirectTo:window.location.href}});
 }
 
+function doSignOut(){
+  sb.auth.signOut().then(()=>{
+    const m=document.getElementById('acct-modal');
+    if(m)m.style.display='none';
+    IS_PRO=false;IS_TRIAL=false;CURRENT_USER=null;
+    updateAuthUI();
+    renderTrialBanner();
+    showToast('Abgemeldet');
+    if(S.lat)render();
+  });
+}
 function getAccountBadge(){
   if(IS_TRIAL)return '<div style="display:inline-flex;align-items:center;gap:6px;background:rgba(107,159,232,0.12);border:.5px solid rgba(107,159,232,0.3);border-radius:99px;padding:4px 12px;font-size:12px;font-weight:600;color:#6B9FE8;margin-top:4px;">🎁 Testversion – noch '+trialHoursLeft()+'h</div>';
   if(IS_PRO)return '<div style="display:inline-flex;align-items:center;gap:6px;background:rgba(52,211,153,0.12);border:.5px solid rgba(52,211,153,0.3);border-radius:99px;padding:4px 12px;font-size:12px;font-weight:600;color:#34D399;margin-top:4px;">✓ Pro-Account aktiv</div>';
@@ -548,7 +559,7 @@ function openAccountMenu(){
   m.style.cssText='position:fixed;inset:0;background:rgba(8,8,13,0.85);z-index:9000;display:flex;align-items:center;justify-content:center;padding:1.5rem;';
   const email=CURRENT_USER?.email||'';
   const initial=email[0]?.toUpperCase()||'U';
-  m.innerHTML=`<div style="background:#0E0E18;border:.5px solid rgba(255,255,255,0.1);border-radius:20px;width:100%;max-width:340px;overflow:hidden;">
+  m.innerHTML=`<div style="background:var(--bg);border:.5px solid var(--bd);border-radius:20px;width:100%;max-width:340px;overflow:hidden;box-shadow:0 20px 60px rgba(0,0,0,0.3);">
     <div style="background:linear-gradient(135deg,rgba(233,164,46,0.15),rgba(233,164,46,0.05));padding:1.75rem;text-align:center;border-bottom:.5px solid rgba(255,255,255,0.08);">
       <div style="width:56px;height:56px;background:var(--goldg,rgba(233,164,46,0.18));border:.5px solid var(--goldb,rgba(233,164,46,0.3));border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:22px;font-weight:700;color:#E9A42E;margin:0 auto 12px;">${initial}</div>
       <div style="font-size:14px;font-weight:500;color:#EDE8DF;margin-bottom:4px;">${email}</div>
@@ -556,7 +567,7 @@ function openAccountMenu(){
     </div>
     <div style="padding:1rem;">
       ${!IS_PRO?`<button onclick="window.open('https://buy.stripe.com/bJe8wPfsG6uQ7040XJ6Ri00','_blank')" style="width:100%;background:#E9A42E;border:none;border-radius:12px;color:#1A0E00;font-family:inherit;font-size:14px;font-weight:600;padding:12px;cursor:pointer;margin-bottom:8px;">🚀 Pro kaufen – CHF 9 →</button>`:''}
-      <button onclick="sb.auth.signOut().then(()=>{document.getElementById('acct-modal').style.display='none';showToast('Abgemeldet');IS_PRO=false;CURRENT_USER=null;updateAuthUI();if(S.lat)render();})" style="width:100%;background:rgba(255,255,255,0.05);border:.5px solid rgba(255,255,255,0.1);border-radius:12px;color:rgba(237,232,223,0.6);font-family:inherit;font-size:13px;padding:10px;cursor:pointer;margin-bottom:6px;transition:all .15s;" onmouseover="this.style.background='rgba(248,113,113,0.1)';this.style.color='#F87171'" onmouseout="this.style.background='rgba(255,255,255,0.05)';this.style.color='rgba(237,232,223,0.6)'">Abmelden</button>
+      <button onclick="doSignOut()" style="width:100%;background:rgba(255,255,255,0.05);border:.5px solid rgba(255,255,255,0.1);border-radius:12px;color:rgba(237,232,223,0.6);font-family:inherit;font-size:13px;padding:10px;cursor:pointer;margin-bottom:6px;">Abmelden</button>
       <button onclick="document.getElementById('acct-modal').style.display='none'" style="width:100%;background:none;border:none;color:rgba(237,232,223,0.35);font-family:inherit;font-size:13px;padding:8px;cursor:pointer;">Schliessen</button>
     </div>
   </div>`;
