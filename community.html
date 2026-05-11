@@ -570,7 +570,11 @@ async function doReport(reason){
 function checkAuthAndSubmit(){
   if(!CURRENT_USER){openAuth();showToast('Bitte zuerst anmelden um Spots einzureichen');return;}
   formData={lat:null,lng:null,cat:'landscape',modOk:false};
-  ['f-name','f-loc','f-desc','f-img'].forEach(id=>document.getElementById(id).value='');
+  ['f-name','f-loc','f-desc'].forEach(id=>document.getElementById(id).value='');
+  const fi=document.getElementById('f-img-file');if(fi)fi.value='';
+  const lbl=document.getElementById('file-upload-text');if(lbl)lbl.textContent='📷 Foto auswählen…';
+  const ul=document.getElementById('file-upload-label');if(ul)ul.classList.remove('has-file');
+  if(window.formData)formData.imageUrl='';
   document.getElementById('img-preview').style.display='none';
   document.getElementById('mod-status').style.display='none';
   document.getElementById('btn-go').disabled=false;
