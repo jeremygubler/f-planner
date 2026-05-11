@@ -1844,18 +1844,7 @@ function clearTrip(){
   renderTrip();
 }
 
-// ── renderPlan: add historical weather ──────────────────────────────────────
-const _origRenderPlan=renderPlan;
-function renderPlan(){
-  _origRenderPlan();
-  // Append historical weather section
-  const main=document.getElementById('main');
-  if(!main||!S.lat)return;
-  const histDiv=document.createElement('div');
-  histDiv.id='hist-weather';
-  main.querySelector('.results')?.appendChild(histDiv);
-  renderHistorical(histDiv);
-}
+// Historical weather is called directly from renderPlan (no override needed)
 
 // ── iOS standalone detection ──────────────────────────────────────────────────
 if (window.navigator.standalone === false && /iPhone|iPad/.test(navigator.userAgent)) {
