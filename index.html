@@ -243,6 +243,13 @@ html,body{min-height:100%;background:var(--bg);color:var(--tx);font-family:'DM S
 .pro-overlay-text{font-size:13px;color:var(--tx);font-weight:500;text-align:center;line-height:1.5;}
 .pro-overlay-btn{background:var(--gold);color:#1A0E00;border:none;border-radius:99px;padding:8px 20px;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit;}
 .pro-wrap{position:relative;}
+.trial-bar{background:linear-gradient(135deg,rgba(107,159,232,0.12),rgba(107,159,232,0.05));border:.5px solid rgba(107,159,232,0.3);border-radius:var(--r);padding:.9rem 1.25rem;margin-bottom:1rem;display:flex;align-items:center;justify-content:space-between;gap:1rem;flex-wrap:wrap;}
+.trial-bar-text{font-size:13px;color:var(--tx);line-height:1.5;}
+.trial-bar-title{font-size:14px;font-weight:600;color:var(--blue);margin-bottom:2px;}
+.trial-time{font-family:'Playfair Display',Georgia,serif;font-size:22px;font-weight:700;color:var(--blue);}
+.trial-expired{background:linear-gradient(135deg,rgba(248,113,113,0.1),rgba(248,113,113,0.04));border-color:rgba(248,113,113,0.3);}
+.trial-expired .trial-bar-title{color:var(--red);}
+.trial-expired .trial-time{color:var(--red);}
 .pro-banner{background:linear-gradient(135deg,rgba(233,164,46,0.12),rgba(233,164,46,0.04));border:.5px solid var(--goldb);border-radius:var(--r);padding:1.25rem;margin-bottom:1rem;display:flex;align-items:center;justify-content:space-between;gap:1rem;flex-wrap:wrap;}
 .pro-banner-text{font-size:13px;color:var(--mu);line-height:1.5;}
 .pro-banner-title{font-size:15px;font-weight:600;color:var(--gold);margin-bottom:3px;}
@@ -329,6 +336,7 @@ html,body{min-height:100%;background:var(--bg);color:var(--tx);font-family:'DM S
   <button class="tab" onclick="setTab('trip')" id="tab-trip">🗓️ Trip</button>
   <button class="tab" onclick="setTab('tools')" id="tab-tools">🔧 Tools</button>
 </div>
+<div id="trial-banner"></div>
 <div id="main"></div>
 </div>
 
@@ -421,7 +429,7 @@ const SUPA_URL='https://cwvmjsasfcidyfssxkgi.supabase.co';
 const SUPA_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImN3dm1qc2FzZmNpZHlmc3N4a2dpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzgyMzkyMDUsImV4cCI6MjA5MzgxNTIwNX0.CPTEdINY26Nr4D5Fg6M54kmREvvRva2Ei4NtRnXw1Hg';
 const {createClient}=supabase;
 const sb=createClient(SUPA_URL,SUPA_KEY);
-let CURRENT_USER=null, IS_PRO=false;
+let CURRENT_USER=null, IS_PRO=false, IS_TRIAL=false, TRIAL_ENDS_AT=null;
 
 async function initSupabase(){
   const {data:{session}}=await sb.auth.getSession();
@@ -435,8 +443,15 @@ async function initSupabase(){
 
 async function loadUserPro(user){
   CURRENT_USER=user;
-  const {data}=await sb.from('profiles').select('is_pro').eq('id',user.id).single();
-  IS_PRO=data?.is_pro||false;
+  const {data}=await sb.from('profiles')
+    .select('is_pro,trial_ends_at,stripe_customer_id')
+    .eq('id',user.id).single();
+  const isPaid=!!(data?.stripe_customer_id&&data?.is_pro);
+  const trialEnd=data?.trial_ends_at?new Date(data.trial_ends_at):null;
+  const trialActive=trialEnd&&trialEnd>new Date();
+  IS_TRIAL=trialActive&&!isPaid;
+  IS_PRO=isPaid||trialActive;
+  TRIAL_ENDS_AT=trialEnd;
 }
 
 function updateAuthUI(){
@@ -502,10 +517,32 @@ async function doGoogle(){
 }
 
 function openAccountMenu(){
-  const msg=IS_PRO
-    ?`✅ Pro-Account aktiv\n${CURRENT_USER.email}\n\nAbmelden?`
-    :`👤 ${CURRENT_USER.email}\n\nNoch kein Pro-Account.\nCHF 9 einmalig für alle Features.\n\nAbmelden?`;
-  if(confirm(msg)) sb.auth.signOut().then(()=>{showToast('Abgemeldet');if(S.lat)render();});
+  const existing=document.getElementById('acct-modal');
+  if(existing){existing.style.display='flex';return;}
+  const m=document.createElement('div');
+  m.id='acct-modal';
+  m.style.cssText='position:fixed;inset:0;background:rgba(8,8,13,0.85);z-index:9000;display:flex;align-items:center;justify-content:center;padding:1.5rem;';
+  const email=CURRENT_USER?.email||'';
+  const initial=email[0]?.toUpperCase()||'U';
+  m.innerHTML=`<div style="background:#0E0E18;border:.5px solid rgba(255,255,255,0.1);border-radius:20px;width:100%;max-width:340px;overflow:hidden;">
+    <div style="background:linear-gradient(135deg,rgba(233,164,46,0.15),rgba(233,164,46,0.05));padding:1.75rem;text-align:center;border-bottom:.5px solid rgba(255,255,255,0.08);">
+      <div style="width:56px;height:56px;background:var(--goldg,rgba(233,164,46,0.18));border:.5px solid var(--goldb,rgba(233,164,46,0.3));border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:22px;font-weight:700;color:#E9A42E;margin:0 auto 12px;">${initial}</div>
+      <div style="font-size:14px;font-weight:500;color:#EDE8DF;margin-bottom:4px;">${email}</div>
+      ${IS_TRIAL
+        ?`<div style="display:inline-flex;align-items:center;gap:6px;background:rgba(107,159,232,0.12);border:.5px solid rgba(107,159,232,0.3);border-radius:99px;padding:4px 12px;font-size:12px;font-weight:600;color:#6B9FE8;margin-top:4px;">🎁 Testversion – noch ${trialHoursLeft()}h</div>`
+        :IS_PRO
+          ?`<div style="display:inline-flex;align-items:center;gap:6px;background:rgba(52,211,153,0.12);border:.5px solid rgba(52,211,153,0.3);border-radius:99px;padding:4px 12px;font-size:12px;font-weight:600;color:#34D399;margin-top:4px;">✓ Pro-Account aktiv</div>`
+          :`<div style="display:inline-flex;align-items:center;gap:6px;background:rgba(248,113,113,0.1);border:.5px solid rgba(248,113,113,0.25);border-radius:99px;padding:4px 12px;font-size:12px;color:#F87171;margin-top:4px;">⏰ Testversion abgelaufen</div>`
+      }
+    </div>
+    <div style="padding:1rem;">
+      ${!IS_PRO?`<button onclick="window.open('https://buy.stripe.com/bJe8wPfsG6uQ7040XJ6Ri00','_blank')" style="width:100%;background:#E9A42E;border:none;border-radius:12px;color:#1A0E00;font-family:inherit;font-size:14px;font-weight:600;padding:12px;cursor:pointer;margin-bottom:8px;">🚀 Pro kaufen – CHF 9 →</button>`:''}
+      <button onclick="sb.auth.signOut().then(()=>{document.getElementById('acct-modal').style.display='none';showToast('Abgemeldet');IS_PRO=false;CURRENT_USER=null;updateAuthUI();if(S.lat)render();})" style="width:100%;background:rgba(255,255,255,0.05);border:.5px solid rgba(255,255,255,0.1);border-radius:12px;color:rgba(237,232,223,0.6);font-family:inherit;font-size:13px;padding:10px;cursor:pointer;margin-bottom:6px;transition:all .15s;" onmouseover="this.style.background='rgba(248,113,113,0.1)';this.style.color='#F87171'" onmouseout="this.style.background='rgba(255,255,255,0.05)';this.style.color='rgba(237,232,223,0.6)'">Abmelden</button>
+      <button onclick="document.getElementById('acct-modal').style.display='none'" style="width:100%;background:none;border:none;color:rgba(237,232,223,0.35);font-family:inherit;font-size:13px;padding:8px;cursor:pointer;">Schliessen</button>
+    </div>
+  </div>`;
+  document.body.appendChild(m);
+  m.addEventListener('click',e=>{if(e.target===m)m.style.display='none';});
 }
 
 function proGate(content, featureName){
@@ -1376,7 +1413,63 @@ function checkNotif(){
     new Notification(`📸 Nächster guter Fototag: ${dn}`,{body:`Score ${best.sc}/100 in ${S.name}`});
   }
 }
-function renderProRequired(title, desc){
+// ── Trial helpers ────────────────────────────────────────────
+function trialHoursLeft(){
+  if(!TRIAL_ENDS_AT)return 0;
+  const ms=TRIAL_ENDS_AT-new Date();
+  return Math.max(0,Math.ceil(ms/3600000));
+}
+function trialMinutesLeft(){
+  if(!TRIAL_ENDS_AT)return 0;
+  const ms=TRIAL_ENDS_AT-new Date();
+  const mins=Math.ceil(ms/60000);
+  return Math.max(0,mins);
+}
+
+function renderTrialBanner(){
+  const el=document.getElementById('trial-banner');
+  if(!el||!CURRENT_USER)return;
+  if(!IS_TRIAL&&(!TRIAL_ENDS_AT||IS_PRO&&!IS_TRIAL)){el.innerHTML='';return;}
+
+  const hours=trialHoursLeft();
+  const mins=trialMinutesLeft();
+  const expired=mins<=0&&!IS_PRO;
+
+  if(IS_TRIAL){
+    const timeStr=hours>0?`${hours}h ${mins%60}m`:`${mins} Min.`;
+    el.innerHTML=`<div class="trial-bar">
+      <div>
+        <div class="trial-bar-title">🎁 1-Tages-Testversion aktiv</div>
+        <div class="trial-bar-text">Du hast Zugang zu allen Pro-Features. Nach Ablauf nur noch Free.</div>
+      </div>
+      <div style="text-align:center;flex-shrink:0;">
+        <div style="font-size:10px;color:var(--mu);text-transform:uppercase;letter-spacing:.08em;margin-bottom:2px;">Noch</div>
+        <div class="trial-time">${timeStr}</div>
+      </div>
+      <button onclick="window.open('https://buy.stripe.com/bJe8wPfsG6uQ7040XJ6Ri00','_blank')" 
+        style="background:var(--blue);border:none;border-radius:99px;padding:10px 20px;font-size:13px;font-weight:600;color:#fff;cursor:pointer;white-space:nowrap;flex-shrink:0;font-family:inherit;">
+        Pro sichern – CHF 9 →
+      </button>
+    </div>`;
+    // Auto-update countdown
+    setTimeout(renderTrialBanner, 60000);
+  }else if(expired){
+    el.innerHTML=`<div class="trial-bar trial-expired">
+      <div>
+        <div class="trial-bar-title">⏰ Testversion abgelaufen</div>
+        <div class="trial-bar-text">Deine kostenlose Testversion ist beendet. Pro-Features sind gesperrt.</div>
+      </div>
+      <button onclick="window.open('https://buy.stripe.com/bJe8wPfsG6uQ7040XJ6Ri00','_blank')"
+        style="background:var(--gold);border:none;border-radius:99px;padding:10px 20px;font-size:13px;font-weight:600;color:#1A0E00;cursor:pointer;white-space:nowrap;flex-shrink:0;font-family:inherit;">
+        Pro kaufen – CHF 9 →
+      </button>
+    </div>`;
+  }else{
+    el.innerHTML='';
+  }
+}
+
+function renderProRequired(title, desc){title, desc){
   document.getElementById('main').innerHTML=`<div style="text-align:center;padding:4rem 1rem;">
     <div style="font-size:56px;margin-bottom:1.25rem;">🔒</div>
     <div style="font-family:'Playfair Display',Georgia,serif;font-size:24px;font-weight:700;margin-bottom:.75rem;">${title}</div>
@@ -1726,7 +1819,7 @@ function closeOnboard(){
   localStorage.setItem('pp_onboard_done','1');
 }
 // Show onboarding after short delay on first visit
-initSupabase().then(()=>{updateAuthUI();if(S.lat)render();});
+initSupabase().then(()=>{updateAuthUI();renderTrialBanner();if(S.lat)render();});
 setTimeout(showOnboard, 800);
 
 // ── Packing List ─────────────────────────────────────────────────────────────
