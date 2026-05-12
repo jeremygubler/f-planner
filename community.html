@@ -433,7 +433,7 @@ async function signOut(){
 // ── Spots: Load from Supabase ─────────────────────────────────────────────────
 async function loadSpots(){
   showSkeleton();
-  let q=sb.from('spots').select('*').eq('status','approved');
+  let q=sb.from('spots').select('*,profiles(username,display_name,country,avatar_url,camera,bio,instagram,badge,is_verified,spots_submitted,total_votes_received,photography_styles)').eq('status','approved');
   if(activeFilter!=='all') q=q.eq('category',activeFilter);
   if(activeSort==='votes') q=q.order('votes_count',{ascending:false});
   else if(activeSort==='newest') q=q.order('created_at',{ascending:false});
