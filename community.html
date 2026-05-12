@@ -503,8 +503,8 @@ function showCreatorProfile(profile){
   const badgeMap={'top_contributor':'🏆 Top Contributor','active_member':'⭐ Active Member','contributor':'📸 Contributor'};
   const overlay=document.createElement('div');
   overlay.id='creator-modal';
-  overlay.className='creator-modal-overlay';
-  overlay.innerHTML=`<div class="creator-modal">
+  overlay.style.cssText='position:fixed;inset:0;background:rgba(0,0,0,0.8);backdrop-filter:blur(12px);z-index:9999;display:flex;align-items:center;justify-content:center;padding:1.25rem;';
+  overlay.innerHTML=`<div style="background:var(--card,#1a1a2e);border:.5px solid rgba(255,255,255,0.1);border-radius:20px;width:100%;max-width:340px;overflow:hidden;box-shadow:0 20px 60px rgba(0,0,0,0.6);">
     <div class="creator-hero">
       <div class="creator-avatar">${profile.avatar_url?`<img src="${profile.avatar_url}">`:'<span>'+initial+'</span>'}</div>
       <div>
@@ -528,6 +528,7 @@ function showCreatorProfile(profile){
   </div>`;
   overlay.addEventListener('click',e=>{if(e.target===overlay)overlay.remove();});
   document.body.appendChild(overlay);
+  requestAnimationFrame(()=>overlay.style.display='flex');
 }
 
 function spotCard(sp){
