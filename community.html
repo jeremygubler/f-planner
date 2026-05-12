@@ -580,7 +580,18 @@ function openDetail(id){
       </div>
       <div style="font-family:'Playfair Display',Georgia,serif;font-size:22px;font-weight:700;margin-bottom:.4rem;">${sp.name}</div>
       <div style="font-size:13px;color:var(--mu);margin-bottom:.75rem;">📍 ${sp.location}</div>
-      <div style="font-size:14px;color:var(--mu);line-height:1.7;margin-bottom:1.25rem;">${sp.description||'Keine Beschreibung.'}</div>
+      <div style="font-size:14px;color:var(--mu);line-height:1.7;margin-bottom:.75rem;">${sp.description||'Keine Beschreibung.'}</div>
+      ${sp.profiles?.username||sp.profiles?.display_name?`
+      <div style="margin-bottom:1rem;">
+        <div style="font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--mu);margin-bottom:6px;font-weight:600;">Erstellt von</div>
+        <div class="profile-chip" onclick="showCreatorProfile(${JSON.stringify(sp.profiles||{}).replace(/"/g,'&quot;')})">
+          <div class="profile-chip-avatar">${sp.profiles?.avatar_url?`<img src="${sp.profiles.avatar_url}">`:(sp.profiles?.display_name||sp.profiles?.username||'?')[0].toUpperCase()}</div>
+          <div>
+            <div class="profile-chip-name">${sp.profiles?.username?"@"+sp.profiles.username:sp.profiles.display_name}${sp.profiles?.is_verified?" ✓":""}</div>
+            ${sp.profiles?.country?`<div class="profile-chip-country">${sp.profiles.country}${sp.profiles?.camera?" · 📷 "+sp.profiles.camera:""}</div>`:""}
+          </div>
+        </div>
+      </div>`:""}
       <div style="display:flex;gap:8px;flex-wrap:wrap;">
         <button class="btn btn-gold" onclick="planSpot(${sp.lat},${sp.lng})">🌅 In App planen</button>
         <button class="btn btn-outline" onclick="closeModal('detail-modal');reportingId='${sp.id}';document.getElementById('report-modal').classList.add('open')">⚑ Melden</button>
