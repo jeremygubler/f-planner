@@ -616,17 +616,14 @@ function openDetail(id){
       <div style="font-family:'Playfair Display',Georgia,serif;font-size:22px;font-weight:700;margin-bottom:.4rem;">${sp.name}</div>
       <div style="font-size:13px;color:var(--mu);margin-bottom:.75rem;">📍 ${sp.location}</div>
       <div style="font-size:14px;color:var(--mu);line-height:1.7;margin-bottom:.75rem;">${sp.description||'Keine Beschreibung.'}</div>
-      ${sp.profiles?.username||sp.profiles?.display_name||sp.profiles?.email?`
+      ${sp.creator_name||sp.creator_username?`
       <div style="margin-bottom:1rem;">
-        <div style="font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--mu);margin-bottom:6px;font-weight:600;">Erstellt von</div>
-        <div class="profile-chip" onclick="showCreatorProfile(${JSON.stringify(sp.profiles||{}).replace(/"/g,'&quot;')})">
-          <div class="profile-chip-avatar">${sp.profiles?.avatar_url?`<img src="${sp.profiles.avatar_url}">`:(sp.profiles?.display_name||sp.profiles?.username||'?')[0].toUpperCase()}</div>
-          <div>
-            <div class="profile-chip-name">${sp.profiles?.username?"@"+sp.profiles.username:sp.profiles.display_name}${sp.profiles?.is_verified?" ✓":""}</div>
-            ${sp.profiles?.country?`<div class="profile-chip-country">${sp.profiles.country}${sp.profiles?.camera?" · 📷 "+sp.profiles.camera:""}</div>`:""}
-          </div>
+        <div style="font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:rgba(237,232,223,0.4);margin-bottom:6px;font-weight:600;">Erstellt von</div>
+        <div style="display:inline-flex;align-items:center;gap:8px;">
+          <div style="width:28px;height:28px;border-radius:50%;background:rgba(233,164,46,0.15);border:1px solid rgba(233,164,46,0.4);display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;color:#E9A42E;">${(sp.creator_name||sp.creator_username)[0].toUpperCase()}</div>
+          <span style="font-size:13px;font-weight:500;color:#EDE8DF;">${sp.creator_username?'@'+sp.creator_username:sp.creator_name}</span>
         </div>
-      </div>`:""}
+      </div>`:''}
       <div style="display:flex;gap:8px;flex-wrap:wrap;">
         <button class="btn btn-gold" onclick="planSpot(${sp.lat},${sp.lng})">🌅 In App planen</button>
         <button class="btn btn-outline" onclick="closeModal('detail-modal');reportingId='${sp.id}';document.getElementById('report-modal').classList.add('open')">⚑ Melden</button>
