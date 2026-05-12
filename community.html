@@ -433,7 +433,7 @@ async function signOut(){
 // ── Spots: Load from Supabase ─────────────────────────────────────────────────
 async function loadSpots(){
   showSkeleton();
-  let q=sb.from('spots').select('*,profiles(username,display_name,country,avatar_url,camera,bio,instagram,badge,is_verified,spots_submitted,total_votes_received,photography_styles)').eq('status','approved');
+  let q=sb.from('spots').select('*,profiles(username,display_name,country,camera,bio,instagram,badge,is_verified,spots_submitted,total_votes_received,photography_styles)').eq('status','approved');
   if(activeFilter!=='all') q=q.eq('category',activeFilter);
   if(activeSort==='votes') q=q.order('votes_count',{ascending:false});
   else if(activeSort==='newest') q=q.order('created_at',{ascending:false});
@@ -516,7 +516,7 @@ function showCreatorProfile(profile){
   hero.setAttribute('style','padding:1.25rem 1.5rem;display:flex;align-items:center;gap:12px;border-bottom:1px solid rgba(255,255,255,0.08);background:linear-gradient(135deg,rgba(233,164,46,0.1),rgba(107,159,232,0.06));');
   const avDiv=document.createElement('div');
   avDiv.setAttribute('style','width:52px;height:52px;border-radius:50%;background:rgba(233,164,46,0.15);border:1.5px solid rgba(233,164,46,0.4);display:flex;align-items:center;justify-content:center;font-size:20px;font-weight:700;color:#E9A42E;flex-shrink:0;overflow:hidden;');
-  if(profile.avatar_url&&profile.avatar_url.includes('avatars')){const img=document.createElement('img');img.src=profile.avatar_url;img.style.cssText='width:100%;height:100%;object-fit:cover;';avDiv.appendChild(img);}
+  // No avatar image - use initials only
   else{avDiv.textContent=initial;}
   const nameDiv=document.createElement('div');
   nameDiv.innerHTML='<div style="font-size:15px;font-weight:600;color:#EDE8DF;">'+name+(profile.is_verified?' <span style="color:#34D399;font-size:12px;">✓</span>':'')+'</div>'
