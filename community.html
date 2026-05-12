@@ -433,7 +433,7 @@ async function signOut(){
 // ── Spots: Load from Supabase ─────────────────────────────────────────────────
 async function loadSpots(){
   showSkeleton();
-  let q=sb.from('spots').select('*').eq('status','approved');
+  let q=sb.from('spots').select('*,creator_name,creator_username').eq('status','approved');
   if(activeFilter!=='all') q=q.eq('category',activeFilter);
   if(activeSort==='votes') q=q.order('votes_count',{ascending:false});
   else if(activeSort==='newest') q=q.order('created_at',{ascending:false});
@@ -569,7 +569,7 @@ function spotCard(sp){
       <div class="spot-cat">${CAT_ICONS[sp.category]||''} ${CAT_NAMES[sp.category]||sp.category}</div>
       <div class="spot-name">${sp.name}</div>
       <div class="spot-loc">📍 ${sp.location}</div>
-      ${sp.profiles?.username||sp.profiles?.display_name?`<div style="font-size:11px;color:var(--mu);margin-top:2px;">👤 ${sp.profiles?.username?"@"+sp.profiles.username:sp.profiles.display_name}${sp.profiles?.country?" · "+sp.profiles.country:""}${sp.profiles?.is_verified?" ✓":""}</div>`:""}
+      ${sp.profiles?.username||sp.profiles?.display_name||sp.profiles?.email?`<div style="font-size:11px;color:var(--mu);margin-top:2px;">👤 ${sp.profiles?.username?"@"+sp.profiles.username:sp.profiles.display_name}${sp.profiles?.country?" · "+sp.profiles.country:""}${sp.profiles?.is_verified?" ✓":""}</div>`:""}
       ${sp.profiles?.badge?`<div style="margin-top:2px;"><span style="background:rgba(233,164,46,0.1);color:var(--gold);border-radius:99px;padding:2px 8px;font-size:10px;">${{"top_contributor":"🏆 Top Contributor","active_member":"⭐ Active Member","contributor":"📸 Contributor"}[sp.profiles.badge]||sp.profiles.badge}</span></div>`:""}
       <div class="spot-desc">${sp.description||''}</div>
       <div class="spot-footer">
@@ -616,7 +616,7 @@ function openDetail(id){
       <div style="font-family:'Playfair Display',Georgia,serif;font-size:22px;font-weight:700;margin-bottom:.4rem;">${sp.name}</div>
       <div style="font-size:13px;color:var(--mu);margin-bottom:.75rem;">📍 ${sp.location}</div>
       <div style="font-size:14px;color:var(--mu);line-height:1.7;margin-bottom:.75rem;">${sp.description||'Keine Beschreibung.'}</div>
-      ${sp.profiles?.username||sp.profiles?.display_name?`
+      ${sp.profiles?.username||sp.profiles?.display_name||sp.profiles?.email?`
       <div style="margin-bottom:1rem;">
         <div style="font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--mu);margin-bottom:6px;font-weight:600;">Erstellt von</div>
         <div class="profile-chip" onclick="showCreatorProfile(${JSON.stringify(sp.profiles||{}).replace(/"/g,'&quot;')})">
@@ -921,7 +921,7 @@ async function submitSpot(){
   }
   if(!formData.modOk){showToast('⚠️ Warte auf Bild-Prüfung');return;}
   const {error}=await sb.from('spots').insert({
-    user_id:CURRENT_USER.id, name, lat:formData.lat, lng:formData.lng,
+    user_id:CURRENT_USER.id, creator_name:USER_PROFILE?.display_name||CURRENT_USER.email?.split('@')[0]||'Anonym', creator_username:USER_PROFILE?.username||null, name, lat:formData.lat, lng:formData.lng,
     location:loc, category:formData.cat, description:desc,
     image_url:img, season:document.getElementById('f-season').value,
     best_time:document.getElementById('f-time').value,
