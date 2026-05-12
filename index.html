@@ -243,13 +243,13 @@ html,body{min-height:100%;background:var(--bg);color:var(--tx);font-family:'DM S
 .trial-bar{background:linear-gradient(135deg,rgba(107,159,232,0.12),rgba(107,159,232,0.05));border:.5px solid rgba(107,159,232,0.3);border-radius:var(--r);padding:.9rem 1.25rem;margin-bottom:1rem;display:flex;align-items:center;justify-content:space-between;gap:1rem;flex-wrap:wrap;}
 .trial-bar-title{font-size:14px;font-weight:600;color:var(--blue);margin-bottom:2px;}.trial-bar-text{font-size:12px;color:var(--mu);}
 .trial-time{font-size:20px;font-weight:700;color:var(--blue);}.trial-expired .trial-bar-title,.trial-expired .trial-time{color:var(--red);}
-.profile-modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.7);backdrop-filter:blur(10px);z-index:9500;display:flex;align-items:center;justify-content:center;padding:1.5rem;}
-.profile-modal{background:var(--bg);border:.5px solid var(--bd);border-radius:24px;width:100%;max-width:420px;padding:0;overflow:hidden;box-shadow:0 24px 64px rgba(0,0,0,0.3);}
+.profile-modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.7);backdrop-filter:blur(10px);z-index:9500;display:flex;align-items:flex-start;justify-content:center;padding:1rem;overflow-y:auto;}
+.profile-modal{background:var(--bg);border:.5px solid var(--bd);border-radius:24px;width:100%;max-width:420px;padding:0;overflow:hidden;box-shadow:0 24px 64px rgba(0,0,0,0.3);max-height:90vh;display:flex;flex-direction:column;}
 .profile-modal-hero{background:linear-gradient(135deg,rgba(233,164,46,0.15),rgba(107,159,232,0.1));padding:2rem;text-align:center;border-bottom:.5px solid var(--bd);}
 .profile-modal-emoji{font-size:56px;display:block;margin-bottom:.75rem;}
 .profile-modal-title{font-family:'Playfair Display',Georgia,serif;font-size:22px;font-weight:700;margin-bottom:.4rem;}
 .profile-modal-sub{font-size:13px;color:var(--mu);line-height:1.5;}
-.profile-modal-body{padding:1.5rem;}
+.profile-modal-body{padding:1.5rem;overflow-y:auto;flex:1;-webkit-overflow-scrolling:touch;}
 .profile-field{margin-bottom:1rem;}
 .profile-field label{font-size:11px;text-transform:uppercase;letter-spacing:.1em;color:var(--mu);font-weight:600;display:block;margin-bottom:.4rem;}
 .profile-field input,.profile-field select{width:100%;background:var(--s2);border:.5px solid var(--bd);border-radius:10px;color:var(--tx);font-family:inherit;font-size:14px;padding:10px 13px;outline:none;box-sizing:border-box;}
@@ -308,7 +308,8 @@ html,body{min-height:100%;background:var(--bg);color:var(--tx);font-family:'DM S
     <span class="si">🔍</span>
     <input class="sinput" id="q" type="text" placeholder="Ort eingeben, z.B. Grindelwald…" autocomplete="off" onkeydown="if(event.key==='Enter')doSearch()">
   </div>
-  <input class="dinput" id="di" type="date">
+  <input class="dinput" id="di" type="date" style="min-width:130px;">
+  <input class="dinput" id="ti" type="time" value="12:00" style="min-width:100px;" title="Uhrzeit wählen">
   <button class="btn btn-gold" onclick="doSearch()" id="btn-search">Suchen</button>
   <button class="btn" onclick="useGPS()">📍</button>
 </div>
@@ -818,9 +819,7 @@ function openProfileEdit(){
 (function(){
   const di=document.getElementById('di'),now=new Date();
   di.value=now.toISOString().slice(0,10);
-  di.min=now.toISOString().slice(0,10);
-  const mx=new Date(now);mx.setDate(mx.getDate()+14);
-  di.max=mx.toISOString().slice(0,10);
+  // No min/max - allow any date past or future
   setInterval(()=>{document.getElementById('clock').textContent=new Date().toLocaleTimeString('de-CH',{hour:'2-digit',minute:'2-digit'});},20000);
   document.getElementById('clock').textContent=new Date().toLocaleTimeString('de-CH',{hour:'2-digit',minute:'2-digit'});
   ['login-modal','acct-modal'].forEach(id=>{const el=document.getElementById(id);if(el)el.remove();});
@@ -1618,7 +1617,9 @@ function useGPS(){
 }
 async function loadData(){
   const dv=document.getElementById('di').value;
-  S.date=dv?new Date(dv+'T12:00:00'):new Date();
+  const tv=document.getElementById('ti')?.value||'12:00';
+  S.date=dv?new Date(dv+'T'+tv+':00'):new Date();
+  S.sunHour=S.date.getHours()+S.date.getMinutes()/60;
   try{const r=await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${S.lat}&longitude=${S.lng}&daily=weathercode,temperature_2m_max,temperature_2m_min,precipitation_probability_max,windspeed_10m_max&timezone=auto&forecast_days=7`);S.weather=await r.json();}catch{S.weather=null;}
   document.getElementById('tab-bar').style.display='flex';
   render();
@@ -1638,7 +1639,13 @@ function render(){
     case'trip':renderTrip();break;
   }
 }
-function selectDay(ds){document.getElementById('di').value=ds;S.date=new Date(ds+'T12:00:00');render();}
+function selectDay(ds){
+  const tv=document.getElementById('ti')?.value||'12:00';
+  document.getElementById('di').value=ds;
+  S.date=new Date(ds+'T'+tv+':00');
+  S.sunHour=S.date.getHours()+S.date.getMinutes()/60;
+  render();
+}
 function setScene(sc){S.scene=sc;render();}
 function setTab(tab){
   S.tab=tab;

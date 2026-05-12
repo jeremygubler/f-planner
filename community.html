@@ -591,7 +591,7 @@ function checkAuthAndSubmit(){
   if(window.formData)formData.imageUrl='';
   document.getElementById('img-preview').style.display='none';
   document.getElementById('mod-status').style.display='none';
-  document.getElementById('btn-go').disabled=false;
+  // submit btn managed externally
   document.getElementById('geo-results').innerHTML='';
   document.querySelectorAll('.cat-btn').forEach((b,i)=>b.classList.toggle('on',i===0));
   document.getElementById('submit-modal').classList.add('open');
@@ -794,7 +794,7 @@ async function handleFileUpload(input){
   // AI Moderation with timeout
   document.getElementById('mod-status').innerHTML='<span style="color:var(--gold)">🤖 KI prüft Bild…</span>';
   try{
-    const modTimeout=new Promise((_,reject)=>setTimeout(()=>reject(new Error('timeout')),10000));
+    const modTimeout=new Promise((_,reject)=>setTimeout(()=>reject(new Error('timeout')),25000));
     await Promise.race([moderateImage(publicUrl), modTimeout]);
   }catch(e){
     // Moderation timeout – allow anyway, mark for manual review
@@ -818,42 +818,14 @@ function previewImage(url){
 }
 
 async function moderateImage(url){
+  // Spots go to pending - manual review by admin in Supabase
+  // (Direct Claude API calls require API key which can't be in frontend)
+  formData.modOk = true;
   const el=document.getElementById('mod-status');
-  el.className='mod-status mod-pending'; el.style.display='block';
-  el.innerHTML='<span class="mod-spin"></span>KI-Moderation läuft…';
-  document.getElementById('btn-go').disabled=true;
-  try{
-    const res=await fetch('https://api.anthropic.com/v1/messages',{
-      method:'POST',headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({
-        model:'claude-sonnet-4-20250514',max_tokens:200,
-        system:`Fotografie-Community-Moderator. Nur JSON antworten:
-{"approved":true/false,"reason":"max 80 Zeichen"}
-Ablehnen: Nacktheit, Gewalt, Gesichter, Kennzeichen, Innenräume, kein Fotospot.
-Genehmigen: Landschaften, Städte, Architektur, Natur, Astro, Wasserfälle.`,
-        messages:[{role:'user',content:[
-          {type:'image',source:{type:'url',url}},
-          {type:'text',text:'Geeignet für Foto-Spot-Community?'}
-        ]}]
-      })
-    });
-    const d=await res.json();
-    const result=JSON.parse((d.content?.[0]?.text||'{}').replace(/```json|```/g,'').trim());
-    if(result.approved){
-      el.className='mod-status mod-ok';
-      el.innerHTML=`✅ Genehmigt – ${result.reason||'Bild geeignet'}`;
-      formData.modOk=true; document.getElementById('btn-go').disabled=false;
-    }else{
-      el.className='mod-status mod-fail';
-      el.innerHTML=`❌ Abgelehnt – ${result.reason||'Nicht geeignet'}`;
-      formData.modOk=false; document.getElementById('btn-go').disabled=true;
-    }
-  }catch{
-    el.className='mod-status mod-pending';
-    el.innerHTML='⚠️ Prüfung nicht verfügbar – wird manuell geprüft';
-    formData.modOk=true; document.getElementById('btn-go').disabled=false;
-  }
+  el.style.display='flex';
+  el.innerHTML='<span style="color:var(--green)">✅ Spot wird nach Prüfung freigeschaltet</span>';
 }
+
 
 async function submitSpot(){
   const name=document.getElementById('f-name').value.trim();
