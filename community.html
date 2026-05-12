@@ -489,6 +489,40 @@ function renderSpots(){
   c.innerHTML=`<div class="spots-grid">${SPOTS.map(spotCard).join('')}</div>`;
 }
 
+
+function showCreatorProfile(profile){
+  const ex=document.getElementById('creator-modal');if(ex)ex.remove();
+  const name=profile.display_name||profile.username||'Fotograf';
+  const initial=(name)[0].toUpperCase();
+  const badgeMap={'top_contributor':'🏆 Top Contributor','active_member':'⭐ Active Member','contributor':'📸 Contributor'};
+  const overlay=document.createElement('div');
+  overlay.id='creator-modal';
+  overlay.className='creator-modal-overlay';
+  overlay.innerHTML=`<div class="creator-modal">
+    <div class="creator-hero">
+      <div class="creator-avatar">${profile.avatar_url?`<img src="${profile.avatar_url}">`:'<span>'+initial+'</span>'}</div>
+      <div class="creator-name">${name}</div>
+      ${profile.username?`<div style="font-size:13px;color:var(--mu);">@${profile.username}</div>`:''}
+      ${profile.badge?`<div style="margin-top:8px;"><span style="background:rgba(233,164,46,0.15);color:var(--gold);border-radius:99px;padding:4px 12px;font-size:12px;font-weight:600;">${badgeMap[profile.badge]||profile.badge}</span></div>`:''}
+      ${profile.is_verified?`<div style="margin-top:6px;font-size:12px;color:var(--green);">✓ Verifizierter Fotograf</div>`:''}
+    </div>
+    <div class="creator-body">
+      ${profile.bio?`<div style="font-size:13px;color:var(--mu);margin-bottom:1rem;font-style:italic;">"${profile.bio}"</div>`:''}
+      ${profile.country?`<div class="creator-stat"><span class="creator-stat-icon">🌍</span><span class="creator-stat-lbl">Land</span><span class="creator-stat-val">${profile.country}</span></div>`:''}
+      ${profile.home_location?`<div class="creator-stat"><span class="creator-stat-icon">📍</span><span class="creator-stat-lbl">Heimatort</span><span class="creator-stat-val">${profile.home_location}</span></div>`:''}
+      ${profile.camera?`<div class="creator-stat"><span class="creator-stat-icon">📷</span><span class="creator-stat-lbl">Kamera</span><span class="creator-stat-val">${profile.camera}</span></div>`:''}
+      ${profile.spots_submitted?`<div class="creator-stat"><span class="creator-stat-icon">📸</span><span class="creator-stat-lbl">Spots eingereicht</span><span class="creator-stat-val">${profile.spots_submitted}</span></div>`:''}
+      ${profile.total_votes_received?`<div class="creator-stat"><span class="creator-stat-icon">⭐</span><span class="creator-stat-lbl">Votes erhalten</span><span class="creator-stat-val">${profile.total_votes_received}</span></div>`:''}
+      ${profile.instagram?`<div class="creator-stat"><span class="creator-stat-icon">📱</span><span class="creator-stat-lbl">Instagram</span><span class="creator-stat-val"><a href="https://instagram.com/${profile.instagram}" target="_blank" style="color:var(--gold);text-decoration:none;">@${profile.instagram}</a></span></div>`:''}
+      ${profile.website?`<div class="creator-stat"><span class="creator-stat-icon">🔗</span><span class="creator-stat-lbl">Website</span><span class="creator-stat-val"><a href="${profile.website.startsWith('http')?profile.website:'https://'+profile.website}" target="_blank" style="color:var(--gold);text-decoration:none;">${profile.website}</a></span></div>`:''}
+      ${profile.photography_styles?.length?`<div class="creator-stat"><span class="creator-stat-icon">🎨</span><span class="creator-stat-lbl">Stile</span><span class="creator-stat-val" style="font-size:12px;">${profile.photography_styles.join(', ')}</span></div>`:''}
+      <button onclick="document.getElementById('creator-modal').remove()" style="width:100%;margin-top:1rem;background:none;border:.5px solid var(--bd);border-radius:10px;padding:10px;color:var(--mu);font-family:inherit;font-size:13px;cursor:pointer;">Schliessen</button>
+    </div>
+  </div>`;
+  overlay.addEventListener('click',e=>{if(e.target===overlay)overlay.remove();});
+  document.body.appendChild(overlay);
+}
+
 function spotCard(sp){
   const myVote=localStorage.getItem('pp_v_'+sp.id);
   return`<div class="spot-card">
