@@ -339,7 +339,7 @@ const SEASONS={spring:'🌸 Frühling',summer:'☀️ Sommer',autumn:'🍂 Herbs
 const TIMES={golden_morning:'🌅 Gold Morgen',golden_evening:'🌇 Gold Abend',blue_hour:'💙 Blaue Std.',night:'🌌 Nacht',midday:'☀️ Mittag','':''};
 
 // ── State ─────────────────────────────────────────────────────────────────────
-let SPOTS=[], CURRENT_USER=null, USER_PROFILE=null;
+let SPOTS=[], CURRENT_USER=null, USER_PROFILE=null, PROFILES_MAP={};
 let MAP_OBJ=null, MAP_MARKERS=[];
 let activeFilter='all', activeSort='votes';
 let formData={lat:null,lng:null,cat:'landscape',modOk:false};
@@ -489,6 +489,12 @@ function renderSpots(){
   c.innerHTML=`<div class="spots-grid">${SPOTS.map(spotCard).join('')}</div>`;
 }
 
+
+function openCreator(userId){
+  const profile = PROFILES_MAP[userId];
+  if(!profile){showToast('Kein Profil verfügbar');return;}
+  showCreatorProfile(profile);
+}
 
 function showCreatorProfile(profile){
   const ex=document.getElementById('creator-modal');if(ex)ex.remove();
